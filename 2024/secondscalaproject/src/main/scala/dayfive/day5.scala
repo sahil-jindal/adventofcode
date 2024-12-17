@@ -3,13 +3,41 @@ package dayfive
 import scala.util.{Try, Success, Failure}
 import scala.io.Source
 import scala.util.matching.Regex
+import scala.collection.mutable.ListBuffer
 
-val pageOrderingRegex = raw"(\d+)|(\d+)".r
+class PageOrder(val earlier: Int, val later: Int)
 
-val useRegex = (input: String, regex: Regex) => regex.findAllIn(input).toArray
+class Manual(
+    val pageNos: Array[Int], 
+    val pageOrders: ListBuffer[PageOrder], 
+    var successMatchCount: Int,
+)
 
-def evalutorOne(lines: List[String], Parser: (String, Regex) => Array[String]): Unit = 
-    println("Something possible!")
+val pageOrderingRegex = raw"(\d+)\|(\d+)".r
+
+def evalutorOne(lines: List[String]): Unit = 
+    val index = lines.indexOf("") + 1
+    var (first, second) = lines.splitAt(index)
+
+    first = first.dropRight(1)
+
+    val listOfManuals = second.map(line => 
+        Manual(line.split(",").map(_.toInt), ListBuffer(), 0)
+    )
+
+    first.foreach(line => 
+        line match {
+            case pageOrderingRegex(earlier, later) => {
+                val (e, l) = (earlier.toInt, later.toInt)
+                
+                listOfManuals.foreach(manual => 
+                    if manual.pageNos.contains(e) && manual.pageNos.contains(l) then {
+                        manual.pageOrders += new PageOrder(e, l)
+                    }
+                )
+            }
+        }
+    )
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Try {
@@ -24,9 +52,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 
 @main
 def hello(): Unit =
-    readLinesFromFile("src/main/scala/dayfive/file.txt") match
+    readLinesFromFile("src/main/scala/dayfive/trial.txt") match
         case Success(lines) => {        
-            lines.foreach(line => println(line))
+            evalutorOne(lines)
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
