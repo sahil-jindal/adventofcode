@@ -2,42 +2,80 @@ package dayfive
 
 import scala.util.{Try, Success, Failure}
 import scala.io.Source
-import scala.util.matching.Regex
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.{ListBuffer, Map, Set}
 
 class PageOrder(val earlier: Int, val later: Int)
 
 class Manual(
     val pageNos: Array[Int], 
-    val pageOrders: ListBuffer[PageOrder], 
-    var successMatchCount: Int,
+    val pageOrders: ListBuffer[PageOrder]
 )
 
-val pageOrderingRegex = raw"(\d+)\|(\d+)".r
+def getManuals(lines: List[String]): List[Manual] = 
+    val index = lines.indexWhere(_.trim.isEmpty)
+    val (first, second) = lines.splitAt(index)
 
-def evalutorOne(lines: List[String]): Unit = 
-    val index = lines.indexOf("") + 1
-    var (first, second) = lines.splitAt(index)
+    val pageOrders = first.map {
+        case s"$earlier|$later" => new PageOrder(earlier.toInt, later.toInt)
+    }.toList
 
-    first = first.dropRight(1)
+    second.tail.map { line =>
+        val pages = line.split(",").map(_.toInt)
+        val applicableOrders = pageOrders.filter(order =>
+            pages.contains(order.earlier) && pages.contains(order.later)
+        )
+        new Manual(pages, ListBuffer(applicableOrders*))
+    }
 
-    val listOfManuals = second.map(line => 
-        Manual(line.split(",").map(_.toInt), ListBuffer(), 0)
-    )
+def isOrdered(manual: Manual): Boolean =
+    manual.pageOrders.forall { order =>
+        val firstIndex = manual.pageNos.indexOf(order.earlier)
+        val secondIndex = manual.pageNos.indexOf(order.later)
+        firstIndex < secondIndex
+    }
+    
+def sortManual(manual: Manual): Unit =
+    val graph = Map[Int, Set[Int]]()
+    val inDegree = Map[Int, Int]().withDefaultValue(0)
 
-    first.foreach(line => 
-        line match {
-            case pageOrderingRegex(earlier, later) => {
-                val (e, l) = (earlier.toInt, later.toInt)
-                
-                listOfManuals.foreach(manual => 
-                    if manual.pageNos.contains(e) && manual.pageNos.contains(l) then {
-                        manual.pageOrders += new PageOrder(e, l)
-                    }
-                )
-            }
+    manual.pageNos.foreach(page => graph(page) = Set())
+
+    manual.pageOrders.foreach { order =>
+        graph(order.earlier) += order.later
+        inDegree(order.later) += 1
+    }
+
+    val queue = ListBuffer(manual.pageNos.filter(inDegree(_) == 0)*)
+    val sortedPages = ListBuffer[Int]()
+
+    while queue.nonEmpty do
+        val current = queue.remove(0)
+        sortedPages += current
+        graph(current).foreach { neighbor =>
+            inDegree(neighbor) -= 1
+            if inDegree(neighbor) == 0 then queue += neighbor
         }
-    )
+
+    manual.pageNos.indices.foreach(i => manual.pageNos(i) = sortedPages(i))
+
+def evalutorOne(manuals: List[Manual]): Unit =
+    val correctlyOrderedManuals = manuals.filter(isOrdered)
+    
+    val sum = correctlyOrderedManuals.map { manual =>
+        manual.pageNos(manual.pageNos.length / 2)
+    }.sum
+    
+    println(sum)
+
+def evalutorTwo(manuals: List[Manual]): Unit =
+    val previouslyInorderlyManuals = manuals.filterNot(isOrdered)
+    previouslyInorderlyManuals.foreach(sortManual)
+    
+    val sum = previouslyInorderlyManuals.map { manual =>
+        manual.pageNos(manual.pageNos.length / 2)
+    }.sum
+    
+    println(sum)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Try {
@@ -52,9 +90,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 
 @main
 def hello(): Unit =
-    readLinesFromFile("src/main/scala/dayfive/trial.txt") match
+    readLinesFromFile("src/main/scala/dayfive/file.txt") match
         case Success(lines) => {        
-            evalutorOne(lines)
+            evalutorTwo(getManuals(lines))
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
