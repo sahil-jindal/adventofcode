@@ -88,7 +88,6 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
         }
     }
 
-@main
 def hello(): Unit =
     readLinesFromFile("src/main/scala/dayfive/file.txt") match
         case Success(lines) => {        
