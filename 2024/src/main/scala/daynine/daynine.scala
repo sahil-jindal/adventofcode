@@ -40,7 +40,10 @@ def evaluatorOne(blocks: Array[Int]): Long = {
 def evaluatorTwo(blocks: Array[Int]): Unit = {
     val fragments = blocks.zipWithIndex.map {
         case (blockSize, index) => {
-            if (index & 1) == 0 then Array.fill(blockSize)(s"$index") else Array.fill(blockSize)(".")
+            if (index & 1) == 0 then 
+                Array.fill(blockSize)(s"$index") 
+            else 
+                Array.fill(blockSize)(".")
         }
     }
 }
