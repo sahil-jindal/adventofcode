@@ -37,7 +37,7 @@ def canMatchTargetSecond(target: Long, numbers: List[Long], current: Long = 0): 
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Try {
-        val source = Source.fromFile(filePath)
+        val source = Source.fromResource(filePath)
         
         try { 
             source.getLines().toList
@@ -46,9 +46,8 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
         }
     }
 
-@main
 def hello(): Unit =
-    readLinesFromFile("src/main/scala/dayseven/file.txt") match
+    readLinesFromFile("dayseven.txt") match
         case Success(lines) => {        
             val equations = lines.map(parseLine)
             val calibrationResult = equations.collect {

@@ -53,7 +53,7 @@ def evalutor_two(lines: List[String], Parser: String => Array[String]): Unit =
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Try {
-        val source = Source.fromFile(filePath)
+        val source = Source.fromResource(filePath)
         
         try { 
             source.getLines().toList
@@ -63,7 +63,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
     }
 
 def hello(): Unit =
-    readLinesFromFile("./dayone/file.txt") match
+    readLinesFromFile("dayone.txt") match
         case Success(lines) => {        
             evalutor_two(lines, useRegex)
         }

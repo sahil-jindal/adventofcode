@@ -53,7 +53,7 @@ def evalutorTwo(lines: List[String], Parser: String => Array[String]): Unit =
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Try {
-        val source = Source.fromFile(filePath)
+        val source = Source.fromResource(filePath)
         
         try { 
             source.getLines().toList
@@ -63,7 +63,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
     }
 
 def hello(): Unit =
-    readLinesFromFile("src/main/scala/daytwo/file.txt") match
+    readLinesFromFile("daytwo.txt") match
         case Success(lines) => {        
             evalutorTwo(lines, splitIntoArray)
         }
