@@ -1,6 +1,0 @@
-2025.01.06 14:07:46 ERROR Bloop 'bsp' command exited with code 1. Something may be wrong with the current configuration.
-Running the [1mclean[0m sub-command to clear the working directory and remove caches might help.
-If the error persists, please report the issue as a bug and attach a log with increased verbosity by passing [1m-v -v -v[0m.[0m
-2025.01.06 14:07:45 ERROR Bloop 'bsp' command exited with code 1. Something may be wrong with the current configuration.
-Running the [1mclean[0m sub-command to clear the working directory and remove caches might help.
-If the error persists, please report the issue as a bug and attach a log with increased verbosity by passing [1m-v -v -v[0m.[0m
