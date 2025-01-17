@@ -58,7 +58,6 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
         }
     }
 
-@main
 def hello(): Unit =
     readLinesFromFile("daythree.txt") match
         case Success(lines) => {
