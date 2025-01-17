@@ -16,7 +16,6 @@ def findLowestNumber(secretKey: String, prefix: String): Int = {
     }.get
 }
 
-@main
 def hello() = {
     val result = findLowestNumber(secretKey, "000000")
     println(s"The lowest number is: $result")
