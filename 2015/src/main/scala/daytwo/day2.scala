@@ -1,6 +1,6 @@
 package daytwo
 
-import scala.util.{Try, Success, Failure}
+import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
 val dimensionRegex = raw"(\d+)x(\d+)x(\d+)".r
@@ -28,15 +28,7 @@ def evaluatorTwo(dimensions: (Int, Int, Int)) = {
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
-    Try {
-        val source = Source.fromResource(filePath)
-
-        try {
-            source.getLines().toList
-        } finally {
-            source.close()
-        }
-    }
+    Using(Source.fromResource(filePath))(_.getLines().toList)
 
 def hello(): Unit =
     readLinesFromFile("daytwo.txt") match

@@ -1,6 +1,6 @@
 package daythree
 
-import scala.util.{Try, Success, Failure}
+import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Set
 
@@ -48,15 +48,7 @@ def evaluatorTwo(line: String) = {
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
-    Try {
-        val source = Source.fromResource(filePath)
-
-        try {
-            source.getLines().toList
-        } finally {
-            source.close()
-        }
-    }
+    Using(Source.fromResource(filePath))(_.getLines().toList)
 
 def hello(): Unit =
     readLinesFromFile("daythree.txt") match
