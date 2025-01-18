@@ -2,7 +2,7 @@ package dayone
 
 import io.Source
 import scala.collection.mutable.{PriorityQueue, ListBuffer, Map}
-import scala.util.{Try, Success, Failure}
+import scala.util.{Try, Success, Failure, Using}
 
 val useRegex = (input: String) => raw"\b\d+\b".r.findAllIn(input).toArray
 
@@ -52,15 +52,7 @@ def evalutor_two(lines: List[String], Parser: String => Array[String]): Unit =
     println(sum)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
-    Try {
-        val source = Source.fromResource(filePath)
-        
-        try { 
-            source.getLines().toList
-        } finally { 
-            source.close()
-        }
-    }
+    Using(Source.fromResource(filePath))(_.getLines().toList)
 
 def hello(): Unit =
     readLinesFromFile("dayone.txt") match

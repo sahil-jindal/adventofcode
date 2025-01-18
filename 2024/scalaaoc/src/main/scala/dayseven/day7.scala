@@ -1,6 +1,6 @@
 package dayseven
 
-import scala.util.{Try, Success, Failure}
+import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
 def parseLine(line: String): (Long, List[Long]) = {
@@ -36,15 +36,7 @@ def canMatchTargetSecond(target: Long, numbers: List[Long], current: Long = 0): 
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
-    Try {
-        val source = Source.fromResource(filePath)
-        
-        try { 
-            source.getLines().toList
-        } finally { 
-            source.close()
-        }
-    }
+    Using(Source.fromResource(filePath))(_.getLines().toList)
 
 @main
 def hello(): Unit =

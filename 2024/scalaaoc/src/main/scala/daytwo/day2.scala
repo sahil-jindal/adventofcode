@@ -1,6 +1,6 @@
 package daytwo
 
-import scala.util.{Try, Success, Failure}
+import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
 val splitIntoArray = (input: String) => input.split(" ")
@@ -52,15 +52,7 @@ def evalutorTwo(lines: List[String], Parser: String => Array[String]): Unit =
     println(safeCount)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
-    Try {
-        val source = Source.fromResource(filePath)
-        
-        try { 
-            source.getLines().toList
-        } finally { 
-            source.close()
-        }
-    }
+    Using(Source.fromResource(filePath))(_.getLines().toList)
 
 def hello(): Unit =
     readLinesFromFile("daytwo.txt") match
