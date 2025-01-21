@@ -57,8 +57,6 @@ def findNextPassword(currentPassword: String): String = {
     password
 }
 
-
-@main
 def hello() = {
     val nextPassword = findNextPassword(input)
     println(s"The next password is: $nextPassword")
