@@ -22,7 +22,6 @@ def evaluatorTwo(line: String) = sumJsonValue(Json.parse(line))
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-@main
 def hello(): Unit =
     readLinesFromFile("daytwelve.txt") match
         case Success(lines) => {
