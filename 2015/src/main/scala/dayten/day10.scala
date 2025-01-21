@@ -30,7 +30,6 @@ def lookAndSaySequence(sequence: String, iterations: Int) = {
     currentSequence.length
 }
 
-@main
 def hello(): Unit = {
     println(lookAndSaySequence(input, 50))
 }
