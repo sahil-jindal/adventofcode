@@ -51,7 +51,6 @@ def findNextPassword(currentPassword: String): String = {
     var password = incrementPassword(currentPassword)
     
     while (!isValidPassword(password)) {
-        println(password)
         password = incrementPassword(password)
     }
     
