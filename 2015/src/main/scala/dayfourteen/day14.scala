@@ -55,7 +55,6 @@ def evaluatorTwo(reindeers: Array[Reindeer]) = {
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-@main
 def hello(): Unit =
     readLinesFromFile("dayfourteen.txt") match
         case Success(lines) => {
