@@ -50,7 +50,6 @@ def findMaximumHappiness(happiness: Map[(String, String), Int]): Int = {
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-@main
 def hello(): Unit =
     readLinesFromFile("daythirteen.txt") match
         case Success(lines) => {
