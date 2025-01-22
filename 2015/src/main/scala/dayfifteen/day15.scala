@@ -21,7 +21,7 @@ def parseInput(line: String) = {
     Ingredient(qualities(0), qualities(1), qualities(2), qualities(3), qualities(4))
 }
 
-def nonDecreasingArrays(n: Int, total: Int): List[List[Int]] = {
+def partitions(n: Int, total: Int): List[List[Int]] = {
     def helper(remaining: Int, minValue: Int, length: Int): List[List[Int]] = {
         if (length == 0) {
             return if (remaining == 0) List(Nil) else Nil
@@ -32,11 +32,11 @@ def nonDecreasingArrays(n: Int, total: Int): List[List[Int]] = {
         }
     }
 
-    helper(total, 0, n)
+    helper(total, 1, n)
 }
 
 def allPossibleRecipes(ingredients: Array[Ingredient]) = {
-    val scoopPossibilities = nonDecreasingArrays(ingredients.length, totalScoops)
+    val scoopPossibilities = partitions(ingredients.length, totalScoops)
                                 .flatMap(_.permutations)
 
     scoopPossibilities.map { it =>
