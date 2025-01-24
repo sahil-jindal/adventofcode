@@ -52,7 +52,6 @@ def findAuntySue(aunts: Array[(Int, Map[String, Int])], matchFunction: (String, 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-@main
 def hello(): Unit =
     readLinesFromFile("daysixteen.txt") match
         case Success(lines) => {
