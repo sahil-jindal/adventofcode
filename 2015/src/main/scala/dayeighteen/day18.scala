@@ -92,7 +92,6 @@ def evaluator(grid: Array[Array[Int]], stuck: Boolean) = {
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-@main
 def hello(): Unit =
     readLinesFromFile("dayeighteen.txt") match
         case Success(lines) => {
