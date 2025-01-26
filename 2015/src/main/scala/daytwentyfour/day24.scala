@@ -27,7 +27,6 @@ def evaluatorTwo(numbers: List[Long]) = solver(numbers, 4)
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-@main
 def hello(): Unit =
     readLinesFromFile("daytwentyfour.txt") match
         case Success(lines) => {
