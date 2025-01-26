@@ -48,7 +48,6 @@ def evaluatorTwo(state: State) = binarySearch(mana => trySolve(state.withManaLim
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-@main
 def hello(): Unit =
     readLinesFromFile("daytwentytwo.txt") match
         case Success(lines) => {
