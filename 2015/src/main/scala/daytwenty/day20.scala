@@ -22,5 +22,4 @@ def presentByHouse(steps: Int, mul: Int, l: Int) = {
 def evaluatorOne(input: Int) = presentByHouse(1000000, 10, input)
 def evaluatorTwo(input: Int) = presentByHouse(50, 11, input)
 
-@main
 def hello() = println(evaluatorTwo(input))
