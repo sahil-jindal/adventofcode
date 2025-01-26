@@ -63,7 +63,6 @@ def evaluatorTwo(boss: Opponent): Int = Buy()
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-@main
 def hello(): Unit =
     readLinesFromFile("daytwentyone.txt") match
         case Success(lines) => {
