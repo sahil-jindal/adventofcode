@@ -71,7 +71,6 @@ def evaluatorTwo(molecule: String, rules: Array[(String, String)]) = {
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-@main
 def hello(): Unit =
     readLinesFromFile("dayninteen.txt") match
         case Success(lines) => {
