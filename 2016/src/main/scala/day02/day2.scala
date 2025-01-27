@@ -1,0 +1,79 @@
+package day02
+
+import scala.util.{Try, Success, Failure, Using}
+import scala.io.Source
+
+case class Direction(val dy: Int, val dx: Int)
+case class Point(val y: Int, val x: Int)
+
+def firstKeyPad = Array(
+    Array('1', '2', '3'),
+    Array('4', '5', '6'),
+    Array('7', '8', '9')
+)
+
+def secondKeyPad = Array(
+    Array(' ', ' ', '1', ' ', ' '),
+    Array(' ', '2', '3', '4', ' '),
+    Array('5', '6', '7', '8', '9'),
+    Array(' ', 'A', 'B', 'C', ' '),
+    Array(' ', ' ', 'D', ' ', ' ')
+)
+
+def getDirections(dir: Char) = dir match {
+    case 'U' => Direction(-1, 0)
+    case 'R' => Direction(0, 1)
+    case 'D' => Direction(1, 0)
+    case 'L' => Direction(0, -1)
+    case _ => Direction(0, 0)
+}
+
+def boundaryConditionOne(y: Int, x: Int) = 
+    (x >= 0 && x <= 2) && (y >= 0 && y <= 2)
+
+def boundaryConditionTwo(y: Int, x: Int) = 
+    (x >= 0 && x <= 4) && (y >= 0 && y <= 4) && secondKeyPad(y)(x) != ' '
+
+def getCode(
+    currPoint: Point, directions: List[String], 
+    boundaryCondition: (Int, Int) => Boolean, keyPad: Array[Array[Char]]
+) = 
+    val code = new StringBuilder
+    var temp = currPoint
+
+    for line <- directions do {
+        for dir <- line do {
+            val move = getDirections(dir)
+
+            val newY = temp.y + move.dy
+            val newX = temp.x + move.dx
+
+            if boundaryCondition(newY, newX) then {
+                temp = Point(newY, newX)
+            } 
+        }
+
+        code.append(keyPad(temp.y)(temp.x))
+    }
+
+    code.toString
+
+def evaluatorOne(directions: List[String]) = 
+    getCode(Point(1, 1), directions, boundaryConditionOne, firstKeyPad)
+
+def evaluatorTwo(directions: List[String]) = 
+    getCode(Point(2, 0), directions, boundaryConditionTwo, secondKeyPad)
+
+def readLinesFromFile(filePath: String): Try[List[String]] =
+    Using(Source.fromResource(filePath))(_.getLines().toList)
+
+@main
+def hello(): Unit =
+    readLinesFromFile("day02.txt") match
+        case Success(lines) => {
+            println(s"Part One: ${evaluatorOne(lines)}")
+            println(s"Part Two: ${evaluatorTwo(lines)}")
+        }
+        case Failure(exception) => {
+            println(s"Error reading file: ${exception.getMessage}")
+        }
