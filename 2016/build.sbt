@@ -8,5 +8,6 @@ lazy val root = project
     scalaVersion := scala3Version,
     Global / semanticdbEnabled := true,
 
-    libraryDependencies += "org.scalameta" %% "munit" % "1.0.0" % Test
+    libraryDependencies += "org.scalameta" %% "munit" % "1.0.0" % Test,
+    libraryDependencies += "org.scala-lang.modules" %% "scala-parallel-collections" % "1.2.0"
   )
