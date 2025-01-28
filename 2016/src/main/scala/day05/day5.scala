@@ -1,7 +1,6 @@
 package day05
 
 import java.security.MessageDigest
-import scala.util.control.Breaks._
 
 def md5Hash(input: String): String = {
     val md = MessageDigest.getInstance("MD5")
@@ -45,8 +44,7 @@ def evaluatorTwo(doorId: String): String = {
     password.flatten.mkString
 }
 
-@main
 def hello(): Unit =
-    val input = "reyedfim" // Example input
+    val input = "reyedfim"
     println(s"Part One: ${evaluatorOne(input)}")
     println(s"Part Two: ${evaluatorTwo(input)}")
