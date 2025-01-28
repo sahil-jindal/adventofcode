@@ -12,8 +12,8 @@ class Reindeer(
 )
 
 def parseInput(line: String) = {
-    val details = raw"\d+".r.findAllIn(line).toArray
-    Reindeer(details(0).toInt, details(1).toInt, details(2).toInt)
+    val details = raw"\d+".r.findAllIn(line).toArray.map(_.toInt)
+    Reindeer(details(0), details(1), details(2))
 }
 
 def totalDistance(reindeer: Reindeer, totalTime: Int) = {
@@ -43,9 +43,12 @@ def evaluatorTwo(reindeers: Array[Reindeer]) = {
     val pointsCollection = Array.ofDim[Int](reindeers.length)
 
     raceTimeStamps.foreach(raceTimeStamp => {
-        val playersByDistance = raceTimeStamp.zipWithIndex.groupMap(_._1)(_._2)
-        val maxDistance = playersByDistance.keys.max
-        val players = playersByDistance.getOrElse(maxDistance, Array[Int]())
+        val maxDistance = raceTimeStamp.max
+        
+        val players = raceTimeStamp.zipWithIndex.collect {
+            case (distance, playerNo) if distance == maxDistance => playerNo
+        }
+
         for i <- players do pointsCollection(i) += 1
     })
 
@@ -55,6 +58,7 @@ def evaluatorTwo(reindeers: Array[Reindeer]) = {
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
+@main
 def hello(): Unit =
     readLinesFromFile("day14.txt") match
         case Success(lines) => {

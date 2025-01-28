@@ -6,15 +6,9 @@ import scala.io.Source
 val dimensionRegex = raw"(\d+)x(\d+)x(\d+)".r
 
 def getDimensions(line: String) = {
-    dimensionRegex.findFirstMatchIn(line) match {
-        case Some(m) =>
-            val dimensions = List(
-                m.group(1).toInt, m.group(2).toInt, m.group(3).toInt
-            ).sorted
-            (dimensions(0), dimensions(1), dimensions(2))
-        case None =>
-            throw new IllegalArgumentException(s"Invalid input: $line")
-    }
+    val m = dimensionRegex.findFirstMatchIn(line).get
+    val dimensions = List(m.group(1).toInt, m.group(2).toInt, m.group(3).toInt).sorted
+    (dimensions(0), dimensions(1), dimensions(2))
 }
 
 def evaluatorOne(dimensions: (Int, Int, Int)) = {
