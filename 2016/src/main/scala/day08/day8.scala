@@ -65,7 +65,6 @@ def evaluatorTwo(instructions: List[String]) = {
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-@main
 def hello(): Unit =
     readLinesFromFile("day08.txt") match
         case Success(lines) => {
