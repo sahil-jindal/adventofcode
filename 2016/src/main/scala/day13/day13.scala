@@ -41,7 +41,6 @@ def partTwo(input: String): Int = steps(input.toInt)
     .takeWhile(_._1 <= 50)
     .size
 
-@main
 def hello() = 
     println(s"Part One: ${partOne("1350")}")
     println(s"Part Two: ${partTwo("1350")}")
