@@ -60,7 +60,6 @@ def routes(input: String): (String, String) = {
 def evaluatorOne(input: String) = routes(input)._1
 def evaluatorTwo(input: String) = routes(input)._2.length
 
-@main
 def hello(): Unit = {
     println(s"Part One: ${evaluatorOne(inputLine)}")
     println(s"Part Two: ${evaluatorTwo(inputLine)}")
