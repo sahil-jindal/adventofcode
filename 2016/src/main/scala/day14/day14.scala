@@ -59,7 +59,6 @@ def compute(requiredKeys: Int, stretched: Boolean): Unit = {
     i - 1
 }
 
-@main
 def hello() = {
     println(s"Part One: ${compute(64, stretched = false)}")
     println(s"Part Two: ${compute(64, stretched = true)}")
