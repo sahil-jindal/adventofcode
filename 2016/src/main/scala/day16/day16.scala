@@ -32,7 +32,6 @@ def generateCheckSum(data: IndexedSeq[Boolean]): String = {
 def evaluatorOne(input: String): String = generateCheckSum(generateRandomData(272, input))
 def evaluatorTwo(input: String): String = generateCheckSum(generateRandomData(35651584, input))
 
-@main
 def hello(): Unit = {
     println(s"Part One: ${{evaluatorOne(inputLine)}}")
     println(s"Part Two: ${{evaluatorTwo(inputLine)}}")
