@@ -36,8 +36,7 @@ def evaluatorTwo(elves: Array[Elf]): Int =
     solve(elves.head, elves(elves.length / 2), elves.length, (elfVictim, count) =>
         if count % 2 == 1 then elfVictim.next else elfVictim.next.next
     )
-
-@main 
+ 
 def hello(): Unit =
     val elves = createElves(inputLine)
     println(s"Part One: ${evaluatorOne(elves)}")

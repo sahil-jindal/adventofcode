@@ -36,4 +36,3 @@ def hello(): Unit =
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
-
