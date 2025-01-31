@@ -29,18 +29,16 @@ def solve(elf: Elf, elfVictim: Elf, elfCount: Int, nextVictim: (Elf, Int) => Elf
     currentElf.id
 }
 
-def evaluatorOne(input: Int): Int =
-    val elves = createElves(input)
+def evaluatorOne(elves: Array[Elf]): Int =    
     solve(elves.head, elves(1), elves.length, (elfVictim, count) => elfVictim.next.next)
 
-def evaluatorTwo(input: Int): Int =
-    val elves = createElves(input)
+def evaluatorTwo(elves: Array[Elf]): Int =
     solve(elves.head, elves(elves.length / 2), elves.length, (elfVictim, count) =>
         if count % 2 == 1 then elfVictim.next else elfVictim.next.next
     )
 
 @main 
 def hello(): Unit =
-  println(s"Part One: ${evaluatorOne(inputLine)}")
-  println(s"Part Two: ${evaluatorTwo(inputLine)}")
-  
+    val elves = createElves(inputLine)
+    println(s"Part One: ${evaluatorOne(elves)}")
+    println(s"Part Two: ${evaluatorTwo(elves)}")
