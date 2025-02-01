@@ -17,7 +17,7 @@ def swapPosition(input: Array[Char], pos1: Int, pos2: Int) = {
     input(pos2) = temp
 }
 
-def Reverse(input: Array[Char], pos1: Int, pos2: Int) = {
+def reverse(input: Array[Char], pos1: Int, pos2: Int) = {
     var x = pos1
     var y = pos2
     
@@ -28,75 +28,73 @@ def Reverse(input: Array[Char], pos1: Int, pos2: Int) = {
     }
 }
 
-def RotateRight(input: Array[Char], pos: Int) = {
+def rotateRight(input: Array[Char], pos: Int) = {
     val t = pos % input.length
-    Reverse(input, 0, input.length - 1);
-    Reverse(input, 0, t - 1);
-    Reverse(input, t, input.length - 1);
+    reverse(input, 0, input.length - 1);
+    reverse(input, 0, t - 1);
+    reverse(input, t, input.length - 1);
 }
 
-def executeInstructions(input: Array[Char], instructions: List[String]) = {
+def executeInstructions(input: String, instructions: List[String]) = {
+    val temp = input.toCharArray
+
     instructions.foreach { instruction =>
         instruction match {
             case operation1(a, b) => {
-                swapPosition(input, a.toInt, b.toInt)
+                swapPosition(temp, a.toInt, b.toInt)
             }
             case operation2(a, b) => {
                 val chx = a(0)
                 val chy = b(0)
 
-                for i <- 0 until input.length do {
-                    if input(i) == chx then input(i) = chy
-                    else if input(i) == chy then input(i) = chx
+                for i <- 0 until temp.length do {
+                    if temp(i) == chx then temp(i) = chy
+                    else if temp(i) == chy then temp(i) = chx
                 }
             }
             case operation3(a) => {
-                val t = a.toInt % input.length
-                Reverse(input, 0, t - 1);
-                Reverse(input, t, input.length - 1);
-                Reverse(input, 0, input.length - 1);
+                val t = a.toInt % temp.length
+                reverse(temp, 0, t - 1);
+                reverse(temp, t, temp.length - 1);
+                reverse(temp, 0, temp.length - 1);
             }
             case operation4(a) => {
-                RotateRight(input, a.toInt)
+                rotateRight(temp, a.toInt)
             }
             case operation5(a) => {
-                var i = input.indexOf(a(0))
+                var i = temp.indexOf(a(0))
                 val rotations = if i >= 4 then i + 2 else i + 1
-                RotateRight(input, rotations) 
+                rotateRight(temp, rotations) 
             }
             case operation6(a, b) => {
-                Reverse(input, a.toInt, b.toInt)
+                reverse(temp, a.toInt, b.toInt)
             }
             case operation7(a, b) => {
                 val x = a.toInt
                 val y = b.toInt
 
                 var d = if x < y then 1 else -1
-                var ch = input(x);
+                var ch = temp(x);
 
                 for (i <- x + d until y + d by d) {
-                    input(i - d) = input(i)
+                    temp(i - d) = temp(i)
                 }
 
-                input(y) = ch;
+                temp(y) = ch;
             }
             case _ => println(s"Unrecognized instruction: $instruction")
         }
     }
-}
 
-def evaluatorOne(input: String, instructions: List[String]) = {
-    val temp = input.toCharArray
-    executeInstructions(temp, instructions)
     temp.mkString
 }
 
+def evaluatorOne(input: String, instructions: List[String]) = {
+    executeInstructions(input, instructions)
+}
+
 def evaluatorTwo(base: String, dest: String, instructions: List[String]) = {
-    base.permutations.find(it => {
-        val temp = it.toCharArray 
-        executeInstructions(temp, instructions)
-        temp.mkString == dest
-    }).get
+    base.permutations.find(it => executeInstructions(it, instructions) == dest).get
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
