@@ -93,8 +93,8 @@ def evaluatorOne(input: String, instructions: List[String]) = {
     executeInstructions(input, instructions)
 }
 
-def evaluatorTwo(base: String, dest: String, instructions: List[String]) = {
-    base.permutations.find(it => executeInstructions(it, instructions) == dest).get
+def evaluatorTwo(dest: String, instructions: List[String]) = {
+    "abcdefgh".permutations.find(it => executeInstructions(it, instructions) == dest).get
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -105,7 +105,7 @@ def hello(): Unit =
     readLinesFromFile("day21.txt") match
         case Success(lines) => {
             println(s"Part One: ${evaluatorOne("abcdefgh", lines)}")
-            println(s"Part Two: ${evaluatorTwo("abcdefgh", "fbgdceah", lines)}")
+            println(s"Part Two: ${evaluatorTwo("fbgdceah", lines)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
