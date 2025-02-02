@@ -5,8 +5,8 @@ import scala.io.Source
 
 def solve(line: Array[Int], rotated: Int) = {
     val d = rotated % line.length
-    val temp = line.drop(d) ++ line.take(d)
-    val newLine = line zip temp
+    val leftRotated = line.drop(d) ++ line.take(d)
+    val newLine = line zip leftRotated
     newLine.collect { case (a, b) if a == b => a }.sum
 }
 
