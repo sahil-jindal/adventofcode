@@ -4,50 +4,45 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Map
 
-def Solve(input: List[String], a: Long): Long = {
-    val regs = Map[String, Long]().withDefaultValue(0L)
+def parseInput(input: List[String]) = input.map(_.replace(",", "").split(" ")).toArray
+
+def Solve(prg: Array[Array[String]], a: Long): Long = {
+    val regs = Map[String, Long]("a" -> a)
     var ip = 0L
 
-    def getReg(reg: String): Long = {
-        reg.toLongOption.getOrElse(regs(reg))
-    }
+    def getReg(reg: String): Long =
+        reg.toLongOption.getOrElse(regs.getOrElse(reg, 0L))
 
-    def setReg(reg: String, value: Long): Unit = {
+    def setReg(reg: String, value: Long): Unit =
         regs(reg) = value
-    }
-
-    setReg("a", a)
     
-    while (ip >= 0 && ip < input.length) {
-        val line = input(ip.toInt)
-        val parts = line.replace(",", "").split(" ")
-        
-        parts(0) match {
-            case "hlf" =>
-                setReg(parts(1), getReg(parts(1)) / 2)
+    while (ip >= 0 && ip < prg.length) {
+        prg(ip.toInt) match {
+            case Array("hlf", x) =>
+                setReg(x, getReg(x) / 2)
                 ip += 1
-            case "tpl" =>
-                setReg(parts(1), getReg(parts(1)) * 3)
+            case Array("tpl", x) =>
+                setReg(x, getReg(x) * 3)
                 ip += 1
-            case "inc" =>
-                setReg(parts(1), getReg(parts(1)) + 1)
+            case Array("inc", x) =>
+                setReg(x, getReg(x) + 1)
                 ip += 1
-            case "jmp" =>
-                ip += parts(1).toLong
-            case "jie" =>
-                ip += (if (getReg(parts(1)) % 2 == 0) parts(2).toLong else 1)
-            case "jio" =>
-                ip += (if (getReg(parts(1)) == 1) parts(2).toLong else 1)
+            case Array("jmp", x) =>
+                ip += x.toLong
+            case Array("jie", x, y) =>
+                ip += (if (getReg(x) % 2 == 0) y.toLong else 1)
+            case Array("jio", x, y) =>
+                ip += (if (getReg(x) == 1) y.toLong else 1)
             case _ =>
-                throw new Exception(s"Cannot parse $line")
+                throw new Exception(s"Cannot parse: ${prg(ip.toInt)}")
         }
     }
 
-    regs("b")
+    getReg("b")
 }
 
-def evaluatorOne(input: List[String]): Long = Solve(input, 0)
-def evaluatorTwo(input: List[String]): Long = Solve(input, 1)
+def evaluatorOne(input: Array[Array[String]]): Long = Solve(input, 0)
+def evaluatorTwo(input: Array[Array[String]]): Long = Solve(input, 1)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -55,8 +50,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit =
     readLinesFromFile("day23.txt") match
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val instructions = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(instructions)}")
+            println(s"Part Two: ${evaluatorTwo(instructions)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
