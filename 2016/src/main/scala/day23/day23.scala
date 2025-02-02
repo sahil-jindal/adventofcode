@@ -15,7 +15,7 @@ def solve(input: Array[String], a: Int): Int = {
     def setReg(reg: String, value: Int): Unit =
         if (reg.toIntOption.isEmpty) regs(reg) = value
 
-    while ip < prg.length do
+    while (ip >= 0 && ip < prg.length) do
         prg(ip) match
             case Array("cpy", x, y) => 
                 setReg(y, getReg(x)); 
