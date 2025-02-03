@@ -19,7 +19,7 @@ def redistribute(banks: Vector[Int]): Vector[Int] = {
     val afterQuotient = banks.updated(maxIdx, 0).map(_ + quotient)
     val start = (maxIdx + 1) % numBanks
 
-    val indicesToIncrement = (0 until remainder).map(j => (start + j) % numBanks)
+    val indicesToIncrement = (0 until remainder).map { j => (start + j) % numBanks }
 
     indicesToIncrement.foldLeft(afterQuotient) { (current, idx) =>
         current.updated(idx, current(idx) + 1)
