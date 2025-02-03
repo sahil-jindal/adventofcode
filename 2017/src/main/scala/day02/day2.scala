@@ -21,7 +21,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
 def hello(): Unit =
-    readLinesFromFile("day2.txt") match
+    readLinesFromFile("day02.txt") match
         case Success(lines) => {
             val input = parseInput(lines)
             println(s"Part One: ${evaluatorOne(input)}")

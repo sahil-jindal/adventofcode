@@ -26,7 +26,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 
 @main
 def hello(): Unit =
-    readLinesFromFile("day5.txt") match
+    readLinesFromFile("day05.txt") match
         case Success(lines) => {
             println(s"Part One: ${evaluatorOne(lines)}")
             println(s"Part Two: ${evaluatorTwo(lines)}")

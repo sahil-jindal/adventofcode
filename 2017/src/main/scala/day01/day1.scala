@@ -17,7 +17,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
 def hello(): Unit =
-    readLinesFromFile("day1.txt") match
+    readLinesFromFile("day01.txt") match
         case Success(lines) => {
             val input = lines(0).map(_.asDigit).toArray
             println(s"Part One: ${evaluatorOne(input)}")
