@@ -24,7 +24,6 @@ def evaluatorTwo(input: List[String]) = getStepCount(input, it => if it < 3 then
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-@main
 def hello(): Unit =
     readLinesFromFile("day05.txt") match
         case Success(lines) => {
