@@ -58,8 +58,7 @@ def evaluatorOne(input: Int) = {
 }
 
 def evaluatorTwo(input: Int) = firstSumAbove(input)
-
-@main 
+ 
 def hello(): Unit = {
     val input = 265149
     println(s"Part One: ${evaluatorOne(input)}")
