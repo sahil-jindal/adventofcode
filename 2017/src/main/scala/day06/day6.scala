@@ -56,7 +56,6 @@ def getStepCount(input: Vector[Int]) = {
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-@main
 def hello(): Unit =
     readLinesFromFile("day06.txt") match
         case Success(lines) => {
