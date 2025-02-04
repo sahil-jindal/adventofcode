@@ -2,35 +2,26 @@ package day10
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.annotation.tailrec
 
 def knotHash(input: List[Int], rounds: Int): Array[Int] = {
     val output = (0 until 256).toArray
-    
-    @tailrec
-    def loop(current: Int, skip: Int, remainingRounds: Int): Unit = {
-        if remainingRounds <= 0 then return
-      
-        var newCurrent = current
-        var newSkip = skip
-        
-        input.foreach { len =>
-            for i <- 0 until (len / 2) do {
-                val from = (newCurrent + i) % output.length
-                val to = (newCurrent + len - 1 - i) % output.length
+    var (current, skip) = (0, 0)
+
+    for (_ <- 0 until rounds) do {
+        for (len <- input) do {
+            for (i <- 0 until len / 2) do {
+                val from = (current + i) % output.length
+                val to = (current + len - 1 - i) % output.length
                 val temp = output(from)
                 output(from) = output(to)
                 output(to) = temp
             }
-        
-            newCurrent = (newCurrent + len + newSkip) % output.length
-            newSkip += 1
+            
+            current += len + skip
+            skip += 1
         }
-      
-        loop(newCurrent, newSkip, remainingRounds - 1)
     }
-    
-    loop(0, 0, rounds)
+
     return output
 }
 
