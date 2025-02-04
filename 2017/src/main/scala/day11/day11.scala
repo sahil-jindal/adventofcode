@@ -27,7 +27,6 @@ def evaluatorTwo(input: Array[String]): Int = distances(input).max
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-@main
 def hello(): Unit =
     readLinesFromFile("day11.txt") match
         case Success(lines) => {
