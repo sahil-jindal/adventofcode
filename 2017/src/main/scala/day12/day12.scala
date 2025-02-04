@@ -53,7 +53,6 @@ def evaluatorTwo(graph: Map[Int, List[Int]]): Int = {
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-@main
 def hello(): Unit =
     readLinesFromFile("day12.txt") match
         case Success(lines) => {
