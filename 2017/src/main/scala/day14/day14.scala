@@ -76,7 +76,6 @@ def evaluatorTwo(input: String): Int = {
     regions
 }
 
-@main
 def hello(): Unit = {
     val input = "jxqlasbh"
     println(s"Part One: ${evaluatorOne(input)}")
