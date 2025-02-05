@@ -35,7 +35,6 @@ def evaluatorTwo(layers: Layers): Int = LazyList.from(0).find(n => severities(la
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-@main
 def hello(): Unit =
     readLinesFromFile("day13.txt") match
         case Success(lines) => {
