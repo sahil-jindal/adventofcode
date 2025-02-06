@@ -30,7 +30,6 @@ def evaluatorTwo(input: String): Int = {
     res
 }
 
-@main 
 def hello(): Unit = {
     val input = "354"
     println(s"Part One: ${evaluatorOne(input)}")
