@@ -76,7 +76,7 @@ private def parseInput(lines: List[String]): List[Particle] = {
 
 def evaluatorOne(input: List[String]) = {
     val particles = parseInput(input)
-    particles.minBy(p => (p.acc.len, p.vel.len, p.pos.len)).i
+    particles.minBy(_.acc.len).i
 }
 
 def evaluatorTwo(input: List[String]): Any = {
