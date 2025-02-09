@@ -1,90 +1,48 @@
 package day25
 
-import scala.util.{Try, Success, Failure, Using}
-import scala.io.Source
-import scala.collection.mutable.Map
+import scala.collection.mutable.ListBuffer
 
 def parseInput(input: List[String]) = input.map(_.split(' ')).toArray
 
-def solve(prg: Array[Array[String]], a: Int) = {
-    var regs = Map[String, Int]("a" -> a)
-    var ip = 0
-
-    def getReg(reg: String): Int =
-        reg.toIntOption.getOrElse(regs.getOrElse(reg, 0))
-
-    def setReg(reg: String, value: Int): Unit =
-        if (reg.toIntOption.isEmpty) regs(reg) = value
-
-    Iterator.continually {
-        if (ip >= prg.length) None
-        
-        else prg(ip) match
-            case Array("cpy", x, y) => 
-                setReg(y, getReg(x)); 
-                ip += 1; 
-                None
-            case Array("inc", x) => 
-                setReg(x, getReg(x) + 1); 
-                ip += 1; 
-                None
-            case Array("out", x) => 
-                ip += 1; 
-                Some(getReg(x))
-            case Array("dec", x) => 
-                setReg(x, getReg(x) - 1); 
-                ip += 1; 
-                None
-            case Array("jnz", x, y) => 
-                ip += (if getReg(x) != 0 then getReg(y) else 1); 
-                None
-            case _ => 
-                throw new Exception(s"Cannot parse ${prg(ip).mkString(" ")}")
-
-    }.collect { case Some(bit) => bit }
-}
-
-def evaluatorOne(input: List[String]) =  {
-    val prg = parseInput(input)
-
-    Iterator.from(0).find { a =>
-        //println(s"Testing $a")
-        val expectedBit = Iterator.iterate(0)(_ ^ 1)
-        solve(prg, a).take(100).corresponds(expectedBit)(_ == _)
-    }.get
-
-    // var low = 0
-    // var high = 4000000 // Arbitrary high value, adjust as needed
+def solve(a: Int) = {
+    val output = ListBuffer[Int]()
     
-    // while (low < high) {
-    //     println(s"low: $low and high: $high")
-    //     // val mid = (low + high) / 2
-    //     val mid = low + (high - low) / 2
-    //     val expectedBit = Iterator.iterate(0)(_ ^ 1)
-    //     if (solve(prg, mid).take(100).corresponds(expectedBit)(_ == _)) high = mid
-    //     else low = mid + 1
-    // }
-    //
-    // low
+    /*
+        Actual simplified code for my input looks like this:
+
+        d = a + (4*643)  <----->  d = a + 2572
+
+        while true {
+            a = d
+            while a != 0 {
+                b = a % 2
+                a /= 2
+                output b
+            }
+        }
+
+        As you can see, output returns the binary representation of d and repeated over and over again.
+        The best way to do it is to solve it manually, and write the code to verify it.
+        Here, the number which is greater than 2572, and returns 1,0.1,0,1....... is 2730,
+        which look like this "101010101010". Hence, a = 2730 - 2572 = 158
+
+    */
+    
+    var d = a + 2572
+    while(d > 0) {
+        val b = d % 2
+        d /= 2
+        output += b
+    }
+
+    output.toList
 }
 
-
-
-def readLinesFromFile(filePath: String): Try[List[String]] =
-    Using(Source.fromResource(filePath))(_.getLines().toList)
+def evaluatorOne() =  {
+    println(solve(158).mkString("[",",","]"))
+}
 
 @main
 def hello(): Unit =
-    readLinesFromFile("day25.txt") match
-        case Success(lines) => {
-            // val input = lines.toArray
-            // input(5) = "cpy c a";
-            // input(6) = "mul d a";
-            // input(7) = "cpy 0 d";
-            // input(8) = "cpy 0 c";
-            
-            println(s"Part One: ${evaluatorOne(lines)}")
-        }
-        case Failure(exception) => {
-            println(s"Error reading file: ${exception.getMessage}")
-        }
+    println(s"Part One: ${evaluatorOne()}")
+    
