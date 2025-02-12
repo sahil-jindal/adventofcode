@@ -10,15 +10,15 @@ def vowels = Set('a', 'e', 'i', 'o', 'u')
 def disAllowedStrings = Set("ab", "cd", "pq", "xy")
 
 def vowelsCondition(line: String): Boolean = {
-    line.filter(vowels.contains).size >= 3
+    return line.filter(vowels.contains).size >= 3
 }
 
 def repeatedLetterCondition(line: String): Boolean = {
-    line.sliding(2).exists(it => it(0) == it(1))
+    return (line.init zip line.tail).exists { case (a, b) => a == b }
 }
 
 def disAllowedStringsCondition(line: String): Boolean = {
-    line.sliding(2).forall(it => !disAllowedStrings.contains(it))
+    return line.sliding(2).forall(it => !disAllowedStrings.contains(it))
 }
 
 def evaluatorOne(lines: List[String]): Int = lines.count(line => {
