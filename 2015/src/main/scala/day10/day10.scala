@@ -18,17 +18,16 @@ def nextSequence(seq: String): String = {
     stringBuilder.append(count).append(seq.last).toString
 }
 
-def lookAndSaySequence(sequence: String, iterations: Int) = {
+def lookAndSaySequence(sequence: String, iterations: Int): Int = {
     var currentSequence = sequence
-    
-    for (_ <- 1 to iterations) {
-        currentSequence = nextSequence(currentSequence)
-    }
-    
+    for (_ <- 1 to iterations) do currentSequence = nextSequence(currentSequence)
     currentSequence.length
 }
 
+def evaluatorOne(sequence: String): Int = lookAndSaySequence(sequence, 40)
+def evaluatorTwo(sequence: String): Int = lookAndSaySequence(sequence, 50)
+
 def hello(): Unit = {
-    println(s"Part One: ${lookAndSaySequence(input, 40)}")
-    println(s"Part Two: ${lookAndSaySequence(input, 50)}")
+    println(s"Part One: ${evaluatorOne(input)}")
+    println(s"Part Two: ${evaluatorTwo(input)}")
 }

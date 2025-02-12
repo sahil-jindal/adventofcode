@@ -3,16 +3,18 @@ package day24
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def findCombinations(numbers: List[Long], arrayLength: Int, balancingNumber: Long) = {
-    numbers.combinations(arrayLength).filter(_.sum == balancingNumber).toList
+def parseInput(lines: List[String]): List[Long] = lines.map(_.toLong).sorted
+
+def findCombinations(numbers: List[Long], len: Int, target: Long): List[List[Long]] = {
+    numbers.combinations(len).filter(_.sum == target).toList
 }
 
-def solver(numbers: List[Long], groupLength: Int) = {
-    val balancingNumber = numbers.sum / groupLength
+def solver(numbers: List[Long], groupLength: Int): String = {
+    val target = numbers.sum / groupLength
 
     val packages = (1 to numbers.length).collectFirst {
-        case n if !findCombinations(numbers, n, balancingNumber).isEmpty => 
-            findCombinations(numbers, n, balancingNumber)
+        case n if findCombinations(numbers, n, target).nonEmpty => 
+            findCombinations(numbers, n, target)
     }
 
     packages match {
@@ -21,19 +23,21 @@ def solver(numbers: List[Long], groupLength: Int) = {
     }
 }
 
-def evaluatorOne(numbers: List[Long]) = solver(numbers, 3)
-def evaluatorTwo(numbers: List[Long]) = solver(numbers, 4)
+def evaluatorOne(numbers: List[Long]): String = solver(numbers, 3)
+def evaluatorTwo(numbers: List[Long]): String = solver(numbers, 4)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day24.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day24.txt") match {
         case Success(lines) => {
-            val numbers = lines.map(_.toLong).sorted
+            val numbers = parseInput(lines)
             println(s"Part One: ${evaluatorOne(numbers)}")
             println(s"Part Two: ${evaluatorTwo(numbers)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

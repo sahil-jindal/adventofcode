@@ -21,28 +21,26 @@ val bordersDyDx = List(
 
 val insideBoxDyDx = List((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))
 
-def parseInput(line: String) = line.map { it => if it == '#' then 1 else 0 }.toArray
-
-def lightCondition(grid: Array[Array[Int]], cell: Position, direction: List[(Int, Int)]) = {
-    val valid = direction.count { case (dy, dx) => grid(cell.y + dy)(cell.x + dx) == 1 }
-
-    if grid(cell.y)(cell.x) == 1 then {
-        if valid == 2 || valid == 3 then 1 else 0
-    } else {
-        if valid == 3 then 1 else 0
-    }
+def parseInput(lines: List[String]): Array[Array[Boolean]] = {
+    lines.map { line => line.map(_ == '#').toArray }.toArray
 }
 
-def updateGrid(grid: Array[Array[Int]], stuck: Boolean) = {
+def lightCondition(grid: Array[Array[Boolean]], cell: Position, direction: List[(Int, Int)]): Boolean = {
+    val valid = direction.count { case (dy, dx) => grid(cell.y + dy)(cell.x + dx) }
+    if grid(cell.y)(cell.x) then return valid == 2 || valid == 3
+    return valid == 3
+}
+
+def updateGrid(grid: Array[Array[Boolean]], stuck: Boolean): Array[Array[Boolean]] = {
     val rowSize = grid.length
     val colSize = grid(0).length
-    val nextGrid = Array.ofDim[Int](rowSize, colSize)
+    val nextGrid = Array.ofDim[Boolean](rowSize, colSize)
 
     if stuck then {
-        nextGrid(0)(0) = 1
-        nextGrid(0)(colSize - 1) = 1
-        nextGrid(rowSize - 1)(colSize - 1) = 1
-        nextGrid(rowSize - 1)(0) = 1
+        nextGrid(0)(0) = true
+        nextGrid(0)(colSize - 1) = true
+        nextGrid(rowSize - 1)(colSize - 1) = true
+        nextGrid(rowSize - 1)(0) = true
     } else {
         nextGrid(0)(0) = lightCondition(grid, Position(0, 0), cornersDyDx(0))
         nextGrid(0)(colSize - 1) = lightCondition(grid, Position(0, colSize - 1), cornersDyDx(1))
@@ -66,39 +64,44 @@ def updateGrid(grid: Array[Array[Int]], stuck: Boolean) = {
         }
     }
 
-    nextGrid
+    return nextGrid
 }
 
-def evaluator(grid: Array[Array[Int]], stuck: Boolean) = {
-    var copyGrid = grid
+def iterateGrid(grid: Array[Array[Boolean]], stuck: Boolean): Int = {
+    var copyGrid = grid.map(_.clone())
 
     val rowSize = grid.length
     val colSize = grid(0).length
 
     if stuck then {
-        copyGrid(0)(0) = 1
-        copyGrid(0)(colSize - 1) = 1
-        copyGrid(rowSize - 1)(colSize - 1) = 1
-        copyGrid(rowSize - 1)(0) = 1
+        copyGrid(0)(0) = true
+        copyGrid(0)(colSize - 1) = true
+        copyGrid(rowSize - 1)(colSize - 1) = true
+        copyGrid(rowSize - 1)(0) = true
     }
     
     for _ <- 1 to 100 do {
         copyGrid = updateGrid(copyGrid, stuck)
     }
 
-    copyGrid.map(_.sum).sum
+    return copyGrid.flatten.count(identity)
 }
+
+def evaluatorOne(grid: Array[Array[Boolean]]): Int = iterateGrid(grid, false)
+def evaluatorTwo(grid: Array[Array[Boolean]]): Int = iterateGrid(grid, true)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day18.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day18.txt") match {
         case Success(lines) => {
-            val grid = lines.map(parseInput).toArray
-            println(s"Part One: ${evaluator(grid, false)}")
-            println(s"Part Two: ${evaluator(grid, true)}")
+            val grid = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(grid)}")
+            println(s"Part Two: ${evaluatorTwo(grid)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

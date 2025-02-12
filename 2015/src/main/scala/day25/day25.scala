@@ -3,7 +3,9 @@ package day25
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def evaluatorOne(rowDst: Int, colDst: Int) = {
+def parseInput(line: String): Vector[Int] = raw"(\d+)".r.findAllIn(line).map(_.toInt).toVector
+
+def evaluatorOne(rowDst: Int, colDst: Int): Long = {
     var m = 20151125L;
     var (irow, icol) = (1, 1);
     
@@ -19,18 +21,20 @@ def evaluatorOne(rowDst: Int, colDst: Int) = {
         m = (m * 252533L) % 33554393L;
     }
     
-    m
+    return m
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day25.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day25.txt") match {
         case Success(lines) => {
-            val dimensions = raw"(\d+)".r.findAllIn(lines.head).toArray.map(_.toInt)
-            println(s"Part One: ${evaluatorOne(dimensions(0), dimensions(1))}")
+            val Vector(rowDst, colDst) = parseInput(lines.head)
+            println(s"Part One: ${evaluatorOne(rowDst, colDst)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

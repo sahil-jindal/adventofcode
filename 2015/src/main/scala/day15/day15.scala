@@ -16,12 +16,12 @@ class Ingredient(
     var calories: Int
 )
 
-def parseInput(line: String) = {
+def parseInput(lines: List[String]): List[Ingredient] = lines.map(line => {
     val qualities = numberRegex.findAllIn(line).toArray.map(_.toInt)
     Ingredient(qualities(0), qualities(1), qualities(2), qualities(3), qualities(4))
-}
+})
 
-def partitions(n: Int, total: Int): List[List[Int]] = {
+def partitions(total: Int, n: Int): List[List[Int]] = {
     def helper(remaining: Int, minValue: Int, length: Int): List[List[Int]] = {
         if (length == 0) {
             return if (remaining == 0) List(Nil) else Nil
@@ -32,58 +32,60 @@ def partitions(n: Int, total: Int): List[List[Int]] = {
         }
     }
 
-    helper(total, 1, n)
+    return helper(total, 1, n)
 }
 
-def allPossibleRecipes(ingredients: Array[Ingredient]) = {
-    val scoopPossibilities = partitions(ingredients.length, totalScoops)
+def allPossibleRecipes(ingredients: List[Ingredient]): List[Ingredient] = {
+    val scoopPossibilities = partitions(totalScoops, ingredients.length)
                                 .flatMap(_.permutations)
 
-    scoopPossibilities.map { it =>
+    return scoopPossibilities.map { scoops =>
         val temp = Ingredient(0, 0, 0, 0, 0)
 
-        for i <- 0 until ingredients.length do {
-            temp.capacity += (ingredients(i).capacity * it(i))
-            temp.durability += (ingredients(i).durability * it(i))
-            temp.flavor += (ingredients(i).flavor * it(i))
-            temp.texture += (ingredients(i).texture * it(i))
-            temp.calories += (ingredients(i).calories * it(i))
+        for (ingr, it) <- (ingredients zip scoops) do {
+            temp.capacity += (ingr.capacity * it)
+            temp.durability += (ingr.durability * it)
+            temp.flavor += (ingr.flavor * it)
+            temp.texture += (ingr.texture * it)
+            temp.calories += (ingr.calories * it)
         }
 
-        if temp.capacity < 0 then temp.capacity = 0
-        if temp.durability < 0 then temp.durability = 0
-        if temp.flavor < 0 then temp.flavor = 0
-        if temp.texture < 0 then temp.texture = 0
+        temp.capacity = math.max(temp.capacity, 0)
+        temp.durability = math.max(temp.durability, 0)
+        temp.flavor = math.max(temp.flavor, 0)
+        temp.texture = math.max(temp.texture, 0)
         
         temp
     }
 }
 
-def bestPossibleRecipe(cookeRecipes: List[Ingredient]) = {
-    cookeRecipes.map { it =>
+def bestPossibleRecipe(cookeRecipes: List[Ingredient]): Int = {
+    return cookeRecipes.map { it =>
         it.capacity * it.durability * it.flavor * it.texture
     }.max
 }
 
-def evaluatorOne(ingredients: Array[Ingredient]) = {
-    bestPossibleRecipe(allPossibleRecipes(ingredients))
+def evaluatorOne(ingredients: List[Ingredient]): Int = {
+    return bestPossibleRecipe(allPossibleRecipes(ingredients))
 }
 
-def evaluatorTwo(ingredients: Array[Ingredient]) = {
+def evaluatorTwo(ingredients: List[Ingredient]): Int = {
     val healthyRecipes = allPossibleRecipes(ingredients).filter(it => it.calories == maxCalories)
-    bestPossibleRecipe(healthyRecipes)
+    return bestPossibleRecipe(healthyRecipes)
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day15.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day15.txt") match {
         case Success(lines) => {
-            val ingredients = lines.map(parseInput).toArray
+            val ingredients = parseInput(lines)
             println(s"Part One: ${evaluatorOne(ingredients)}")
             println(s"Part Two: ${evaluatorTwo(ingredients)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

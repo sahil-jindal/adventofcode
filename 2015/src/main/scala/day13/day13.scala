@@ -2,49 +2,44 @@ package day13
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.Map
+import scala.collection.mutable.{Map, Set}
 
-def parseInput(lines: List[String]): Map[(String, String), Int] = {
+class Graph(val people: Set[String], val happiness: Map[(String, String), Int])
+
+def parseInput(lines: List[String]): Graph = {
+    val people = Set[String]()
     val happiness = Map[(String, String), Int]()
     
-    for (line <- lines) {
+    lines.foreach(line => {
         val parts = line.split(" ")
         val person1 = parts(0)
-        val person2 = parts.last.dropRight(1) // Remove the period
+        val person2 = parts.last.init // Remove the period
         val value = parts(3).toInt * (if (parts(2) == "gain") 1 else -1)
         happiness((person1, person2)) = value
-    }
+        people ++= Set(person1, person2)
+    })
 
-    happiness
+    return Graph(people, happiness)
 }
 
-def calculateHappiness(arrangement: Seq[String], happiness: Map[(String, String), Int]): Int = {
-    val n = arrangement.length
-    arrangement.indices.map { i =>
-        val person1 = arrangement(i)
-        val person2 = arrangement((i + 1) % n) // Circular table
-        happiness.getOrElse((person1, person2), 0) + happiness.getOrElse((person2, person1), 0)
-    }.sum
+def findMaximumHappiness(graph: Graph): Int = {
+    return graph.people.toSeq.permutations.map { arrangement =>
+        val leftRotated = arrangement.tail :+ arrangement.head 
+        (arrangement zip leftRotated).foldLeft(0) { case (acc, (a, b)) => 
+            acc + graph.happiness((a, b)) + graph.happiness((b, a))
+        }
+    }.max
 }
 
-def addYourself(happiness: Map[(String, String), Int]): Map[(String, String), Int] = {
-    val guests = happiness.keys.flatMap { case (p1, p2) => Seq(p1, p2) }.toSet
-    val updatedHappiness = Map(happiness.toSeq*)
+def addYourself(graph: Graph): Graph = {
+    val updatedHappiness = Map(graph.happiness.toSeq*)
     
-    for (guest <- guests) {
+    graph.people.foreach(guest => {
         updatedHappiness(("You", guest)) = 0
         updatedHappiness((guest, "You")) = 0
-    }
+    })
 
-    updatedHappiness
-  }
-
-def findMaximumHappiness(happiness: Map[(String, String), Int]): Int = {
-    val guests = happiness.keys.flatMap { case (p1, p2) => Seq(p1, p2) }.toSet
-    
-    guests.toSeq.permutations.map { arrangement =>
-        calculateHappiness(arrangement, happiness)
-    }.max
+    return Graph(graph.people ++ Set("You"), updatedHappiness)
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -53,12 +48,12 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit =
     readLinesFromFile("day13.txt") match
         case Success(lines) => {
-            val happiness = parseInput(lines)
-            var maxHappiness = findMaximumHappiness(happiness)
+            val graph = parseInput(lines)
+            var maxHappiness = findMaximumHappiness(graph)
             println(s"Maximum Total Happiness: $maxHappiness")
 
-            val happinessWithYou = addYourself(happiness)
-            maxHappiness = findMaximumHappiness(happinessWithYou)
+            val newGraph = addYourself(graph)
+            maxHappiness = findMaximumHappiness(newGraph)
             println(s"Maximum Total Happiness (including yourself): $maxHappiness")
         }
         case Failure(exception) => {

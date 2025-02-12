@@ -4,48 +4,31 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Set
 
-class Direction(val dx: Int, val dy: Int)
-case class Point(val x: Int, val y: Int)
+case class Point(val y: Int, val x: Int)
 
-def getDirections(arrow: Char) = arrow match {
-    case '^' => Direction(0, 1)
-    case '>' => Direction(1, 0)
-    case 'v' => Direction(0, -1)
-    case '<' => Direction(-1, 0)
-    case _ => Direction(0, 0) 
-}
+def run(input: String, actors: Int): Int = {
+    val seen = Set(Point(0, 0))
+    val pos = Array.fill(actors)(Point(0, 0))
 
-def evaluatorOne(line: String) = {
-    var currentPoint = Point(0, 0)
-    val allPoints = Set[Point](currentPoint)
-
-    line.foreach(arrow => {
-        val currentDirection = getDirections(arrow)
+    input.zipWithIndex.foreach { case (ch, i) =>
+        val Point(y, x) = pos(i % actors)
         
-        currentPoint = Point(
-            currentPoint.x + currentDirection.dx,
-            currentPoint.y + currentDirection.dy
-        )
+        pos(i % actors) = ch match {
+            case 'v' => Point(y + 1, x)
+            case '<' => Point(y, x - 1)
+            case '>' => Point(y, x + 1)
+            case '^' => Point(y - 1, x)
+            case _   => Point(y, x) // Should not happen
+        }
 
-        allPoints.add(currentPoint)
-    })
-
-    allPoints
-}
-
-def evaluatorTwo(line: String) = {
-    val (evenIndexedChars, oddIndexedChars) = line.zipWithIndex.partition { 
-        case (_, index) => index % 2 == 0 
+        seen.add(pos(i % actors))
     }
-
-    val santaDirections = evenIndexedChars.map(_._1).mkString
-    val roboSantaDirections = oddIndexedChars.map(_._1).mkString
-
-    val p1 = evaluatorOne(santaDirections)
-    val p2 = evaluatorOne(roboSantaDirections)
-
-    p1 | p2
+    
+    seen.size
 }
+
+def evaluatorOne(line: String): Int = run(line, 1)
+def evaluatorTwo(line: String): Int = run(line, 2)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -54,8 +37,8 @@ def hello(): Unit =
     readLinesFromFile("day03.txt") match
         case Success(lines) => {
             val line = lines(0)
-            println(s"Part One: ${evaluatorOne(line).size}")
-            println(s"Part Two: ${evaluatorTwo(line).size}")
+            println(s"Part One: ${evaluatorOne(line)}")
+            println(s"Part Two: ${evaluatorTwo(line)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

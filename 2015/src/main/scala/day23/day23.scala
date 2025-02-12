@@ -38,7 +38,7 @@ def Solve(prg: Array[Array[String]], a: Long): Long = {
         }
     }
 
-    getReg("b")
+    return getReg("b")
 }
 
 def evaluatorOne(input: Array[Array[String]]): Long = Solve(input, 0)
@@ -47,8 +47,8 @@ def evaluatorTwo(input: Array[Array[String]]): Long = Solve(input, 1)
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day23.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day23.txt") match {
         case Success(lines) => {
             val instructions = parseInput(lines)
             println(s"Part One: ${evaluatorOne(instructions)}")
@@ -57,3 +57,5 @@ def hello(): Unit =
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

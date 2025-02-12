@@ -3,6 +3,9 @@ package day05
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
+val pairRule = "(..).*\\1".r
+val repeatRule = "(.).\\1".r
+
 def vowels = Set('a', 'e', 'i', 'o', 'u')
 def disAllowedStrings = Set("ab", "cd", "pq", "xy")
 
@@ -11,33 +14,32 @@ def vowelsCondition(line: String): Boolean = {
 }
 
 def repeatedLetterCondition(line: String): Boolean = {
-    line.sliding(2).exists(it => it.charAt(0) == it.charAt(1))
+    line.sliding(2).exists(it => it(0) == it(1))
 }
 
 def disAllowedStringsCondition(line: String): Boolean = {
-    !line.sliding(2).exists(it => disAllowedStrings.contains(it))
+    line.sliding(2).forall(it => !disAllowedStrings.contains(it))
 }
 
-def evaluatorOne(line: String): Boolean = {
+def evaluatorOne(lines: List[String]): Int = lines.count(line => {
     vowelsCondition(line) && repeatedLetterCondition(line) && disAllowedStringsCondition(line)
-}
+})
 
-def evaluatorTwo(string: String): Boolean = {
-    val pairRule = "(..).*\\1".r
-    val repeatRule = "(.).\\1".r
-
-    pairRule.findFirstIn(string).isDefined && repeatRule.findFirstIn(string).isDefined
-}
+def evaluatorTwo(lines: List[String]): Int = lines.count(line => {
+    pairRule.findFirstIn(line).isDefined && repeatRule.findFirstIn(line).isDefined
+})
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day05.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day05.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${lines.count(evaluatorOne)}")
-            println(s"Part Two: ${lines.count(evaluatorTwo)}")
+            println(s"Part One: ${evaluatorOne(lines)}")
+            println(s"Part Two: ${evaluatorTwo(lines)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

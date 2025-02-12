@@ -6,17 +6,17 @@ val secretKey = "bgvyzdsv"
   
 def md5Hash(text: String): String = {
     val md = MessageDigest.getInstance("MD5")
-    md.digest(text.getBytes).map("%02x".format(_)).mkString
+    return md.digest(text.getBytes).map("%02x".format(_)).mkString
 }
 
-def findLowestNumber(secretKey: String, prefix: String): Int = {
-    Iterator.from(1).find { number =>
-        val hash = md5Hash(secretKey + number)
-        hash.startsWith(prefix)
-    }.get
+def findLowestNumber(key: String, prefix: String): Int = {
+    return Iterator.from(1).find(number => md5Hash(key + number).startsWith(prefix)).get
 }
+
+def evaluatorOne(key: String) = findLowestNumber(key, "00000")
+def evaluatorTwo(key: String) = findLowestNumber(key, "000000")
 
 def hello() = {
-    println(s"Part One: ${findLowestNumber(secretKey, "00000")}")
-    println(s"Part Two: ${findLowestNumber(secretKey, "000000")}")
+    println(s"Part One: ${evaluatorOne(secretKey)}")
+    println(s"Part Two: ${evaluatorTwo(secretKey)}")
 }

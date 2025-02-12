@@ -5,7 +5,7 @@ import scala.io.Source
 
 val instructionRegex = raw"(toggle|turn on|turn off) (\d+),(\d+) through (\d+),(\d+)".r
 
-def evaluatorOne(lines: List[String]) = {
+def evaluatorOne(lines: List[String]): Int = {
     
     def turnOnBrightness(grid: Array[Array[Boolean]], startx: Int, starty: Int, endx: Int, endy: Int) =
         for i <- starty to endy; j <- startx to endx do grid(i)(j) = true
@@ -34,10 +34,10 @@ def evaluatorOne(lines: List[String]) = {
         case _ => println(s"Invalid line: $line")
     }
 
-    grid.flatten.count(identity)
+    return grid.flatten.count(identity)
 }
 
-def evaluatorTwo(lines: List[String]) = {
+def evaluatorTwo(lines: List[String]): Int = {
     
     def turnOnBrightness(grid: Array[Array[Int]], startx: Int, starty: Int, endx: Int, endy: Int) =
         for i <- starty to endy; j <- startx to endx do grid(i)(j) += 1
@@ -66,14 +66,14 @@ def evaluatorTwo(lines: List[String]) = {
         case _ => println(s"Invalid line: $line")
     }
 
-    grid.flatten.sum
+    return grid.flatten.sum
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day06.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day06.txt") match {
         case Success(lines) => {
             println(s"Part One: ${evaluatorOne(lines)}")
             println(s"Part Two: ${evaluatorTwo(lines)}")
@@ -81,3 +81,5 @@ def hello(): Unit =
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

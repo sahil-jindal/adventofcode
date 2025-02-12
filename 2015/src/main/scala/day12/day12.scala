@@ -15,15 +15,14 @@ def sumJsonValue(value: JsValue): Int = value match {
     case _ => 0
 }
 
-def evaluatorOne(line: String) = numberRegex.findAllIn(line).toArray.map(_.toInt).sum
-
-def evaluatorTwo(line: String) = sumJsonValue(Json.parse(line))
+def evaluatorOne(line: String): Int = numberRegex.findAllIn(line).map(_.toInt).sum
+def evaluatorTwo(line: String): Int = sumJsonValue(Json.parse(line))
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day12.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day12.txt") match {
         case Success(lines) => {
             println(s"Part One: ${evaluatorOne(lines(0))}")
             println(s"Part Two: ${evaluatorTwo(lines(0))}")
@@ -31,3 +30,5 @@ def hello(): Unit =
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

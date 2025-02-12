@@ -2,7 +2,7 @@ package day20
 
 val input = 36000000
 
-def presentByHouse(steps: Int, mul: Int, l: Int) = {
+def presentByHouse(steps: Int, mul: Int, l: Int): Int = {
     val presents = Array.ofDim[Int](1000000)
 
     for i <- 1 until presents.length do {
@@ -16,11 +16,11 @@ def presentByHouse(steps: Int, mul: Int, l: Int) = {
         }
     }
 
-    presents.indexWhere(_ >= l)
+    return presents.indexWhere(_ >= l)
 }
 
-def evaluatorOne(input: Int) = presentByHouse(1000000, 10, input)
-def evaluatorTwo(input: Int) = presentByHouse(50, 11, input)
+def evaluatorOne(input: Int): Int = presentByHouse(1000000, 10, input)
+def evaluatorTwo(input: Int): Int = presentByHouse(50, 11, input)
 
 def hello() = {
     println(s"Part One: ${evaluatorOne(input)}")

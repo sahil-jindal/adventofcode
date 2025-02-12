@@ -16,16 +16,18 @@ val criteria = Map(
     "perfumes" -> 1
 )
 
-def parseInput(line: String) = {
-    val parts = line.split(": ", 2)
-    val sueNumber = parts(0).split(" ")(1).toInt
-    
-    val properties = parts(1).split(", ").map { prop =>
-        val Array(key, value) = prop.split(": ")
-        key -> value.toInt
-    }.toMap
-    
-    sueNumber -> properties
+def parseInput(lines: List[String]): List[(Int, Map[String, Int])] = {
+    return lines.map(line => {
+        val parts = line.split(": ", 2)
+        val sueNumber = parts(0).split(" ")(1).toInt
+
+        val properties = parts(1).split(", ").map { prop =>
+            val Array(key, value) = prop.split(": ")
+            key -> value.toInt
+        }.toMap
+
+        sueNumber -> properties
+    })
 }
 
 def matchFunctionOne(key: String, value: Int): Boolean = criteria(key) == value
@@ -36,29 +38,29 @@ def matchFunctionTwo(key: String, value: Int): Boolean = key match {
     case _ => criteria(key) == value
 }
 
-def findAuntySue(aunts: Array[(Int, Map[String, Int])], matchFunction: (String, Int) => Boolean) = {
+def findAuntySue(aunts: List[(Int, Map[String, Int])], matchFunction: (String, Int) => Boolean): Int = {
     val matchingAunt = aunts.find { case (_, properties) =>
-        properties.forall { case (key, value) =>
-            matchFunction(key, value)
-        }
+        properties.forall { case (key, value) => matchFunction(key, value) }
     }
 
-    matchingAunt match {
-        case Some((sueNumber, _)) => println(s"Aunt Sue $sueNumber got you the gift!")
-        case None => println("No matching Aunt Sue found!")
-    }
+    return matchingAunt.get._1
 }
+
+def evaluatorOne(aunts: List[(Int, Map[String, Int])]): Int = findAuntySue(aunts, matchFunctionOne)
+def evaluatorTwo(aunts: List[(Int, Map[String, Int])]): Int = findAuntySue(aunts, matchFunctionTwo)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day16.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day16.txt") match {
         case Success(lines) => {
-            val aunts = lines.map(parseInput).toArray
-            findAuntySue(aunts, matchFunctionOne)
-            findAuntySue(aunts, matchFunctionTwo)
+            val aunts = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(aunts)}")
+            println(s"Part Two: ${evaluatorTwo(aunts)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

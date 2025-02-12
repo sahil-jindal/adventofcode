@@ -1,6 +1,6 @@
 package day11
 
-val input = "hepxcrrq"
+val currentPassword = "hepxcrrq"
 
 val consecutiveLetters = List(
     "abc","bcd","cde","def","efg","fgh","pqr","qrs","rst","stu","tuv","uvw","vwx","wxy","xyz",
@@ -14,25 +14,19 @@ val consecutiveLetters = List(
     "pqrstuvwxyz"
 )
 
-def hasIncreasingStraight(password: String): Boolean = {
-    consecutiveLetters.exists(password.contains)
+def hasIncreasingStraight(pword: String): Boolean = consecutiveLetters.exists(pword.contains)
+def noConfusingLetters(pword: String): Boolean = !"iol".exists(pword.contains)
+
+def hasTwoNonOverlappingPairs(pword: String): Boolean = {
+    return (pword.init zip pword.tail).filter { case (a, b) => a == b }.toSet.size >= 2
 }
 
-def noConfusingLetters(password: String): Boolean = {
-    !"iol".exists(password.contains)
+def isValidPassword(pword: String): Boolean = {
+    return hasIncreasingStraight(pword) && noConfusingLetters(pword) && hasTwoNonOverlappingPairs(pword)
 }
 
-def hasTwoNonOverlappingPairs(password: String): Boolean = {
-    val pairs = password.sliding(2).filter(pair => pair(0) == pair(1)).toSet
-    pairs.size >= 2
-}
-
-def isValidPassword(password: String): Boolean = {
-    hasIncreasingStraight(password) && noConfusingLetters(password) && hasTwoNonOverlappingPairs(password)
-}
-
-def incrementPassword(input: String) = {
-    val temp = input.toCharArray
+def incrementPassword(currentPassword: String): String = {
+    val temp = currentPassword.toCharArray
 
     val zlength = temp.reverse.takeWhile(_ == 'z').length
     val remaining = temp.length - zlength
@@ -57,8 +51,8 @@ def findNextPassword(currentPassword: String): String = {
     password
 }
 
-def hello() = {
-    val nextPassword = findNextPassword(input)
+def hello(): Unit = {
+    val nextPassword = findNextPassword(currentPassword)
     println(s"The next password is: $nextPassword")
 
     val secondPassword = findNextPassword(nextPassword)
