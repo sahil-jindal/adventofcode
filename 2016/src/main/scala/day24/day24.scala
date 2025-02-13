@@ -22,7 +22,7 @@ def parseInput(grid: List[String]): (Map[Int, Point], Set[Point]) = {
         }
     }
     
-    (locations, walls)
+    return (locations, walls)
 }
 
 // A* Search to compute shortest paths between POIs
@@ -47,7 +47,7 @@ def aStar(start: Point, goal: Point, walls: Set[Point]): Int = {
         }
     }
 
-    Int.MaxValue
+    return Int.MaxValue
 }
 
 // Precompute shortest distances between all numbered locations
@@ -58,7 +58,7 @@ def precomputeDistances(locations: Map[Int, Point], walls: Set[Point]): Map[(Int
     for { i <- keys; j <- keys if i != j } 
         result((i, j)) = aStar(locations(i), locations(j), walls)
     
-    result
+    return result
 }
 
 // A* for solving TSP using state-space search
@@ -86,20 +86,17 @@ def tspAStar(start: Int, numLocations: Int, dist: Map[(Int, Int), Int], returnTo
         }
     }
 
-    minCost
+    return minCost
 }
 
-def evaluatorOne(noOfLocations: Int, dist: Map[(Int, Int), Int]) = 
-    tspAStar(0, noOfLocations, dist, false)
-
-def evaluatorTwo(noOfLocations: Int, dist: Map[(Int, Int), Int]) = 
-    tspAStar(0, noOfLocations, dist, true)
+def evaluatorOne(noOfLocations: Int, dist: Map[(Int, Int), Int]): Int = tspAStar(0, noOfLocations, dist, false)
+def evaluatorTwo(noOfLocations: Int, dist: Map[(Int, Int), Int]): Int = tspAStar(0, noOfLocations, dist, true)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day24.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day24.txt") match {
         case Success(lines) => {
             val (locations, walls) = parseInput(lines)
             val dist = precomputeDistances(locations, walls)
@@ -110,3 +107,5 @@ def hello(): Unit =
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

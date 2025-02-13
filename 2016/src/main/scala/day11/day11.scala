@@ -3,17 +3,10 @@ package day11
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Set, Queue, Map}
-import scala.util.matching.Regex
 import scala.util.boundary, boundary.break
 
 case class State(elevator: Int, elements: List[(Int, Int)]) {
     override def toString: String = s"State($elevator, ${elements.mkString("[", ", ", "]")})"
-}
-
-object State {
-    def apply(elevator: Int, elements: List[(Int, Int)]): State = {
-        new State(elevator, elements.sortBy(t => (t._1, t._2)))
-    }
 }
 
 def parseInput(input: List[String]) = {
@@ -40,14 +33,10 @@ def parseInput(input: List[String]) = {
 def isValid(elements: List[(Int, Int)]): Boolean = {
     boundary {
         for (floor <- 1 to 4) {
-            val generators = elements.indices.filter(i => elements(i)._1 == floor)
-            val chips = elements.indices.filter(i => elements(i)._2 == floor)
-            for (c <- chips) {
-                if (elements(c)._1 != floor) {
-                    if (generators.nonEmpty) {
-                        break(false)
-                    }
-                }
+            val generators = elements.exists { case (a, _) => a == floor }
+            val chips = elements.exists { case (a, b) => a != floor && b == floor }
+            if generators && chips then {
+                break(false)
             }
         }
     }
@@ -59,8 +48,7 @@ def nextStates(current: State): List[State] = {
     val currentFloor = current.elevator
     val elements = current.elements
 
-    val items = elements.indices.flatMap { i =>
-        val (g, c) = elements(i)
+    val items = elements.zipWithIndex.flatMap { case ((g, c), i) =>
         var list = List.empty[(Int, Char)]
         if (g == currentFloor) list = list :+ (i, 'G')
         if (c == currentFloor) list = list :+ (i, 'M')
@@ -68,10 +56,9 @@ def nextStates(current: State): List[State] = {
     }
 
     val combinations = items.combinations(1).toList ++ items.combinations(2).toList
+    val newFloors = List(currentFloor + 1, currentFloor - 1).filter(f => f >= 1 && f <= 4)
 
-    combinations.flatMap { combo =>
-        val newFloors = List(currentFloor + 1, currentFloor - 1).filter(f => f >= 1 && f <= 4)
-        
+    return combinations.flatMap { combo =>
         newFloors.flatMap { newFloor =>
             val newElements = elements.zipWithIndex.map { case ((g, c), idx) =>
                 val moves = combo.collect { case (i, t) if i == idx => t }
@@ -88,23 +75,19 @@ def nextStates(current: State): List[State] = {
 }
 
 def isGoal(state: State): Boolean = {
-    state.elements.forall { case (g, c) => g == 4 && c == 4 }
+    return state.elements.forall { case (g, c) => g == 4 && c == 4 }
 }
 
 def bfs(initial: State): Int = {
-    val queue = Queue[(State, Int)]()
-    val visited = Set[State]()
-    queue.enqueue((initial, 0))
-    visited.add(initial)
+    val queue = Queue((initial, 0))
+    val visited = Set(initial)
 
     while (queue.nonEmpty) {
         val (current, steps) = queue.dequeue()
         
         if (isGoal(current)) return steps
         
-        val nexts = nextStates(current)
-        
-        nexts.foreach { nextState =>
+        nextStates(current).foreach { nextState =>
             if (!visited.contains(nextState)) {
                 visited.add(nextState)
                 queue.enqueue((nextState, steps + 1))
@@ -112,34 +95,34 @@ def bfs(initial: State): Int = {
         }
     }
     
-    -1
+    return -1
 }
 
-def evaluatorOne(input: List[String]) = {
+def evaluatorOne(input: List[String]): Int = {
     val initialElements = parseInput(input)
-    val initialState = State(1, initialElements.values.toList)
-    println(s"Part One: ${bfs(initialState)}")
+    return bfs(State(1, initialElements.values.toList))
 }
 
-def evaluatorTwo(input: List[String]) = {
+def evaluatorTwo(input: List[String]): Int = {
     val initialElements = parseInput(input)
 
     initialElements("elerium") = (1, 1)
     initialElements("dilithium") = (1, 1)
-
-    val initialState = State(1, initialElements.values.toList)
-    println(s"Part Two: ${bfs(initialState)}")
+    
+    return bfs(State(1, initialElements.values.toList))
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day11.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day11.txt") match {
         case Success(lines) => {
-            evaluatorOne(lines)
-            evaluatorTwo(lines)
+            println(s"Part One: ${evaluatorOne(lines)}")
+            println(s"Part Two: ${evaluatorTwo(lines)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

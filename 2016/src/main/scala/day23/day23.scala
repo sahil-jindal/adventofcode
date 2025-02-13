@@ -34,7 +34,7 @@ def solve(input: Array[String], a: Int): Int = {
             case Array("tgl", x) => {
                 val ipDst = ip + getReg(x)
 
-                if ipDst >= 0 && ipDst < prg.length then
+                if ipDst >= 0 && ipDst < prg.length then {
                     prg(ipDst)(0) = prg(ipDst)(0) match
                         case "cpy" => "jnz"
                         case "inc" => "dec"
@@ -42,12 +42,13 @@ def solve(input: Array[String], a: Int): Int = {
                         case "jnz" => "cpy"
                         case "tgl" => "inc"
                         case other  => other
+                }
                 
                 ip += 1
             }
             case stm => throw new Exception(s"Cannot parse ${stm.mkString(" ")}")
 
-    getReg("a")
+    return getReg("a")
 }
 
 def evaluatorOne(input: Array[String]): Long = solve(input, 7)
@@ -56,8 +57,8 @@ def evaluatorTwo(input: Array[String]): Long = solve(input, 12)
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day23.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day23.txt") match {
         case Success(lines) => {
             val input = lines.toArray
             input(5) = "cpy c a";
@@ -71,3 +72,5 @@ def hello(): Unit =
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

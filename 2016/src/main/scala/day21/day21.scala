@@ -11,13 +11,13 @@ val operation5 = "rotate based on position of letter (\\w)".r
 val operation6 = "reverse positions (\\d+) through (\\d+)".r
 val operation7 = "move position (\\d+) to position (\\d+)".r
 
-def swapPosition(input: Array[Char], pos1: Int, pos2: Int) = {
+def swapPosition(input: Array[Char], pos1: Int, pos2: Int): Unit = {
     val temp = input(pos1)
     input(pos1) = input(pos2)
     input(pos2) = temp
 }
 
-def reverse(input: Array[Char], pos1: Int, pos2: Int) = {
+def reverse(input: Array[Char], pos1: Int, pos2: Int): Unit = {
     var x = pos1
     var y = pos2
     
@@ -28,14 +28,14 @@ def reverse(input: Array[Char], pos1: Int, pos2: Int) = {
     }
 }
 
-def rotateRight(input: Array[Char], pos: Int) = {
+def rotateRight(input: Array[Char], pos: Int): Unit = {
     val t = pos % input.length
     reverse(input, 0, input.length - 1);
     reverse(input, 0, t - 1);
     reverse(input, t, input.length - 1);
 }
 
-def executeInstructions(input: String, instructions: List[String]) = {
+def executeInstructions(input: String, instructions: List[String]): String = {
     val temp = input.toCharArray
 
     instructions.foreach { instruction =>
@@ -86,22 +86,22 @@ def executeInstructions(input: String, instructions: List[String]) = {
         }
     }
 
-    temp.mkString
+    return temp.mkString
 }
 
-def evaluatorOne(input: String, instructions: List[String]) = {
-    executeInstructions(input, instructions)
+def evaluatorOne(input: String, instructions: List[String]): String = {
+    return executeInstructions(input, instructions)
 }
 
-def evaluatorTwo(dest: String, instructions: List[String]) = {
-    "abcdefgh".permutations.find(it => executeInstructions(it, instructions) == dest).get
+def evaluatorTwo(dest: String, instructions: List[String]): String = {
+    return "abcdefgh".permutations.find(it => executeInstructions(it, instructions) == dest).get
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day21.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day21.txt") match {
         case Success(lines) => {
             println(s"Part One: ${evaluatorOne("abcdefgh", lines)}")
             println(s"Part Two: ${evaluatorTwo("fbgdceah", lines)}")
@@ -109,3 +109,5 @@ def hello(): Unit =
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

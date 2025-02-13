@@ -20,8 +20,9 @@ class Grid(nodes: Array[Array[Node]]) {
     val crow: Int = nodes.length
     val ccol: Int = nodes.head.length
 
-    def wall(irow: Int, icol: Int): Boolean =
+    def wall(irow: Int, icol: Int): Boolean = {
         nodes(irow)(icol).used > nodes(irowEmpty)(icolEmpty).size
+    }
 
     def move(drow: Int, dcol: Int): Unit = {
         require(math.abs(drow) + math.abs(dcol) == 1, "Invalid move")
@@ -33,7 +34,11 @@ class Grid(nodes: Array[Array[Node]]) {
         require(icolT >= 0 && icolT < ccol, "Column out of bounds")
         require(nodes(irowT)(icolT).used <= nodes(irowEmpty)(icolEmpty).avail, "Move not possible")
 
-        nodes(irowEmpty)(icolEmpty) = nodes(irowEmpty)(icolEmpty).copy(used = nodes(irowT)(icolT).used, goal = nodes(irowT)(icolT).goal)
+        nodes(irowEmpty)(icolEmpty) = nodes(irowEmpty)(icolEmpty).copy(
+            used = nodes(irowT)(icolT).used, 
+            goal = nodes(irowT)(icolT).goal
+        )
+
         nodes(irowT)(icolT) = nodes(irowT)(icolT).copy(used = 0, goal = false)
         irowEmpty = irowT
         icolEmpty = icolT
@@ -42,7 +47,7 @@ class Grid(nodes: Array[Array[Node]]) {
 }
 
 
-def parse(input: List[String]): Array[Array[Node]] = {
+def parseInput(input: List[String]): Array[Array[Node]] = {
     val pattern = "(\\d+)".r
     
     val nodes = input.drop(2).map { line =>
@@ -57,11 +62,11 @@ def parse(input: List[String]): Array[Array[Node]] = {
     nodes.foreach(n => grid(n.irow)(n.icol) = n)
     grid(0)(ccol - 1) = grid(0)(ccol - 1).copy(goal = true)
     
-    grid
+    return grid
 }
 
-def evaluatorOne(nodes: Array[Array[Node]]) = {
-    nodes.flatten.combinations(2).count { case Array(nodeA, nodeB) => 
+def evaluatorOne(nodes: Array[Array[Node]]): Int = {
+    return nodes.flatten.combinations(2).count { case Array(nodeA, nodeB) => 
         (nodeA.used > 0 && nodeB.avail > nodeA.used) || (nodeB.used > 0 && nodeA.avail > nodeB.used)
     }
 }
@@ -84,19 +89,21 @@ def evaluatorTwo(nodes: Array[Array[Node]]): Int = {
         grid.move(0, 1)
     }
 
-    grid.moves
+    return grid.moves
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day22.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day22.txt") match {
         case Success(lines) => {
-            val nodes = parse(lines)
+            val nodes = parseInput(lines)
             println(s"Part One: ${evaluatorOne(nodes)}")
             println(s"Part Two: ${evaluatorTwo(nodes)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

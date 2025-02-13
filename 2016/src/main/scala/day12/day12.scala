@@ -33,7 +33,7 @@ def Solve(input: List[String], c: Int): Int = {
         }
     }
 
-    getReg("a")
+    return getReg("a")
 }
 
 def evaluatorOne(input: List[String]): Long = Solve(input, 0)
@@ -42,8 +42,8 @@ def evaluatorTwo(input: List[String]): Long = Solve(input, 1)
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day12.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day12.txt") match {
         case Success(lines) => {
             println(s"Part One: ${evaluatorOne(lines)}")
             println(s"Part Two: ${evaluatorTwo(lines)}")
@@ -51,3 +51,5 @@ def hello(): Unit =
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

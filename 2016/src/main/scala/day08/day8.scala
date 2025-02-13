@@ -7,7 +7,7 @@ val rectPattern = "rect (\\d+)x(\\d+)".r
 val rotateRowPattern = "rotate row y=(\\d+) by (\\d+)".r
 val rotateColumnPattern = "rotate column x=(\\d+) by (\\d+)".r
 
-def executeInstructions(instructions: List[String]) = {
+def executeInstructions(instructions: List[String]): Array[Array[Boolean]] = {
     val (height, width) = (6, 50)
     val screen = Array.fill(height, width)(false)    
     
@@ -49,24 +49,24 @@ def executeInstructions(instructions: List[String]) = {
         }
     }
 
-    screen
+    return screen
 }
 
 def evaluatorOne(instructions: List[String]): Int = {
     val screen = executeInstructions(instructions)
-    screen.flatten.count(identity)
+    return screen.flatten.count(identity)
 }
 
-def evaluatorTwo(instructions: List[String]) = {
+def evaluatorTwo(instructions: List[String]): String = {
     val screen = executeInstructions(instructions)
-    screen.map { row => row.map(if (_) '#' else '.').mkString }.mkString("\n")
+    return screen.map { row => row.map(if (_) '#' else ' ').mkString }.mkString("\n")
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day08.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day08.txt") match {
         case Success(lines) => {
             println(s"Part One: ${evaluatorOne(lines)}")
             println(s"Part Two:\n${evaluatorTwo(lines)}")
@@ -74,3 +74,5 @@ def hello(): Unit =
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

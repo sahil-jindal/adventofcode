@@ -28,16 +28,16 @@ def getDirections(dir: Char) = dir match {
     case _ => Direction(0, 0)
 }
 
-def boundaryConditionOne(y: Int, x: Int) = 
-    (x >= 0 && x <= 2) && (y >= 0 && y <= 2)
+def boundaryConditionOne(y: Int, x: Int): Boolean = (x >= 0 && x <= 2) && (y >= 0 && y <= 2)
 
-def boundaryConditionTwo(y: Int, x: Int) = 
-    (x >= 0 && x <= 4) && (y >= 0 && y <= 4) && secondKeyPad(y)(x) != ' '
+def boundaryConditionTwo(y: Int, x: Int): Boolean = {
+    return (x >= 0 && x <= 4) && (y >= 0 && y <= 4) && secondKeyPad(y)(x) != ' '
+}
 
 def getCode(
-    currPoint: Point, directions: List[String], 
-    boundaryCondition: (Int, Int) => Boolean, keyPad: Array[Array[Char]]
-) = 
+    currPoint: Point, directions: List[String], keyPad: Array[Array[Char]],
+    boundaryCondition: (Int, Int) => Boolean
+): String = {
     val code = new StringBuilder
     var temp = currPoint
 
@@ -57,18 +57,21 @@ def getCode(
     }
 
     code.toString
+}
 
-def evaluatorOne(directions: List[String]) = 
-    getCode(Point(1, 1), directions, boundaryConditionOne, firstKeyPad)
+def evaluatorOne(directions: List[String]): String = {
+    return getCode(Point(1, 1), directions, firstKeyPad, boundaryConditionOne)
+}
 
-def evaluatorTwo(directions: List[String]) = 
-    getCode(Point(2, 0), directions, boundaryConditionTwo, secondKeyPad)
+def evaluatorTwo(directions: List[String]): String = {
+    return getCode(Point(2, 0), directions, secondKeyPad, boundaryConditionTwo)
+}
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day02.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day02.txt") match {
         case Success(lines) => {
             println(s"Part One: ${evaluatorOne(lines)}")
             println(s"Part Two: ${evaluatorTwo(lines)}")
@@ -76,3 +79,5 @@ def hello(): Unit =
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

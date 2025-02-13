@@ -2,9 +2,7 @@ package day25
 
 import scala.collection.mutable.ListBuffer
 
-def parseInput(input: List[String]) = input.map(_.split(' ')).toArray
-
-def solve(a: Int) = {
+def solve(a: Int): List[Int] = {
     val output = ListBuffer[Int]()
     
     /*
@@ -38,11 +36,7 @@ def solve(a: Int) = {
     output.toList
 }
 
-def evaluatorOne() =  {
-    println(solve(158).mkString("[",",","]"))
-}
+def evaluatorOne(): Unit = println(solve(158).mkString("[",",","]"))
 
-@main
-def hello(): Unit =
-    println(s"Part One: ${evaluatorOne()}")
+def hello(): Unit = println(s"Part One: ${evaluatorOne()}")
     

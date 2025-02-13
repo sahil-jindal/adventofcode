@@ -4,7 +4,7 @@ import java.security.MessageDigest
 
 def md5Hash(input: String): String = {
     val md = MessageDigest.getInstance("MD5")
-    md.digest(input.getBytes).map("%02x".format(_)).mkString
+    return md.digest(input.getBytes).map("%02x".format(_)).mkString
 }
 
 def evaluatorOne(doorId: String): String = {
@@ -12,7 +12,7 @@ def evaluatorOne(doorId: String): String = {
     var index = 0
 
     while (password.length < 8) {
-        val hash = md5Hash(s"$doorId$index")
+        val hash = md5Hash(doorId + index)
         
         if (hash.startsWith("00000")) {
             password += hash.charAt(5)
@@ -21,7 +21,7 @@ def evaluatorOne(doorId: String): String = {
         index += 1
     }
     
-    password
+    return password
 }
 
 def evaluatorTwo(doorId: String): String = {
@@ -29,7 +29,7 @@ def evaluatorTwo(doorId: String): String = {
     var index = 0
 
     while (password.contains(None)) {
-        val hash = md5Hash(s"$doorId$index")
+        val hash = md5Hash(doorId + index)
         
         if (hash.startsWith("00000")) {
             val position = hash.charAt(5).asDigit
@@ -41,10 +41,11 @@ def evaluatorTwo(doorId: String): String = {
         index += 1
     }
 
-    password.flatten.mkString
+    return password.flatten.mkString
 }
 
-def hello(): Unit =
+def hello(): Unit = {
     val input = "reyedfim"
     println(s"Part One: ${evaluatorOne(input)}")
     println(s"Part Two: ${evaluatorTwo(input)}")
+}
