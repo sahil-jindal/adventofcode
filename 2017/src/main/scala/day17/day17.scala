@@ -2,8 +2,7 @@ package day17
 
 import scala.collection.mutable.ListBuffer
 
-def evaluatorOne(input: String): Int = {
-    val step = input.toInt
+def evaluatorOne(step: Int): Int = {
     val nums = ListBuffer(0)
     var pos = 0
 
@@ -12,11 +11,10 @@ def evaluatorOne(input: String): Int = {
         nums.insert(pos, i)
     }
 
-    nums((pos + 1) % nums.length)
+    return nums((pos + 1) % nums.length)
 }
 
-def evaluatorTwo(input: String): Int = {
-    val step = input.toInt
+def evaluatorTwo(step: Int): Int = {
     var pos = 0
     var numsCount = 1
     var res = 0
@@ -27,11 +25,11 @@ def evaluatorTwo(input: String): Int = {
         numsCount += 1
     }
 
-    res
+    return res
 }
 
 def hello(): Unit = {
-    val input = "354"
+    val input = 354
     println(s"Part One: ${evaluatorOne(input)}")
     println(s"Part Two: ${evaluatorTwo(input)}")
 }

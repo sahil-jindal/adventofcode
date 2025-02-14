@@ -4,8 +4,8 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.util.control.Breaks._
 
-def parseInput(lines: String) = {
-    "(\\d+)".r.findAllIn(lines).map(_.toInt).toVector
+def parseInput(lines: String): Vector[Int] = {
+    return "(\\d+)".r.findAllIn(lines).map(_.toInt).toVector
 }
 
 def redistribute(banks: Vector[Int]): Vector[Int] = {
@@ -21,7 +21,7 @@ def redistribute(banks: Vector[Int]): Vector[Int] = {
 
     val indicesToIncrement = (0 until remainder).map { j => (start + j) % numBanks }
 
-    indicesToIncrement.foldLeft(afterQuotient) { (current, idx) =>
+    return indicesToIncrement.foldLeft(afterQuotient) { (current, idx) =>
         current.updated(idx, current(idx) + 1)
     }
 }
@@ -44,7 +44,7 @@ def getStepCount(input: Vector[Int]) = {
                     part2 = steps - previousStep
                     break()
                 case None =>
-                    seen = seen + (current -> steps)
+                    seen += (current -> steps)
             }
         }
     }
@@ -56,12 +56,13 @@ def getStepCount(input: Vector[Int]) = {
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day06.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day06.txt") match {
         case Success(lines) => {
-            val numbers = parseInput(lines(0))
-            getStepCount(numbers)
+            getStepCount(parseInput(lines.head))
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

@@ -9,7 +9,7 @@ val writePattern = """\s*- Write the value (\d+)\.""".r
 val movePattern = """\s*- Move one slot to the (left|right)\.""".r
 val continuePattern = """\s*- Continue with state (\w+)\.""".r
 
-def evaluatorOne(input: List[String]) = {
+def evaluatorOne(input: List[String]): Int = {
     val lines = input.filter(_.trim.nonEmpty).toList
     
     // Parse initial state and steps
@@ -73,14 +73,13 @@ def evaluatorOne(input: List[String]) = {
         currentState = nextState
     }
 
-    tape.size
+    return tape.size
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-@main
-def hello(): Unit =
+def hello(): Unit = {
     readLinesFromFile("day25.txt") match {
         case Success(lines) => {
             println(s"Part One: ${evaluatorOne(lines)}")
@@ -89,3 +88,4 @@ def hello(): Unit =
             println(s"File not found: ${exception.getMessage()}")
         }
     }
+}

@@ -29,11 +29,11 @@ class Particle(val i: Int, val pos: Point, val vel: Point, val acc: Point) {
         } yield tx
     }
 
-    private def collisionTimeOnAxis(da: Int, dv: Int, dp: Int): Iterable[Int] = {
-        solveIntEq(da / 2, dv, dp)
+    def collisionTimeOnAxis(da: Int, dv: Int, dp: Int): Iterable[Int] = {
+        return solveIntEq(da / 2, dv, dp)
     }
 
-    private def solveIntEq(a: Int, b: Int, c: Int): Iterable[Int] = {
+    def solveIntEq(a: Int, b: Int, c: Int): Iterable[Int] = {
         if (a == 0) {
             if (b != 0) return Seq(-c / b)
             if (c == 0) return Seq(0)
@@ -55,13 +55,13 @@ class Particle(val i: Int, val pos: Point, val vel: Point, val acc: Point) {
 
 def parseVector(s: String): Point = {
     val parts = s.split(",").map(_.trim.toInt)
-    Point(parts(0), parts(1), parts(2))
+    return Point(parts(0), parts(1), parts(2))
 }
 
-private def parseInput(lines: List[String]): List[Particle] = {
+def parseInput(lines: List[String]): List[Particle] = {
     val pattern = """p=<([^>]+)>, v=<([^>]+)>, a=<([^>]+)>""".r
 
-    lines.zipWithIndex.map { case (line, i) =>
+    return lines.zipWithIndex.map { case (line, i) =>
         line match {
             case pattern(pStr, vStr, aStr) =>
                 val pVec = parseVector(pStr)
@@ -74,13 +74,10 @@ private def parseInput(lines: List[String]): List[Particle] = {
     }
 }
 
-def evaluatorOne(input: List[String]) = {
-    val particles = parseInput(input)
-    particles.minBy(_.acc.len).i
-}
+def evaluatorOne(currParticles: List[Particle]): Int = currParticles.minBy(_.acc.len).i
 
-def evaluatorTwo(input: List[String]): Any = {
-    var particles = parseInput(input)
+def evaluatorTwo(currParticles: List[Particle]): Int = {
+    var particles = currParticles
 
     val collisionTimes: Array[Int] = (for {
         p1 <- particles
@@ -110,15 +107,12 @@ def evaluatorTwo(input: List[String]): Any = {
         }
 
         particles = particles.filterNot(_.destroyed)
-        
-        for (particle <- particles) {
-            particle.step()
-        }
+        particles.foreach(_.step())
 
         t += 1
     }
     
-    particles.length
+    return particles.length
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -127,8 +121,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Any =
     readLinesFromFile("day20.txt") match
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val particles = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(particles)}")
+            println(s"Part Two: ${evaluatorTwo(particles)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

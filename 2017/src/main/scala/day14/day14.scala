@@ -2,7 +2,7 @@ package day14
 
 import scala.collection.mutable.Queue
 
-private def knotHash(input: String): Array[Int] = {
+def knotHash(input: String): List[Int] = {
     val suffix = Seq(17, 31, 73, 47, 23)
     val chars = input.map(_.toInt) ++ suffix
     val output = (0 until 256).toArray
@@ -24,18 +24,18 @@ private def knotHash(input: String): Array[Int] = {
         }
     }
   
-    output.grouped(16).map(_.reduce(_ ^ _)).toArray
+    return output.grouped(16).map(_.reduce(_ ^ _)).toList
 }
 
-private def extract(input: String): Seq[String] = {
-    (0 until 128).map { irow =>
+def extract(input: String): Seq[String] = {
+    return (0 until 128).map { irow =>
         knotHash(s"$input-$irow").flatMap { n =>
             (7 to 0 by -1).map { bit => if ((n & (1 << bit)) != 0) '#' else '.' }
         }.mkString
     }
 }
 
-private def fill(mtx: Array[Array[Char]], startCell: (Int, Int)): Unit = {
+def fill(mtx: Array[Array[Char]], startCell: (Int, Int)): Unit = {
     val q = Queue(startCell)
     val (rows, cols) = (mtx.length, mtx(0).length)
 
@@ -56,7 +56,7 @@ private def fill(mtx: Array[Array[Char]], startCell: (Int, Int)): Unit = {
 }
 
 def evaluatorOne(input: String): Int = {
-    extract(input).map(_.count(_ == '#')).sum
+    return extract(input).map(_.count(_ == '#')).sum
 }
 
 def evaluatorTwo(input: String): Int = {
@@ -73,7 +73,7 @@ def evaluatorTwo(input: String): Int = {
         }
     }
 
-    regions
+    return regions
 }
 
 def hello(): Unit = {

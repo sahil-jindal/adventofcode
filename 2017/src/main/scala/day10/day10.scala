@@ -45,12 +45,14 @@ def partTwo(input: String): String = {
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day10.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day10.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${partOne(lines(0))}")
-            println(s"Part Two: ${partTwo(lines(0))}")
+            println(s"Part One: ${partOne(lines.head)}")
+            println(s"Part Two: ${partTwo(lines.head)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

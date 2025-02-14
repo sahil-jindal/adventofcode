@@ -9,9 +9,9 @@ case class Point(val y: Int, val x: Int)
 case class Direction(val dy: Int, val dx: Int)
 case class Virus(val currDirection: Direction, val state: State)
 
-def iterate(lines: List[String], iterations: Int, update: Virus => Virus) = {
+def iterate(lines: List[String], iterations: Int, update: Virus => Virus): Int = {
     val crow = lines.length
-    val ccol = lines(0).length
+    val ccol = lines.head.length
     val cells = HashMap[Point, State]()
 
     for (irowT <- 0 until crow; icolT <- 0 until ccol; if lines(irowT)(icolT) == '#') do {
@@ -42,7 +42,7 @@ def iterate(lines: List[String], iterations: Int, update: Virus => Virus) = {
         icol += dx
     } 
 
-    infections
+    return infections
 }
 
 def evaluatorOne(input: List[String]) = iterate(input, 10000, it => {
@@ -69,8 +69,8 @@ def evaluatorTwo(input: List[String]) = iterate(input, 10000000, it => {
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello() =
-    readLinesFromFile("day22.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day22.txt") match {
         case Success(lines) => {
             println(s"Part One: ${evaluatorOne(lines)}")
             println(s"Part Two: ${evaluatorTwo(lines)}")
@@ -78,3 +78,5 @@ def hello() =
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

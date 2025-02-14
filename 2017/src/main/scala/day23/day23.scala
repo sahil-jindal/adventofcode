@@ -4,7 +4,7 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Map
 
-def evaluatorOne(input: List[String]) = {
+def evaluatorOne(input: List[String]): Int = {
     val prog = input.map(_.split(" "))
     val regs = Map[String, Int]()
     var ip = 0
@@ -38,23 +38,21 @@ def evaluatorOne(input: List[String]) = {
         }
     }
 
-    mulCount
+    return mulCount
 }
 
 def isPrime(n: Int): Boolean = {
     if n < 2 then return false
-    (2 to math.sqrt(n).toInt).forall(n % _ != 0)
+    return (2 to math.sqrt(n).toInt).forall(n % _ != 0)
 }
 
-def evaluatorTwo(): Int = {
-    (109300 to 126300 by 17).count(!isPrime(_))
-}
+def evaluatorTwo(): Int = (109300 to 126300 by 17).count(!isPrime(_))
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello() =
-    readLinesFromFile("day23.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day23.txt") match {
         case Success(lines) => {
             println(s"Part One: ${evaluatorOne(lines)}")
             println(s"Part Two: ${evaluatorTwo()}")
@@ -62,3 +60,5 @@ def hello() =
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

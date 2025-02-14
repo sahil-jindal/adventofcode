@@ -49,15 +49,15 @@ def firstSumAbove(input: Int): Int = {
         n += 1
     }
 
-    -1 // Unreachable
+    return -1 // Unreachable
 }
 
-def evaluatorOne(input: Int) = {
+def evaluatorOne(input: Int): Int = {
     val (x, y) = getCoordinates(input)
-    x.abs + y.abs
+    return x.abs + y.abs
 }
 
-def evaluatorTwo(input: Int) = firstSumAbove(input)
+def evaluatorTwo(input: Int): Int = firstSumAbove(input)
  
 def hello(): Unit = {
     val input = 265149

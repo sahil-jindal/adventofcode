@@ -2,28 +2,24 @@ package day24
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable
+import scala.collection.mutable.Set
 
 case class Component(pinA: Int, pinB: Int)
 case class Pair(length: Int, strength: Int)
 
-private def parse(input: List[String]): mutable.Set[Component] = {
-    val components = mutable.Set[Component]()
+def parse(input: List[String]): Set[Component] = {
+    val components = Set[Component]()
     
     for (line <- input) {
         val parts = line.split("/").map(_.toInt)
         components.addOne(Component(parts(0), parts(1)))
     }
 
-    components
+    return components
 }
 
-private def strongestBridge(
-    input: List[String],
-    compare: (Pair, Pair) => Int
-): Int = {
-  
-    def fold(pinIn: Int, components: mutable.Set[Component]): Pair = {
+def strongestBridge(input: List[String], compare: (Pair, Pair) => Int): Int = {
+    def fold(pinIn: Int, components: Set[Component]): Pair = {
         var strongest = Pair(0, 0)
         for (component <- components.toList) {
             val pinOut = {
@@ -41,26 +37,22 @@ private def strongestBridge(
             }
         }
         
-        strongest
+        return strongest
     }
   
-    fold(0, parse(input)).strength
+    return fold(0, parse(input)).strength
 }
 
-def partOne(input: List[String]): Int = {
-    strongestBridge(input, (a, b) => a.strength - b.strength)
-}
+def partOne(input: List[String]): Int = strongestBridge(input, (a, b) => a.strength - b.strength)
 
-def partTwo(input: List[String]): Int = {
-    strongestBridge(input, (a, b) => {
-        if (a.length != b.length) then { a.length - b.length } else { a.strength - b.strength }
-    })
-}
+def partTwo(input: List[String]): Int = strongestBridge(input, (a, b) => {
+    if (a.length != b.length) then { a.length - b.length } else { a.strength - b.strength }
+})
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
+def hello(): Unit = {
     readLinesFromFile("day24.txt") match {
         case Success(lines) => {
             println(s"Part One: ${partOne(lines)}")
@@ -70,3 +62,4 @@ def hello(): Unit =
             println(s"File not found: ${exception.getMessage()}")
         }
     }
+}

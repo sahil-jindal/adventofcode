@@ -46,7 +46,7 @@ class Mtx(val size: Int) {
             case _ => throw new Exception()
         }
         
-        (for {
+        return (for {
             irow <- 0 until size by blockSize
             icol <- 0 until size by blockSize
         } yield {
@@ -61,12 +61,6 @@ class Mtx(val size: Int) {
     }
 
     def count(): Int = flags.count(identity)
-
-    override def toString: String = {
-        (0 until size).map { irow =>
-            (0 until size).map(icol => if (this(irow, icol)) "#" else ".").mkString
-        }.mkString("\n")
-    }
 }
 
 object Mtx {
@@ -104,42 +98,39 @@ class RuleSet(input: List[String]) {
 
     private val ruleRegex = "(.*?) => (.*?)".r
 
-    for (line <- input) {
-        line match {
-            case ruleRegex(left, right) => {
-                val rules = left.length match {
-                    case 5  => rules2
-                    case 11 => rules3
-                    case _  => throw new Exception()
-                }
-                
-                for (mtx <- variations(Mtx.fromString(left))) {
-                    rules(mtx.codeNumber) = Mtx.fromString(right)
-                }
+    input foreach {
+        case ruleRegex(left, right) => {
+            val rules = left.length match {
+                case 5  => rules2
+                case 11 => rules3
+                case _  => throw new Exception()
             }
-            case _ =>
+            
+            for (mtx <- variations(Mtx.fromString(left))) {
+                rules(mtx.codeNumber) = Mtx.fromString(right)
+            }
         }
+        case _ =>
     }
+    
 
-    def apply(mtx: Mtx): Mtx = {
-        Mtx.join(mtx.split().map {
-            case child if child.size == 2 => rules2(child.codeNumber)
-            case child if child.size == 3 => rules3(child.codeNumber)
-        })
-    }
+    def apply(mtx: Mtx): Mtx = Mtx.join(mtx.split().map {
+        case child if child.size == 2 => rules2(child.codeNumber)
+        case child if child.size == 3 => rules3(child.codeNumber)
+    })
 
-    private def variations(mtx: Mtx): Seq[Mtx] = {
+    def variations(mtx: Mtx): Seq[Mtx] = {
         var variants = Seq(mtx)
         
         for (_ <- 0 until 4) {
             variants :+= variants.last.rotate()
         }
         
-        variants ++ variants.map(_.flip())
+        return variants ++ variants.map(_.flip())
     }
 }
 
-private def iterate(input: List[String], iterations: Int): Int = {
+def iterate(input: List[String], iterations: Int): Int = {
     var mtx = Mtx.fromString(".#./..#/###")
     val ruleset = RuleSet(input)
     
@@ -147,7 +138,7 @@ private def iterate(input: List[String], iterations: Int): Int = {
         mtx = ruleset.apply(mtx)
     }
     
-    mtx.count()
+    return mtx.count()
 }
     
 def evaluatorOne(input: List[String]): Int = iterate(input, 5)
@@ -156,8 +147,8 @@ def evaluatorTwo(input: List[String]): Int = iterate(input, 18)
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Any =
-    readLinesFromFile("day21.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day21.txt") match {
         case Success(lines) => {
             println(s"Part One: ${evaluatorOne(lines)}")
             println(s"Part Two: ${evaluatorTwo(lines)}")
@@ -165,3 +156,5 @@ def hello(): Any =
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

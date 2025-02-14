@@ -9,22 +9,20 @@ case class Spin(size: Int) extends Move
 case class Exchange(a: Int, b: Int) extends Move
 case class Partner(a: Char, b: Char) extends Move
 
-def parseMove(moveStr: String): Move = {
-    moveStr(0) match {
-        case 's' => Spin(moveStr.tail.toInt)
-        case 'x' =>
-            val parts = moveStr.tail.split('/')
+def parseInput(input: String): List[Move] = input.split(',').map(move => {
+    move(0) match {
+        case 's' => Spin(move.tail.toInt)
+        case 'x' => {
+            val parts = move.tail.split('/')
             Exchange(parts(0).toInt, parts(1).toInt)
-        case 'p' =>
-            val parts = moveStr.tail.split('/')
+        }
+        case 'p' => {
+            val parts = move.tail.split('/')
             Partner(parts(0).head, parts(1).head)
-        case _ => throw new IllegalArgumentException(s"Unknown move: $moveStr")
+        }
+        case _ => throw new IllegalArgumentException(s"Unknown move: $move")
     }
-}
-
-def parseInput(input: String) = {
-    input.split(',').map(parseMove).toList
-}
+}).toList
 
 def applySpin(s: String, x: Int): String = {
     val splitPos = s.length - x
@@ -71,7 +69,7 @@ def findCycle(initial: String, moves: List[Move]): (List[String], Int, Int) = {
     val cycleStart = seen(current)
     val cycleLength = step - cycleStart
     
-    (states.toList, cycleStart, cycleLength)
+    return (states.toList, cycleStart, cycleLength)
 }
 
 def evaluatorOne(moves: List[Move]) = {
@@ -91,13 +89,15 @@ def evaluatorTwo(moves: List[Move]): String = {
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day16.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day16.txt") match {
         case Success(lines) => {
-            val instructions = parseInput(lines(0))
+            val instructions = parseInput(lines.head)
             println(s"Part One: ${evaluatorOne(instructions)}")
             println(s"Part Two: ${evaluatorTwo(instructions)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

@@ -32,19 +32,21 @@ def process(input: String): (Int, Int) = {
         }
     }
 
-    (totalScore, garbageCount)
+    return (totalScore, garbageCount)
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day09.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day09.txt") match {
         case Success(lines) => {
-            val (score, garbage) = process(lines(0))
+            val (score, garbage) = process(lines.head)
             println(s"Part One: $score")
             println(s"Part Two: $garbage")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

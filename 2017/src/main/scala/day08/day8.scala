@@ -5,17 +5,13 @@ import scala.io.Source
 import scala.collection.mutable.Map
 
 val comparators = Map[String, (Int, Int) => Boolean](
-    (">=", (x, y) => x >= y),
-    ("<=", (x, y) => x <= y),
-    ("==", (x, y) => x == y),
-    ("!=", (x, y) => x != y),
-    (">",  (x, y) => x > y),
-    ("<",  (x, y) => x < y),
+    (">=", (x, y) => x >= y), ("<=", (x, y) => x <= y),
+    ("==", (x, y) => x == y), ("!=", (x, y) => x != y),
+    (">",  (x, y) => x > y), ("<",  (x, y) => x < y),
 )
 
 val operations = Map[String, (Int, Int) => Int](
-    ("inc", (x, y) => x + y),
-    ("dec", (x, y) => x - y)
+    ("inc", (x, y) => x + y), ("dec", (x, y) => x - y)
 )
 
 def solve(input: List[String]): (Int, Int) = {
@@ -39,14 +35,14 @@ def solve(input: List[String]): (Int, Int) = {
         }   
     }
     
-    (regs.values.max, maxEver)
+    return (regs.values.max, maxEver)
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day08.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day08.txt") match {
         case Success(lines) => {
             val (partOne, partTwo) = solve(lines)
             println(s"Part One: $partOne")
@@ -55,3 +51,5 @@ def hello(): Unit =
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

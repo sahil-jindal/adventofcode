@@ -4,17 +4,15 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Queue, Set, Stack}
 
-private def parseInput(lines: List[String]): Map[Int, List[Int]] = {
+def parseInput(lines: List[String]): Map[String, List[String]] = {
     return lines.map { line =>
-        val parts = line.split(" <-> ")
-        val key = parts(0).toInt
-        val values = parts(1).split(", ").map(_.toInt).toList
-        key -> values
+        val Array(first, second) = line.split(" <-> ")
+        first -> second.split(", ").toList
     }.toMap
 }
 
-def dfs(graph: Map[Int, List[Int]], start: Int): Set[Int] = {
-    val visited = Set.empty[Int]
+def dfs(graph: Map[String, List[String]], start: String): Set[String] = {
+    val visited = Set.empty[String]
     val stack = Stack(start)
 
     while (stack.nonEmpty) {
@@ -32,11 +30,9 @@ def dfs(graph: Map[Int, List[Int]], start: Int): Set[Int] = {
     return visited
 }
 
-def evaluatorOne(graph: Map[Int, List[Int]]): Int = {
-    dfs(graph, 0).size
-}
+def evaluatorOne(graph: Map[String, List[String]]): Int = dfs(graph, "0").size
 
-def evaluatorTwo(graph: Map[Int, List[Int]]): Int = {
+def evaluatorTwo(graph: Map[String, List[String]]): Int = {
     var remainingNodes = graph.keys.toSet
     var groups = 0
 
@@ -53,8 +49,8 @@ def evaluatorTwo(graph: Map[Int, List[Int]]): Int = {
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day12.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day12.txt") match {
         case Success(lines) => {
             val graph = parseInput(lines)
             println(s"Part One: ${evaluatorOne(graph)}")
@@ -63,3 +59,5 @@ def hello(): Unit =
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

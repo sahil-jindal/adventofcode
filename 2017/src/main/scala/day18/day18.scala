@@ -4,9 +4,7 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Queue, Map}
 
-def parseInput(lines: List[String]) = {
-    lines.map(_.split(" "))
-}
+def parseInput(lines: List[String]): List[Vector[String]] = lines.map(_.split(" ").toVector)
 
 abstract class Machine[TState] {
     private val regs = Map[String, Long]().withDefaultValue(0L)
@@ -24,30 +22,30 @@ abstract class Machine[TState] {
     protected def snd(reg: String): Unit
     protected def rcv(reg: String): Unit
 
-    def execute(prog: List[Array[String]]): Iterator[TState] = {
+    def execute(prog: List[Vector[String]]): Iterator[TState] = {
         Iterator.continually {
             if (ip >= 0 && ip < prog.length) {
                 running = true
                 prog(ip) match {
-                    case Array("snd", x) => snd(x)
-                    case Array("rcv", x) => rcv(x)
-                    case Array("set", x, y) => {
+                    case Vector("snd", x) => snd(x)
+                    case Vector("rcv", x) => rcv(x)
+                    case Vector("set", x, y) => {
                         setReg(x, getReg(y))
                         ip += 1
                     }
-                    case Array("add", x, y) => {
+                    case Vector("add", x, y) => {
                         setReg(x, getReg(x) + getReg(y))
                         ip += 1
                     }
-                    case Array("mul", x, y) => {
+                    case Vector("mul", x, y) => {
                         setReg(x, getReg(x) * getReg(y))
                         ip += 1
                     }
-                    case Array("mod", x, y) => {
+                    case Vector("mod", x, y) => {
                         setReg(x, getReg(x) % getReg(y))
                         ip += 1
                     }
-                    case Array("jgz", x, y) => {
+                    case Vector("jgz", x, y) => {
                         ip += (if (getReg(x) > 0) getReg(y).toInt else 1)
                     }
                     case _      => throw new Exception(s"Cannot parse ${prog(ip)}")
@@ -100,18 +98,18 @@ case class Machine2(p: Long, qIn: Queue[Long], qOut: Queue[Long]) extends Machin
     }
 }
 
-def evaluatorOne(input: List[Array[String]]) = {
-    Machine1().execute(input).collectFirst { case Some(received) => received }.get
+def evaluatorOne(input: List[Vector[String]]): Long = {
+    return Machine1().execute(input).collectFirst { case Some(received) => received }.get
 }
 
-def evaluatorTwo(input: List[Array[String]]) = {
+def evaluatorTwo(input: List[Vector[String]]): Int = {
     val p0Input = Queue[Long]()
     val p1Input = Queue[Long]()
 
     val states = Machine2(0, p0Input, p1Input).execute(input)
         .zip(Machine2(1, p1Input, p0Input).execute(input))
 
-    states.collectFirst { 
+    return states.collectFirst { 
         case ((running0, _), (running1, valueSent1)) if !running0 && !running1 => valueSent1 
     }.get
 }
@@ -119,8 +117,8 @@ def evaluatorTwo(input: List[Array[String]]) = {
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Any =
-    readLinesFromFile("day18.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day18.txt") match {
         case Success(lines) => {
             val instructions = parseInput(lines)
             println(s"Part One: ${evaluatorOne(instructions)}")
@@ -129,3 +127,5 @@ def hello(): Any =
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

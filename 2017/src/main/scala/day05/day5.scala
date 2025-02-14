@@ -18,14 +18,14 @@ def getStepCount(lines: List[String], update: Int => Int): Int = {
     return stepCount
 }
 
-def evaluatorOne(input: List[String]) = getStepCount(input, it => it + 1)
-def evaluatorTwo(input: List[String]) = getStepCount(input, it => if it < 3 then it + 1 else it - 1 )
+def evaluatorOne(input: List[String]): Int = getStepCount(input, it => it + 1)
+def evaluatorTwo(input: List[String]): Int = getStepCount(input, it => if it < 3 then it + 1 else it - 1 )
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day05.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day05.txt") match {
         case Success(lines) => {
             println(s"Part One: ${evaluatorOne(lines)}")
             println(s"Part Two: ${evaluatorTwo(lines)}")
@@ -33,3 +33,5 @@ def hello(): Unit =
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

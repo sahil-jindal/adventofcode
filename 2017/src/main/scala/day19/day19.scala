@@ -3,7 +3,7 @@ package day19
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-private def followPath(map: List[String]): (String, Int) = {
+def followPath(map: List[String]): Unit = {
     val (ccol, crow) = (map(0).length, map.length)
     var (icol, irow) = (map(0).indexOf('|'), 0)
     var (dcol, drow) = (0, 1)
@@ -38,11 +38,9 @@ private def followPath(map: List[String]): (String, Int) = {
         }
     }
     
-    (msg.toString, steps)
+    println(s"Part One: ${msg.toString}")
+    println(s"Part Two: $steps")
 }
-
-def evaluatorOne(input: List[String]) = followPath(input)._1
-def evaluatorTwo(input: List[String]) = followPath(input)._2
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -50,8 +48,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Any =
     readLinesFromFile("day19.txt") match
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            followPath(lines)
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
