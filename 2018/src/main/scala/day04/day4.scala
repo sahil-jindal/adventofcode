@@ -41,7 +41,7 @@ def parseInput(input: List[String]): Seq[Day] = {
     return result
 }
 
-def partOne(records: Seq[Day]): Int = {
+def evaluatorOne(records: Seq[Day]): Int = {
     val grouped = records.groupBy(_.guard).view.mapValues { days =>
         val totalSleeps = days.map(_.totalSleep).sum
         val sleepByMin = Seq.tabulate(60) { minT => days.map(_.sleep(minT)).sum }
@@ -53,7 +53,7 @@ def partOne(records: Seq[Day]): Int = {
     return guard * min
 }
 
-def partTwo(records: Seq[Day]): Int = {
+def evaluatorTwo(records: Seq[Day]): Int = {
     val grouped = records.groupBy(_.guard).view.mapValues { days =>
         val sleepByMin = Seq.tabulate(60) { minT => days.map(_.sleep(minT)).sum }
         sleepByMin
@@ -71,8 +71,8 @@ def hello(): Unit = {
     readLinesFromFile("day04.txt") match {
         case Success(lines) => {
             val records = parseInput(lines)
-            println(s"Part One: ${partOne(records)}")
-            println(s"Part Two: ${partTwo(records)}")
+            println(s"Part One: ${evaluatorOne(records)}")
+            println(s"Part Two: ${evaluatorTwo(records)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
