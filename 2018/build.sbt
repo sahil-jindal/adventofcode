@@ -5,8 +5,8 @@ lazy val root = project
   .settings(
     name := "2018",
     version := "0.1.0-SNAPSHOT",
-
     scalaVersion := scala3Version,
-
-    libraryDependencies += "org.scalameta" %% "munit" % "1.0.0" % Test
+    Global / semanticdbEnabled := true,
+    libraryDependencies += "org.scalameta" %% "munit" % "1.0.0" % Test,
+    libraryDependencies += "com.github.nscala-time" %% "nscala-time" % "3.0.0"
   )
