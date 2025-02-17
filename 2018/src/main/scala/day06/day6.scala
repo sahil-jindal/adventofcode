@@ -16,12 +16,10 @@ def parseInput(lines: List[String]): (Plane, List[Point]) = {
         Point(x, y)
     })
 
-    val minX = points.map(_.x).min
-    val maxX = points.map(_.x).max
-    val minY = points.map(_.y).min
-    val maxY = points.map(_.y).max
+    val xs = points.map(_.x)
+    val ys = points.map(_.y)
 
-    return (Plane(minX, maxX, minY, maxY), points)
+    return (Plane(xs.min, xs.max, ys.min, ys.max), points)
 }
 
 def manhattanDistance(p1: Point, p2: Point): Int = {
