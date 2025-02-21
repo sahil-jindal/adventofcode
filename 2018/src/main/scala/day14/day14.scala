@@ -53,7 +53,6 @@ def evaluatorTwo(targetStr: String): Int = {
     return -1
 }
 
-@main
 def hello(): Unit = {
     val input = "320851"
     println(s"Part One: ${evaluatorOne(input.toInt)}")
