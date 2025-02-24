@@ -81,7 +81,7 @@ def workOutMapping(constraints: Map[Int, List[Int]], used: Array[Boolean], res: 
     }
 }
 
-def partOne(input: List[String]): Int = {
+def evaluatorOne(input: List[String]): Int = {
     val (testCases, _) = parseInput(input)
     
     return testCases.count { testCase =>
@@ -92,7 +92,7 @@ def partOne(input: List[String]): Int = {
     }
 }
 
-def partTwo(input: List[String]): Int = {
+def evaluatorTwo(input: List[String]): Int = {
     val constraints = (0 until 16).map(i => i -> (0 until 16).toList).toMap
     val (testCases, prg) = parseInput(input)
     
@@ -125,8 +125,8 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day16.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${partOne(lines)}")
-            println(s"Part Two: ${partTwo(lines)}")
+            println(s"Part One: ${evaluatorOne(lines)}")
+            println(s"Part Two: ${evaluatorTwo(lines)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
