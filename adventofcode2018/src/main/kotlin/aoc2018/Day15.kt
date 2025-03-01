@@ -1,16 +1,16 @@
-package org.example
+package aoc2018
 
 import java.io.File
 
 enum class Direction { UP, LEFT, RIGHT, DOWN }
 
-data class Unit(val type: Char, var x: Int, var y: Int, var hp: Int = 200, val attackPower: Int = 3)
+data class CombatUnit(val type: Char, var x: Int, var y: Int, var hp: Int = 200, val attackPower: Int = 3)
 
 typealias Grid = List<List<Boolean>>
 
-fun parseInput(input: List<String>): Pair<Grid, List<Unit>> {
+fun parseInput(input: List<String>): Pair<Grid, List<CombatUnit>> {
     val grid = mutableListOf<List<Boolean>>()
-    val units = mutableListOf<Unit>()
+    val units = mutableListOf<CombatUnit>()
 
     for (y in input.indices) {
         val line = input[y]
@@ -21,7 +21,7 @@ fun parseInput(input: List<String>): Pair<Grid, List<Unit>> {
                 '.' -> row.add(false)
                 'E', 'G' -> {
                     row.add(false)
-                    units.add(Unit(line[x], x, y))
+                    units.add(CombatUnit(line[x], x, y))
                 }
                 else -> throw IllegalArgumentException("Invalid character in input: ${line[x]}")
             }
@@ -89,7 +89,7 @@ fun bfs(startX: Int, startY: Int, occupiedPositions: Set<Pair<Int, Int>>, grid: 
     return distanceMap to firstStepDirMap
 }
 
-fun moveUnit(unit: Unit, units: List<Unit>, grid: Grid) {
+fun moveUnit(unit: CombatUnit, units: List<CombatUnit>, grid: Grid) {
     val occupiedPositions = units
         .filter { it.hp > 0 && it != unit }
         .map { Pair(it.x, it.y) }
@@ -139,7 +139,7 @@ fun moveUnit(unit: Unit, units: List<Unit>, grid: Grid) {
     }
 }
 
-fun attack(unit: Unit, units: List<Unit>): Boolean {
+fun attack(unit: CombatUnit, units: List<CombatUnit>): Boolean {
     val adjacentEnemies = listOf(
         unit.x to unit.y - 1,
         unit.x - 1 to unit.y,
@@ -161,14 +161,14 @@ fun attack(unit: Unit, units: List<Unit>): Boolean {
     return targetEnemy.type == 'E' && targetEnemy.hp <= 0
 }
 
-fun simulateBattle(grid: Grid, initialUnits: List<Unit>, checkElfDeaths: Boolean = false): Triple<Int, Int, Boolean> {
+fun simulateBattle(grid: Grid, initialUnits: List<CombatUnit>, checkElfDeaths: Boolean = false): Triple<Int, Int, Boolean> {
     val units = initialUnits.toMutableList()
     var rounds = 0
     var combatEnded: Boolean
     var elvesDied = false
 
     while (true) {
-        units.sortWith(compareBy<Unit> { it.y }.thenBy { it.x })
+        units.sortWith(compareBy<CombatUnit> { it.y }.thenBy { it.x })
         combatEnded = false
 
         val unitsToProcess = units.toList()
@@ -208,7 +208,7 @@ fun simulateBattle(grid: Grid, initialUnits: List<Unit>, checkElfDeaths: Boolean
 }
 
 fun main() {
-    val input = File("src/main/resources/input.txt").readLines()
+    val input = File("src/main/resources/day15.txt").readLines()
     val (grid, initialUnits) = parseInput(input)
 
     // Part One
