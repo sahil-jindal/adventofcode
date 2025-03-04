@@ -1,4 +1,4 @@
-package aoc2018
+package aoc2018.day15
 
 import java.io.File
 
