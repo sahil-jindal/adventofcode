@@ -207,27 +207,35 @@ fun simulateBattle(grid: Grid, initialUnits: List<CombatUnit>, checkElfDeaths: B
     return Triple(rounds, totalHp, elvesDied)
 }
 
-fun main() {
-    val input = File("src/main/resources/day15.txt").readLines()
+fun evaluatorOne(input: List<String>): Int {
+    val (grid, initialUnits) = parseInput(input)
+    val (rounds, totalHp) = simulateBattle(grid, initialUnits)
+    return rounds * totalHp
+}
+
+fun evaluatorTwo(input: List<String>): Int {
     val (grid, initialUnits) = parseInput(input)
 
-    // Part One
-    val (roundsA, totalHpA) = simulateBattle(grid, initialUnits.map { it.copy() })
-    println("Part One: ${roundsA * totalHpA}")
-
-    // Part Two
     var elfAttackPower = 4
 
     while (true) {
         val units = initialUnits.map { if (it.type == 'E') it.copy(attackPower = elfAttackPower) else it.copy() }
-
-        val (roundsB, totalHpB, elvesDied) = simulateBattle(grid, units, true)
-
-        if (!elvesDied) {
-            println("Part Two: ${roundsB * totalHpB} (Elf Attack Power: $elfAttackPower)")
-            break
-        }
-
+        val (rounds, totalHp, elvesDied) = simulateBattle(grid, units, true)
+        if (!elvesDied) return rounds * totalHp
         elfAttackPower++
     }
+}
+
+fun readLinesFromFile(filePath: String): Result<List<String>> =
+    runCatching { File(filePath).readLines() }
+
+fun main() {
+    readLinesFromFile("src/main/resources/day15.txt")
+        .onSuccess {
+            println("Part One: ${evaluatorOne(it)}")
+            println("Part Two: ${evaluatorTwo(it)}")
+        }
+        .onFailure {
+            println("Error reading file: ${it.message}")
+        }
 }
