@@ -28,13 +28,13 @@ def parse(lines: List[String]): (Point, Point => RegionType) = {
     return (Point(targetX, targetY), regionType)
 }
 
-def partOne(input: List[String]): Int = {
+def evaluatorOne(input: List[String]): Int = {
     val (target, regionType) = parse(input)
     val result = for { y <- 0 to target.y; x <- 0 to target.x } yield regionType(Point(x, y)).ordinal
     return result.sum
 }
 
-def partTwo(input: List[String]): Int = {
+def evaluatorTwo(input: List[String]): Int = {
     val (target, regionType) = parse(input)
     
     def neighbours(pos: Point, tool: Tool): Seq[(Point, Tool, Int)] = {
@@ -57,19 +57,21 @@ def partTwo(input: List[String]): Int = {
         return moves :+ (pos, switchTool, 7)
     }
     
-    val q = PriorityQueue.empty(Ordering.by[(Int, Point, Tool, Int), Int](-_._1))
+    val q = PriorityQueue.empty(Ordering.by[(Point, Tool, Int), Int] { case (pos, _, time) =>
+        -(time + (target.x - pos.x).abs + (target.y - pos.y).abs) // Negative for max-heap
+    })
+
     val seen = Set.empty[(Point, Tool)]
 
-    q.enqueue((0, Point(0, 0), Tool.Torch, 0))
+    q.enqueue((Point(0, 0), Tool.Torch, 0))
 
     while (q.nonEmpty) {
-        val (_, pos, tool, t) = q.dequeue()
+        val (pos, tool, t) = q.dequeue()
         if (pos == target && tool == Tool.Torch) return t
-        if (!seen((pos, tool))) {
+        if (!seen.contains((pos, tool))) {
             seen += ((pos, tool))
             for ((newPos, newTool, dt) <- neighbours(pos, tool)) {
-                val priority = t + dt + (target.x - newPos.x).abs + (target.y - newPos.y).abs
-                q.enqueue((priority, newPos, newTool, t + dt))
+                q.enqueue((newPos, newTool, t + dt))
             }
         }
     }
@@ -83,8 +85,8 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day22.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${partOne(lines)}")
-            println(s"Part Two: ${partTwo(lines)}")
+            println(s"Part One: ${evaluatorOne(lines)}")
+            println(s"Part Two: ${evaluatorTwo(lines)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
