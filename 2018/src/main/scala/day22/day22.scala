@@ -10,7 +10,7 @@ enum RegionType { case Rocky, Wet, Narrow }
 
 enum Tool { case Nothing, Torch, ClimbingGear }
 
-def parse(lines: List[String]): (Point, Point => RegionType) = {
+def parseInput(lines: List[String]): (Point, Point => RegionType) = {
     val depth = "\\d+".r.findAllIn(lines(0)).mkString.toInt
     val Array(targetX, targetY) = "\\d+".r.findAllIn(lines(1)).map(_.toInt).toArray
     val erosionLevelCache = Map.empty[Point, Int]
@@ -29,13 +29,13 @@ def parse(lines: List[String]): (Point, Point => RegionType) = {
 }
 
 def evaluatorOne(input: List[String]): Int = {
-    val (target, regionType) = parse(input)
+    val (target, regionType) = parseInput(input)
     val result = for { y <- 0 to target.y; x <- 0 to target.x } yield regionType(Point(x, y)).ordinal
     return result.sum
 }
 
 def evaluatorTwo(input: List[String]): Int = {
-    val (target, regionType) = parse(input)
+    val (target, regionType) = parseInput(input)
     
     def neighbours(pos: Point, tool: Tool): Seq[(Point, Tool, Int)] = {
         val switchTool = regionType(pos) match {
@@ -57,21 +57,21 @@ def evaluatorTwo(input: List[String]): Int = {
         return moves :+ (pos, switchTool, 7)
     }
     
-    val q = PriorityQueue.empty(Ordering.by[(Point, Tool, Int), Int] { case (pos, _, time) =>
+    val pq = PriorityQueue.empty(Ordering.by[(Point, Tool, Int), Int] { case (pos, _, time) =>
         -(time + (target.x - pos.x).abs + (target.y - pos.y).abs) // Negative for max-heap
     })
 
     val seen = Set.empty[(Point, Tool)]
 
-    q.enqueue((Point(0, 0), Tool.Torch, 0))
+    pq.enqueue((Point(0, 0), Tool.Torch, 0))
 
-    while (q.nonEmpty) {
-        val (pos, tool, t) = q.dequeue()
+    while (pq.nonEmpty) {
+        val (pos, tool, t) = pq.dequeue()
         if (pos == target && tool == Tool.Torch) return t
         if (!seen.contains((pos, tool))) {
             seen += ((pos, tool))
             for ((newPos, newTool, dt) <- neighbours(pos, tool)) {
-                q.enqueue((newPos, newTool, t + dt))
+                pq.enqueue((newPos, newTool, t + dt))
             }
         }
     }
