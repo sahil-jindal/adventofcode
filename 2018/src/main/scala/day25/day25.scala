@@ -2,7 +2,6 @@ package day25
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{ListBuffer, Set}
 
 case class Point(x: Int, y: Int, z: Int, w: Int) {
     def manhattanDistance(other: Point): Int = {
