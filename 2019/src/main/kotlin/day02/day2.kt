@@ -31,7 +31,7 @@ fun readLinesFromFile(filePath: String): Result<List<String>> =
     runCatching { File(filePath).readLines() }
 
 fun main() {
-    readLinesFromFile("src/main/resources/day2.txt")
+    readLinesFromFile("src/main/resources/day02.txt")
         .onSuccess {
             val line = it.first()
             println("Part One: ${evaluatorOne(line)}")

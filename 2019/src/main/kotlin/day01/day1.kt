@@ -24,7 +24,7 @@ fun readLinesFromFile(filePath: String): Result<List<String>> =
     runCatching { File(filePath).readLines() }
 
 fun main() {
-    readLinesFromFile("src/main/resources/day1.txt")
+    readLinesFromFile("src/main/resources/day01.txt")
         .onSuccess {
             val weights = parseInput(it)
             println("Part One: ${evaluatorOne(weights)}")
