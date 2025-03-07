@@ -34,8 +34,8 @@ fun solve(prg: String, loop: Boolean, prgIds: List<Int>): Long {
     return permutations(prgIds).maxOf { execAmps(amps, it, loop) }
 }
 
-fun evaluatorOne(prg: String): Any = solve(prg, false, listOf(0, 1, 2, 3, 4))
-fun evaluatorTwo(prg: String): Any = solve(prg, true, listOf(5, 6, 7, 8, 9))
+fun evaluatorOne(prg: String): Long = solve(prg, false, listOf(0, 1, 2, 3, 4))
+fun evaluatorTwo(prg: String): Long = solve(prg, true, listOf(5, 6, 7, 8, 9))
 
 fun readLinesFromFile(filePath: String): Result<List<String>> =
     runCatching { File(filePath).readLines() }
