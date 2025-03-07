@@ -7,6 +7,5 @@ lazy val root = project
     version := "0.1.0-SNAPSHOT",
     scalaVersion := scala3Version,
     Global / semanticdbEnabled := true,
-
     libraryDependencies += "org.scalameta" %% "munit" % "1.0.0" % Test
   )
