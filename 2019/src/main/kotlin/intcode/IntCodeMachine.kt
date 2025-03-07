@@ -5,9 +5,9 @@ import kotlin.math.min
 
 class IntCodeMachine(program: String) {
     var memory: Memory
+    val inputQueue = ArrayDeque<Long>()
     private var ip: Long = 0
     private var bp: Long = 0
-    private val inputQueue = ArrayDeque<Long>()
     private val modeMask = listOf(0, 100, 1000, 10000)
 
     init {
