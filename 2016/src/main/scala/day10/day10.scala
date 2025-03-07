@@ -5,7 +5,7 @@ import scala.io.Source
 import scala.collection.mutable.{TreeSet, Map, Queue}
 
 case class Bot(id: Int) {
-    val chips: TreeSet[Int] = TreeSet()
+    val chips = TreeSet.empty[Int]
     var lowTarget: Option[(String, Int)] = None
     var highTarget: Option[(String, Int)] = None
 
@@ -27,13 +27,13 @@ object BalanceBots {
     val botPattern = """bot (\d+) gives low to (bot|output) (\d+) and high to (bot|output) (\d+)""".r
     val valuePattern = """value (\d+) goes to bot (\d+)""".r
 
-    val bots = Map[Int, Bot]()
-    val outputs = Map[Int, Int]()
+    val bots = Map.empty[Int, Bot]
+    val outputs = Map.empty[Int, Int]
 
     def getBot(id: Int): Bot = bots.getOrElseUpdate(id, Bot(id))
 
     def processInstructions(instructions: List[String]): Unit = {
-        val actionQueue = Queue[String]()
+        val actionQueue = Queue.empty[String]
 
         instructions.foreach {
             case valuePattern(value, botId) => getBot(botId.toInt).receiveChip(value.toInt)

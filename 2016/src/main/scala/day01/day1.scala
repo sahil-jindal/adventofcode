@@ -38,7 +38,7 @@ def evaluatorOne(directions: Array[(Char, Int)]): Int = {
 }
 
 def evaluatorTwo(directions: Array[(Char, Int)]): Int = {
-    val uniquePoints = Set[Point]()
+    val uniquePoints = Set.empty[Point]
     val repeatedPoint = travel(directions).find(point => !uniquePoints.add(point)).get
     return repeatedPoint.x.abs + repeatedPoint.y.abs
 }

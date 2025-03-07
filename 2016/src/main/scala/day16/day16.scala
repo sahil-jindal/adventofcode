@@ -2,24 +2,24 @@ package day16
 
 import scala.collection.mutable.ArrayBuffer
 
-def parseInput(input: String): Vector[Boolean] = input.map(_ == '1').toVector
+def parseInput(input: String): List[Boolean] = input.map(_ == '1').toList
 
-def generateRandomData(seed: String, disk: Int): Vector[Boolean] = {
+def generateRandomData(seed: String, disk: Int): List[Boolean] = {
     var temp = ArrayBuffer.from(parseInput(seed))
 
     while (temp.length < disk) {
-        val reversedFlipped = temp.reverseIterator.map(!_).toVector
+        val reversedFlipped = temp.reverseIterator.map(!_).toList
         temp.append(false).appendAll(reversedFlipped)
     }
 
-    return temp.take(disk).toVector
+    return temp.take(disk).toList
 }
 
-def generateCheckSum(data: Vector[Boolean]): String = {
+def generateCheckSum(data: List[Boolean]): String = {
     var temp = data
     
     while(temp.length % 2 == 0) {
-        temp = temp.grouped(2).map { it => it(0) == it(1) }.toVector
+        temp = temp.grouped(2).map { it => it(0) == it(1) }.toList
     }
 
     return temp.map { if _ then '1' else '0' }.mkString

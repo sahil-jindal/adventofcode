@@ -5,31 +5,20 @@ import scala.io.Source
 import scala.collection.mutable.Map
 
 def Solve(input: List[String], c: Int): Int = {
-    val prg = input.map(_.split(' ')).toArray
+    val prg = input.map(_.split(' '))
     val regs = Map[String, Int]("c" -> c)
     var ip = 0
 
-    def getReg(reg: String): Int =
-        reg.toIntOption.getOrElse(regs.getOrElse(reg, 0))
-
-    def setReg(reg: String, value: Int): Unit = 
-        regs(reg) = value
+    def getReg(reg: String): Int = reg.toIntOption.getOrElse(regs.getOrElse(reg, 0))
+    def setReg(reg: String, value: Int): Unit = regs(reg) = value
     
     while (ip >= 0 && ip < input.length) {
         prg(ip) match {
-            case Array("cpy", x, y) =>
-                setReg(y, getReg(x))
-                ip += 1
-            case Array("inc", x) =>
-                setReg(x, getReg(x) + 1)
-                ip += 1
-            case Array("dec", x) =>
-                setReg(x, getReg(x) - 1)
-                ip += 1
-            case Array("jnz", x, y) =>
-                ip += (if (getReg(x) != 0) then getReg(y) else 1)
-            case _ =>
-                println(s"Cannot parse ${prg(ip)}")
+            case Array("cpy", x, y) => setReg(y, getReg(x)); ip += 1
+            case Array("inc", x) => setReg(x, getReg(x) + 1); ip += 1
+            case Array("dec", x) => setReg(x, getReg(x) - 1); ip += 1
+            case Array("jnz", x, y) => ip += (if (getReg(x) != 0) then getReg(y) else 1)
+            case _ => println(s"Cannot parse ${prg(ip)}")
         }
     }
 

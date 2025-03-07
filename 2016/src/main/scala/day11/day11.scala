@@ -5,29 +5,22 @@ import scala.io.Source
 import scala.collection.mutable.{Set, Queue, Map}
 import scala.util.boundary, boundary.break
 
-case class State(elevator: Int, elements: List[(Int, Int)]) {
-    override def toString: String = s"State($elevator, ${elements.mkString("[", ", ", "]")})"
-}
+case class State(elevator: Int, elements: List[(Int, Int)])
 
-def parseInput(input: List[String]) = {
-    val elementMap = Map[String, (Int, Int)]().withDefaultValue((0, 0))
+def parseInput(input: List[String]): Map[String, (Int, Int)] = {
+    val elementMap = Map.empty[String, (Int, Int)].withDefaultValue((0, 0))
 
     for ((line, idx) <- input.zipWithIndex) {
         val floor = idx + 1
         
-        val generators = "([a-z]+) generator".r.findAllMatchIn(line).map(_.group(1)).toList
-        val microchips = "([a-z]+)-compatible microchip".r.findAllMatchIn(line).map(_.group(1)).toList
+        val generators = "([a-z]+) generator".r.findAllMatchIn(line).map(_.group(1))
+        val microchips = "([a-z]+)-compatible microchip".r.findAllMatchIn(line).map(_.group(1))
         
-        generators.foreach { element =>
-            elementMap(element) = (floor, elementMap(element)._2)
-        }
-        
-        microchips.foreach { element =>
-            elementMap(element) = (elementMap(element)._1, floor)
-        }
+        generators.foreach { element => elementMap(element) = (floor, elementMap(element)._2) }
+        microchips.foreach { element => elementMap(element) = (elementMap(element)._1, floor) }
     }
     
-    elementMap
+    return elementMap
 }
 
 def isValid(elements: List[(Int, Int)]): Boolean = {
@@ -35,13 +28,11 @@ def isValid(elements: List[(Int, Int)]): Boolean = {
         for (floor <- 1 to 4) {
             val generators = elements.exists { case (a, _) => a == floor }
             val chips = elements.exists { case (a, b) => a != floor && b == floor }
-            if generators && chips then {
-                break(false)
-            }
+            if generators && chips then break(false)
         }
+        
+        true
     }
-
-    true
 }
 
 def nextStates(current: State): List[State] = {
@@ -74,9 +65,7 @@ def nextStates(current: State): List[State] = {
     }
 }
 
-def isGoal(state: State): Boolean = {
-    return state.elements.forall { case (g, c) => g == 4 && c == 4 }
-}
+def isGoal(state: State): Boolean = state.elements.forall { case (g, c) => g == 4 && c == 4 }
 
 def bfs(initial: State): Int = {
     val queue = Queue((initial, 0))

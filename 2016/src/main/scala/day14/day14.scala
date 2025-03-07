@@ -17,7 +17,7 @@ def hasQuintuplet(hash: String, c: Char): Boolean = {
 }
 
 def compute(prefix: String, requiredKeys: Int, stretched: Boolean): Int = {
-    val cache = Map[Int, String]()
+    val cache = Map.empty[Int, String]
     var count = 0
     var i = 0
 

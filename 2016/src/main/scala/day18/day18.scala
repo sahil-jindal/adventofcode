@@ -2,11 +2,8 @@ package day18
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.ArrayBuffer
 
-def parseInput(input: String): IndexedSeq[Boolean] = {
-    input.map { it => if it == '^' then true else false }
-}
+def parseInput(input: String): List[Boolean] = input.map(_ == '^').toList
 
 def safeCount(input: String, row: Int): Int = {
     var current = parseInput(input)
@@ -14,8 +11,8 @@ def safeCount(input: String, row: Int): Int = {
 
     for _ <- 1 to row do {
         count += current.count(!_)
-        val temp = IndexedSeq(false) ++ current ++ IndexedSeq(false)
-        current = temp.sliding(3).map { it => it(0) ^ it(2) }.toIndexedSeq
+        val temp = List(false) ++ current ++ List(false)
+        current = temp.sliding(3).map { it => it(0) ^ it(2) }.toList
     }
 
     return count

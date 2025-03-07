@@ -2,8 +2,8 @@ package day19
 
 case class Elf(id: Int, var prev: Elf = null, var next: Elf = null)
 
-def createElves(count: Int): Array[Elf] = {
-    val elves = Array.tabulate(count)(i => Elf(i + 1))
+def createElves(count: Int): List[Elf] = {
+    val elves = List.tabulate(count)(i => Elf(i + 1))
     
     for i <- elves.indices do {
         elves(i).prev = elves((i - 1 + count) % count)
@@ -29,11 +29,11 @@ def solve(elf: Elf, elfVictim: Elf, elfCount: Int, nextVictim: (Elf, Int) => Elf
     return currentElf.id
 }
 
-def evaluatorOne(elves: Array[Elf]): Int = {   
-    return solve(elves.head, elves(1), elves.length, (elfVictim, count) => elfVictim.next.next)
+def evaluatorOne(elves: List[Elf]): Int = {   
+    return solve(elves.head, elves(1), elves.length, (elfVictim, _) => elfVictim.next.next)
 }
 
-def evaluatorTwo(elves: Array[Elf]): Int = {
+def evaluatorTwo(elves: List[Elf]): Int = {
     return solve(elves.head, elves(elves.length / 2), elves.length, (elfVictim, count) =>
         if count % 2 == 1 then elfVictim.next else elfVictim.next.next
     )

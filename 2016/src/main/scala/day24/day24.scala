@@ -11,8 +11,8 @@ case class State(cost: Int, pos: Int, visited: Int)
 val directions = List(Point(0, 1), Point(1, 0), Point(0, -1), Point(-1, 0))
 
 def parseInput(grid: List[String]): (Map[Int, Point], Set[Point]) = {
-    val locations = Map[Int, Point]()
-    val walls = Set[Point]()
+    val locations = Map.empty[Int, Point]
+    val walls = Set.empty[Point]
     
     for (y <- grid.indices; x <- grid(y).indices) {
         grid(y)(x) match {
@@ -53,10 +53,9 @@ def aStar(start: Point, goal: Point, walls: Set[Point]): Int = {
 // Precompute shortest distances between all numbered locations
 def precomputeDistances(locations: Map[Int, Point], walls: Set[Point]): Map[(Int, Int), Int] = {
     val keys = locations.keys.toList
-    val result = Map[(Int, Int), Int]()
+    val result = Map.empty[(Int, Int), Int]
     
-    for { i <- keys; j <- keys if i != j } 
-        result((i, j)) = aStar(locations(i), locations(j), walls)
+    for { i <- keys; j <- keys if i != j } result((i, j)) = aStar(locations(i), locations(j), walls)
     
     return result
 }
@@ -64,7 +63,7 @@ def precomputeDistances(locations: Map[Int, Point], walls: Set[Point]): Map[(Int
 // A* for solving TSP using state-space search
 def tspAStar(start: Int, numLocations: Int, dist: Map[(Int, Int), Int], returnToStart: Boolean): Int = {
     val openSet = PriorityQueue(State(0, start, 1 << start))(Ordering.by(-_.cost))
-    val best = Map[(Int, Int), Int]().withDefaultValue(Int.MaxValue)
+    val best = Map.empty[(Int, Int), Int].withDefaultValue(Int.MaxValue)
     var minCost = Int.MaxValue
 
     while (openSet.nonEmpty) {

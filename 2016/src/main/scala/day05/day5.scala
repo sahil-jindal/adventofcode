@@ -45,7 +45,7 @@ def evaluatorTwo(doorId: String): String = {
 }
 
 def hello(): Unit = {
-    val input = "reyedfim"
-    println(s"Part One: ${evaluatorOne(input)}")
-    println(s"Part Two: ${evaluatorTwo(input)}")
+    val inputLine = "reyedfim"
+    println(s"Part One: ${evaluatorOne(inputLine)}")
+    println(s"Part Two: ${evaluatorTwo(inputLine)}")
 }
