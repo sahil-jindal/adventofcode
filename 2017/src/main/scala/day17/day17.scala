@@ -29,7 +29,7 @@ def evaluatorTwo(step: Int): Int = {
 }
 
 def hello(): Unit = {
-    val input = 354
-    println(s"Part One: ${evaluatorOne(input)}")
-    println(s"Part Two: ${evaluatorTwo(input)}")
+    val inputLine = 354
+    println(s"Part One: ${evaluatorOne(inputLine)}")
+    println(s"Part Two: ${evaluatorTwo(inputLine)}")
 }

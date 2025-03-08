@@ -7,17 +7,13 @@ import scala.collection.mutable.{Queue, Map}
 def parseInput(lines: List[String]): List[Vector[String]] = lines.map(_.split(" ").toVector)
 
 abstract class Machine[TState] {
-    private val regs = Map[String, Long]().withDefaultValue(0L)
+    private val regs = Map.empty[String, Long].withDefaultValue(0L)
     protected var running: Boolean = false
     protected var ip: Int = 0
 
-    protected def getReg(reg: String): Long =
-        reg.toLongOption.getOrElse(regs(reg))
+    protected def getReg(reg: String): Long = reg.toLongOption.getOrElse(regs(reg))
+    protected def setReg(reg: String, value: Long): Unit = regs(reg) = value
 
-    protected def setReg(reg: String, value: Long): Unit =
-        regs(reg) = value
-
-    
     protected def state(): TState
     protected def snd(reg: String): Unit
     protected def rcv(reg: String): Unit
@@ -29,25 +25,11 @@ abstract class Machine[TState] {
                 prog(ip) match {
                     case Vector("snd", x) => snd(x)
                     case Vector("rcv", x) => rcv(x)
-                    case Vector("set", x, y) => {
-                        setReg(x, getReg(y))
-                        ip += 1
-                    }
-                    case Vector("add", x, y) => {
-                        setReg(x, getReg(x) + getReg(y))
-                        ip += 1
-                    }
-                    case Vector("mul", x, y) => {
-                        setReg(x, getReg(x) * getReg(y))
-                        ip += 1
-                    }
-                    case Vector("mod", x, y) => {
-                        setReg(x, getReg(x) % getReg(y))
-                        ip += 1
-                    }
-                    case Vector("jgz", x, y) => {
-                        ip += (if (getReg(x) > 0) getReg(y).toInt else 1)
-                    }
+                    case Vector("set", x, y) => setReg(x, getReg(y)); ip += 1
+                    case Vector("add", x, y) => setReg(x, getReg(x) + getReg(y)); ip += 1
+                    case Vector("mul", x, y) => setReg(x, getReg(x) * getReg(y)); ip += 1
+                    case Vector("mod", x, y) => setReg(x, getReg(x) % getReg(y)); ip += 1
+                    case Vector("jgz", x, y) => ip += (if (getReg(x) > 0) getReg(y).toInt else 1)
                     case _      => throw new Exception(s"Cannot parse ${prog(ip)}")
                 }
             } else {
@@ -103,8 +85,8 @@ def evaluatorOne(input: List[Vector[String]]): Long = {
 }
 
 def evaluatorTwo(input: List[Vector[String]]): Int = {
-    val p0Input = Queue[Long]()
-    val p1Input = Queue[Long]()
+    val p0Input = Queue.empty[Long]
+    val p1Input = Queue.empty[Long]
 
     val states = Machine2(0, p0Input, p1Input).execute(input)
         .zip(Machine2(1, p1Input, p0Input).execute(input))

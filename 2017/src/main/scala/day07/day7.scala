@@ -10,7 +10,7 @@ case class Node(id: String, children: Seq[String], weight: Int, var treeWeight: 
 type Tree = Map[String, Node]
 
 def parseInput(input: List[String]): Tree = {
-    val tree = Map[String, Node]()
+    val tree = Map.empty[String, Node]
     val pattern =  """([a-z]+) \((\d+)\)( -> (.*))?""".r
     
     input.foreach {

@@ -2,7 +2,7 @@ package day16
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{HashMap, ListBuffer}
+import scala.collection.mutable.{Map, ListBuffer}
 
 sealed trait Move
 case class Spin(size: Int) extends Move
@@ -26,7 +26,7 @@ def parseInput(input: String): List[Move] = input.split(',').map(move => {
 
 def applySpin(s: String, x: Int): String = {
     val splitPos = s.length - x
-    s.substring(splitPos) + s.substring(0, splitPos)
+    return s.substring(splitPos) + s.substring(0, splitPos)
 }
 
 def applyExchange(s: String, a: Int, b: Int): String = {
@@ -34,17 +34,17 @@ def applyExchange(s: String, a: Int, b: Int): String = {
     val temp = arr(a)
     arr(a) = arr(b)
     arr(b) = temp
-    new String(arr)
+    return new String(arr)
 }
 
 def applyPartner(s: String, a: Char, b: Char): String = {
     val idxA = s.indexOf(a)
     val idxB = s.indexOf(b)
-    applyExchange(s, idxA, idxB)
+    return applyExchange(s, idxA, idxB)
 }
 
 def applyMoves(initial: String, moves: List[Move]): String = {
-    moves.foldLeft(initial) { (current, move) =>
+    return moves.foldLeft(initial) { (current, move) =>
         move match {
             case Spin(x) => applySpin(current, x)
             case Exchange(a, b) => applyExchange(current, a, b)
@@ -54,8 +54,8 @@ def applyMoves(initial: String, moves: List[Move]): String = {
 }
 
 def findCycle(initial: String, moves: List[Move]): (List[String], Int, Int) = {   
-    val seen = HashMap[String, Int]()
-    val states = ListBuffer[String]()
+    val seen = Map.empty[String, Int]
+    val states = ListBuffer.empty[String]
     var current = initial
     var step = 0
     
@@ -72,9 +72,7 @@ def findCycle(initial: String, moves: List[Move]): (List[String], Int, Int) = {
     return (states.toList, cycleStart, cycleLength)
 }
 
-def evaluatorOne(moves: List[Move]) = {
-    applyMoves("abcdefghijklmnop", moves)
-}
+def evaluatorOne(moves: List[Move]): String = applyMoves("abcdefghijklmnop", moves)
 
 def evaluatorTwo(moves: List[Move]): String = {
     val (states, cycleStart, cycleLength) = findCycle("abcdefghijklmnop", moves)

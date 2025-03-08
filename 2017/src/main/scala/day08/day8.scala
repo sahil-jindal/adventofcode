@@ -16,7 +16,7 @@ val operations = Map[String, (Int, Int) => Int](
 
 def solve(input: List[String]): (Int, Int) = {
     val prg = input.map(_.split(' '))
-    var regs = Map[String, Int]().withDefaultValue(0)
+    var regs = Map.empty[String, Int].withDefaultValue(0)
     var maxEver = Int.MinValue
 
     for instruction <- prg do {

@@ -2,20 +2,15 @@ package day24
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.Set
 
 case class Component(pinA: Int, pinB: Int)
 case class Pair(length: Int, strength: Int)
 
-def parse(input: List[String]): Set[Component] = {
-    val components = Set[Component]()
-    
-    for (line <- input) {
+def parseInput(input: List[String]): Set[Component] = {
+    return input.map(line => {
         val parts = line.split("/").map(_.toInt)
-        components.addOne(Component(parts(0), parts(1)))
-    }
-
-    return components
+        Component(parts(0), parts(1))
+    }).toSet
 }
 
 def strongestBridge(input: List[String], compare: (Pair, Pair) => Int): Int = {
@@ -29,18 +24,16 @@ def strongestBridge(input: List[String], compare: (Pair, Pair) => Int): Int = {
             }
 
             if (pinOut != -1) {
-                components.remove(component)
-                val curr = fold(pinOut, components)
+                val curr = fold(pinOut, components - component)
                 val updated = Pair(curr.length + 1, curr.strength + component.pinA + component.pinB)
                 strongest = if (compare(updated, strongest) > 0) then { updated } else { strongest }
-                components.add(component)
             }
         }
         
         return strongest
     }
   
-    return fold(0, parse(input)).strength
+    return fold(0, parseInput(input)).strength
 }
 
 def partOne(input: List[String]): Int = strongestBridge(input, (a, b) => a.strength - b.strength)

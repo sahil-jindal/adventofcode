@@ -4,34 +4,25 @@ import scala.collection.mutable.Map
 
 def getCoordinates(n: Int): (Int, Int) = {
     if (n == 1) return (0, 0)
-    
+
     val ringNo = math.ceil((math.sqrt(n) - 1) / 2).toInt
     val start = (2 * ringNo - 1) * (2 * ringNo - 1)
     val offset = n - start - 1
+    val side = offset / (2 * ringNo)
+    val pos = offset % (2 * ringNo)
 
-    if (offset < 2 * ringNo) {
-        return (ringNo, -ringNo + 1 + offset)
+    return side match {
+        case 0 => (ringNo, -ringNo + 1 + pos)
+        case 1 => (ringNo - (pos + 1), ringNo)
+        case 2 => (-ringNo, ringNo - (pos + 1))
+        case _ => (-ringNo + (pos + 1), -ringNo)
     }
-
-    if (offset < 4 * ringNo) {
-        val offsetSide = offset - 2 * ringNo
-        return (ringNo - (offsetSide + 1), ringNo)
-    }
-    
-    if (offset < 6 * ringNo) {
-        val offsetSide = offset - 4 * ringNo
-        return (-ringNo, ringNo - (offsetSide + 1))
-    }
-    
-    val offsetSide = offset - 6 * ringNo
-    return (-ringNo + (offsetSide + 1), -ringNo)
 }
 
 def firstSumAbove(input: Int): Int = {
     if (input == 1) return 1
     
-    val grid = Map[(Int, Int), Int]()
-    grid((0, 0)) = 1
+    val grid = Map(((0, 0), 1))
 
     var n = 2
     
@@ -58,9 +49,9 @@ def evaluatorOne(input: Int): Int = {
 }
 
 def evaluatorTwo(input: Int): Int = firstSumAbove(input)
- 
+
 def hello(): Unit = {
-    val input = 265149
-    println(s"Part One: ${evaluatorOne(input)}")
-    println(s"Part Two: ${evaluatorTwo(input)}")
+    val inputLine = 265149
+    println(s"Part One: ${evaluatorOne(inputLine)}")
+    println(s"Part Two: ${evaluatorTwo(inputLine)}")
 }

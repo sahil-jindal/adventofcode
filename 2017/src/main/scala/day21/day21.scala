@@ -57,7 +57,7 @@ class Mtx(val size: Int) {
             }
             
             mtx
-        }).toSeq
+        })
     }
 
     def count(): Int = flags.count(identity)
@@ -93,8 +93,8 @@ object Mtx {
 }
 
 class RuleSet(input: List[String]) {
-    private val rules2 = Map[Int, Mtx]()
-    private val rules3 = Map[Int, Mtx]()
+    private val rules2 = Map.empty[Int, Mtx]
+    private val rules3 = Map.empty[Int, Mtx]
 
     private val ruleRegex = "(.*?) => (.*?)".r
 

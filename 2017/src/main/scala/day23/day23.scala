@@ -6,34 +6,19 @@ import scala.collection.mutable.Map
 
 def evaluatorOne(input: List[String]): Int = {
     val prog = input.map(_.split(" "))
-    val regs = Map[String, Int]()
+    val regs = Map.empty[String, Int]
     var ip = 0
     var mulCount = 0
 
-    def getReg(reg: String): Int =
-        reg.toIntOption.getOrElse(regs.getOrElse(reg, 0))
-
-    def setReg(reg: String, value: Int): Unit =
-        regs(reg) = value
+    def getReg(reg: String): Int = reg.toIntOption.getOrElse(regs.getOrElse(reg, 0))
+    def setReg(reg: String, value: Int): Unit = regs(reg) = value
 
     while (ip >= 0 && ip < prog.length) {
         prog(ip) match {
-            case Array("set", x, y) => {
-                setReg(x, getReg(y))
-                ip += 1
-            }
-            case Array("sub", x, y) => {
-                setReg(x, getReg(x) - getReg(y))
-                ip += 1
-            }
-            case Array("mul", x, y) => {
-                mulCount += 1
-                setReg(x, getReg(x) * getReg(y))
-                ip += 1
-            }
-            case Array("jnz", x, y) => {
-                ip += (if (getReg(x) != 0) getReg(y) else 1)
-            }
+            case Array("set", x, y) => setReg(x, getReg(y)); ip += 1
+            case Array("sub", x, y) => setReg(x, getReg(x) - getReg(y)); ip += 1
+            case Array("mul", x, y) => setReg(x, getReg(x) * getReg(y)); ip += 1; mulCount += 1
+            case Array("jnz", x, y) => ip += (if (getReg(x) != 0) getReg(y) else 1)
             case _ => throw new Exception(s"Cannot parse ${prog(ip)}")
         }
     }

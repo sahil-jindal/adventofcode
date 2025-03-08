@@ -54,7 +54,6 @@ def evaluatorOne(input: List[String]): Int = {
     }
 
     // Simulation
-    
     val tape = mutable.Map.empty[Int, Int]
     var currentPos = 0
     var currentState = initialState
@@ -81,11 +80,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 
 def hello(): Unit = {
     readLinesFromFile("day25.txt") match {
-        case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-        } 
-        case Failure(exception) => {
-            println(s"File not found: ${exception.getMessage()}")
-        }
+        case Success(lines) => println(s"Part One: ${evaluatorOne(lines)}")
+        case Failure(exception) => println(s"File not found: ${exception.getMessage()}")
     }
 }

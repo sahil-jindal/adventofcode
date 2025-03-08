@@ -27,11 +27,11 @@ def knotHash(input: String): List[Int] = {
     return output.grouped(16).map(_.reduce(_ ^ _)).toList
 }
 
-def extract(input: String): Seq[String] = {
+def extract(input: String): Seq[List[Char]] = {
     return (0 until 128).map { irow =>
         knotHash(s"$input-$irow").flatMap { n =>
             (7 to 0 by -1).map { bit => if ((n & (1 << bit)) != 0) '#' else '.' }
-        }.mkString
+        }
     }
 }
 
@@ -43,21 +43,18 @@ def fill(mtx: Array[Array[Char]], startCell: (Int, Int)): Unit = {
         val (i, j) = q.dequeue()
         mtx(i)(j) = ' '
 
-        val neighbors =
-            for {
-                (di, dj) <- Seq((-1, 0), (1, 0), (0, -1), (0, 1))
-                ni = i + di
-                nj = j + dj
-                if (ni >= 0 && ni < rows && nj >= 0 && nj < cols && mtx(ni)(nj) == '#')
-            } yield (ni, nj)
+        val neighbors = for {
+            (di, dj) <- Seq((-1, 0), (1, 0), (0, -1), (0, 1))
+            ni = i + di
+            nj = j + dj
+            if (ni >= 0 && ni < rows && nj >= 0 && nj < cols && mtx(ni)(nj) == '#')
+        } yield (ni, nj)
 
         q.enqueueAll(neighbors)
     }
 }
 
-def evaluatorOne(input: String): Int = {
-    return extract(input).map(_.count(_ == '#')).sum
-}
+def evaluatorOne(input: String): Int = extract(input).flatten.count(_ == '#')
 
 def evaluatorTwo(input: String): Int = {
     val mtx = extract(input).map(_.toArray).toArray
@@ -66,18 +63,17 @@ def evaluatorTwo(input: String): Int = {
     for {
         i <- mtx.indices
         j <- mtx(0).indices
+        if mtx(i)(j) == '#'
     } do {
-        if (mtx(i)(j) == '#') {
-            regions += 1
-            fill(mtx, (i, j))
-        }
+        regions += 1
+        fill(mtx, (i, j))
     }
 
     return regions
 }
 
 def hello(): Unit = {
-    val input = "jxqlasbh"
-    println(s"Part One: ${evaluatorOne(input)}")
-    println(s"Part Two: ${evaluatorTwo(input)}")
+    val inputLine = "jxqlasbh"
+    println(s"Part One: ${evaluatorOne(inputLine)}")
+    println(s"Part Two: ${evaluatorTwo(inputLine)}")
 }

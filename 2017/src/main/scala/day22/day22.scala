@@ -2,7 +2,7 @@ package day22
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.HashMap
+import scala.collection.mutable.Map
 
 enum State { case Clean, Weakened, Infected, Flagged }
 case class Point(val y: Int, val x: Int)
@@ -12,7 +12,7 @@ case class Virus(val currDirection: Direction, val state: State)
 def iterate(lines: List[String], iterations: Int, update: Virus => Virus): Int = {
     val crow = lines.length
     val ccol = lines.head.length
-    val cells = HashMap[Point, State]()
+    val cells = Map.empty[Point, State]
 
     for (irowT <- 0 until crow; icolT <- 0 until ccol; if lines(irowT)(icolT) == '#') do {
         cells += Point(irowT, icolT) -> State.Infected

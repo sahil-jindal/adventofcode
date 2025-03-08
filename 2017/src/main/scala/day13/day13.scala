@@ -20,7 +20,6 @@ def evaluatorTwo(layers: List[Layer]): Int = Iterator.from(0).find(n => severiti
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-@main
 def hello(): Unit = {
     readLinesFromFile("day13.txt") match {
         case Success(lines) => {
