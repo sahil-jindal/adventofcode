@@ -1,7 +1,5 @@
 package day11
 
-val currentPassword = "hepxcrrq"
-
 val consecutiveLetters = List(
     "abc","bcd","cde","def","efg","fgh","pqr","qrs","rst","stu","tuv","uvw","vwx","wxy","xyz",
     "abcd","bcde","cdef","defg","efgh","pqrs","qrst","rstu","stuv","tuvw","uvwx","vwxy","wxyz",
@@ -14,15 +12,10 @@ val consecutiveLetters = List(
     "pqrstuvwxyz"
 )
 
-def hasIncreasingStraight(pword: String): Boolean = consecutiveLetters.exists(pword.contains)
-def noConfusingLetters(pword: String): Boolean = !"iol".exists(pword.contains)
-
-def hasTwoNonOverlappingPairs(pword: String): Boolean = {
-    return (pword.init zip pword.tail).filter { case (a, b) => a == b }.toSet.size >= 2
-}
-
 def isValidPassword(pword: String): Boolean = {
-    return hasIncreasingStraight(pword) && noConfusingLetters(pword) && hasTwoNonOverlappingPairs(pword)
+    if "iol".exists(pword.contains) then return false
+    if !consecutiveLetters.exists(pword.contains) then return false
+    return (pword.init zip pword.tail).filter { case (a, b) => a == b }.toSet.size >= 2
 }
 
 def incrementPassword(currentPassword: String): String = {
@@ -43,15 +36,13 @@ def incrementPassword(currentPassword: String): String = {
 
 def findNextPassword(currentPassword: String): String = {
     var password = incrementPassword(currentPassword)
-    
-    while (!isValidPassword(password)) {
-        password = incrementPassword(password)
-    }
-    
-    password
+    while (!isValidPassword(password)) do password = incrementPassword(password)
+    return password
 }
 
 def hello(): Unit = {
+    val currentPassword = "hepxcrrq"
+
     val nextPassword = findNextPassword(currentPassword)
     println(s"The next password is: $nextPassword")
 

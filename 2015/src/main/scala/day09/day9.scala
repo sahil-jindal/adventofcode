@@ -7,8 +7,8 @@ import scala.collection.mutable.{Map, Set}
 class Graph(val locations: Set[String], val distances: Map[(String, String), Int])
 
 def parseLines(lines: List[String]): Graph = {
-    val locations = Set[String]()
-    val distances = Map[(String, String), Int]()
+    val locations = Set.empty[String]
+    val distances = Map.empty[(String, String), Int]
 
     lines.foreach(line => {
         val Array(pair, cost) = line.split(" = ")
@@ -24,9 +24,7 @@ def parseLines(lines: List[String]): Graph = {
 
 def allPossiblePathCost(graph: Graph): List[Int] = {
     return graph.locations.toSeq.permutations.map { route => 
-        (route.init zip route.tail).foldLeft(0) { 
-            case (acc, it) => acc + graph.distances(it)
-        }
+        (route.init zip route.tail).map(graph.distances).sum
     }.toList
 }
 

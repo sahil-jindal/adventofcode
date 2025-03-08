@@ -5,7 +5,7 @@ import scala.io.Source
 import scala.collection.mutable.Map
 
  def parseInstructions(input: List[String]): Map[String, Vector[String]] = {
-    val instructions = Map[String, Vector[String]]()
+    val instructions = Map.empty[String, Vector[String]]
     
     input.foreach(line => {
         val Array(expr, wire) = line.split(" -> ")
@@ -34,14 +34,11 @@ def evaluate(wire: String, instructions: Map[String, Vector[String]], cache: Map
 
 def evaluator(input: List[String]) = {
     val originalInstructions = parseInstructions(input)
-
-    val cachePartOne = Map[String, Int]()
-    val signalA = evaluate("a", originalInstructions, cachePartOne)
+    val signalA = evaluate("a", originalInstructions, Map.empty[String, Int])
     println(s"Signal to wire 'a' (Part One): $signalA")
 
     val modifiedInstructions = originalInstructions + ("b" -> Vector(signalA.toString))
-    val cachePartTwo = Map[String, Int]()
-    val newSignalA = evaluate("a", modifiedInstructions, cachePartTwo)
+    val newSignalA = evaluate("a", modifiedInstructions, Map.empty[String, Int])
     println(s"Signal to wire 'a' (Part Two): $newSignalA")
 }
 
@@ -50,11 +47,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 
 def hello(): Unit = {
     readLinesFromFile("day07.txt") match {
-        case Success(lines) => {
-            evaluator(lines)
-        }
-        case Failure(exception) => {
-            println(s"Error reading file: ${exception.getMessage}")
-        }
+        case Success(lines) => evaluator(lines)
+        case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
     }
 }

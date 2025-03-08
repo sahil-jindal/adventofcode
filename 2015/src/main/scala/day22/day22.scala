@@ -55,7 +55,7 @@ case class State(
     def playerSteps(): Seq[State] = {
         if playerHp <= 0 || bossHp <= 0 then return Seq(this)
     
-        val steps = Buffer[State]()
+        val steps = Buffer.empty[State]
         
         if playerMana >= missileMana && missileMana + usedMana <= manaLimit then
             steps += copy(

@@ -10,9 +10,7 @@ def floorMovement(ch: Char): Int = ch match {
     case _ => 0
 }
 
-def evaluatorOne(line: String): Int = {
-    return line.foldLeft(0) { case (acc, it) => acc + floorMovement(it) }
-}
+def evaluatorOne(line: String): Int = line.map(floorMovement).sum
 
 def evaluatorTwo(line: String): Int = {
     var sum = 0

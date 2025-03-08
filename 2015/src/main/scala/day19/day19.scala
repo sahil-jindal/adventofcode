@@ -17,11 +17,11 @@ def parseInput(lines: List[String]): Fabrication = {
 
 def Replacements(fab: Fabrication): List[ReplacementString] = {
     val groupedRules = fab.rules.groupBy { case (from, _) => from.length }
-    val replacements = ListBuffer[ReplacementString]()
+    val replacements = ListBuffer.empty[ReplacementString]
 
     for (len, similarRules) <- groupedRules do {
-        for (str, i) <- fab.molecule.sliding(len).zipWithIndex do {
-            for (from, to) <- similarRules do {
+        for (from, to) <- similarRules do {
+            for (str, i) <- fab.molecule.sliding(len).zipWithIndex do {
                 if from == str then replacements += ReplacementString(i, str.length, to)
             }
         }

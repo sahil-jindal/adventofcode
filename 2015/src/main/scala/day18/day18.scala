@@ -58,10 +58,8 @@ def updateGrid(grid: Array[Array[Boolean]], stuck: Boolean): Array[Array[Boolean
         nextGrid(i)(0) = lightCondition(grid, Position(i, 0), bordersDyDx(3))
     }
 
-    for i <- 1 to rowSize - 2 do {
-        for j <- 1 to colSize - 2 do {
-            nextGrid(i)(j) = lightCondition(grid, Position(i, j), insideBoxDyDx)
-        }
+    for (i <- 1 to rowSize - 2; j <- 1 to colSize - 2) do {
+        nextGrid(i)(j) = lightCondition(grid, Position(i, j), insideBoxDyDx)
     }
 
     return nextGrid
@@ -80,9 +78,7 @@ def iterateGrid(grid: Array[Array[Boolean]], stuck: Boolean): Int = {
         copyGrid(rowSize - 1)(0) = true
     }
     
-    for _ <- 1 to 100 do {
-        copyGrid = updateGrid(copyGrid, stuck)
-    }
+    for _ <- 1 to 100 do copyGrid = updateGrid(copyGrid, stuck)
 
     return copyGrid.flatten.count(identity)
 }

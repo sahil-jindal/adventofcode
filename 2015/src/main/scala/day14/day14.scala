@@ -3,8 +3,9 @@ package day14
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-class Reindeer(val speed: Int, val durationTime: Int, val restTime: Int)
 val raceTotalTime = 2503
+
+class Reindeer(val speed: Int, val durationTime: Int, val restTime: Int)
 
 def parseInput(lines: List[String]): List[Reindeer] = lines.map(line => {
     val details = raw"\d+".r.findAllIn(line).toArray.map(_.toInt)
@@ -15,15 +16,13 @@ def totalDistance(reindeer: Reindeer, totalTime: Int): Int = {
     val restartTime = reindeer.durationTime + reindeer.restTime
     var totalRuns = totalTime / restartTime
     val remainingTime = totalTime % restartTime
-
     if remainingTime >= reindeer.durationTime then totalRuns += 1
-
-    reindeer.speed * reindeer.durationTime * totalRuns
+    return reindeer.speed * reindeer.durationTime * totalRuns
 }
 
 def distanceTravelledEverySecond(reindeer: Reindeer, totalTime: Int): Array[Int] = {
     val restartTime = reindeer.durationTime + reindeer.restTime
-    val result = Seq.tabulate(totalTime) { i => if (i % restartTime < reindeer.durationTime) 1 else 0 }.toArray
+    val result = Array.tabulate(totalTime) { i => if (i % restartTime < reindeer.durationTime) 1 else 0 }
     for i <- 1 until totalTime do result(i) += result(i - 1)
     return result.map(_ * reindeer.speed)
 }

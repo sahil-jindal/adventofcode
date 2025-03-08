@@ -9,7 +9,7 @@ def findCombinations(numbers: List[Long], len: Int, target: Long): List[List[Lon
     numbers.combinations(len).filter(_.sum == target).toList
 }
 
-def solver(numbers: List[Long], groupLength: Int): String = {
+def solver(numbers: List[Long], groupLength: Int): Long = {
     val target = numbers.sum / groupLength
 
     val packages = (1 to numbers.length).collectFirst {
@@ -17,14 +17,11 @@ def solver(numbers: List[Long], groupLength: Int): String = {
             findCombinations(numbers, n, target)
     }
 
-    packages match {
-        case Some(it) => it.map(_.product).min.toString
-        case None => "No answer found"
-    }
+    return packages.get.map(_.product).min
 }
 
-def evaluatorOne(numbers: List[Long]): String = solver(numbers, 3)
-def evaluatorTwo(numbers: List[Long]): String = solver(numbers, 4)
+def evaluatorOne(numbers: List[Long]): Long = solver(numbers, 3)
+def evaluatorTwo(numbers: List[Long]): Long = solver(numbers, 4)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

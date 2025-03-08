@@ -7,8 +7,8 @@ import scala.collection.mutable.{Map, Set}
 class Graph(val people: Set[String], val happiness: Map[(String, String), Int])
 
 def parseInput(lines: List[String]): Graph = {
-    val people = Set[String]()
-    val happiness = Map[(String, String), Int]()
+    val people = Set.empty[String]
+    val happiness = Map.empty[(String, String), Int]
     
     lines.foreach(line => {
         val parts = line.split(" ")
@@ -42,20 +42,22 @@ def addYourself(graph: Graph): Graph = {
     return Graph(graph.people ++ Set("You"), updatedHappiness)
 }
 
+def evaluator(input: List[String]): Unit = {
+    val graph = parseInput(input)
+    var maxHappiness = findMaximumHappiness(graph)
+    println(s"Maximum Total Happiness: $maxHappiness")
+
+    val newGraph = addYourself(graph)
+    maxHappiness = findMaximumHappiness(newGraph)
+    println(s"Maximum Total Happiness (including yourself): $maxHappiness")
+}
+
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day13.txt") match
-        case Success(lines) => {
-            val graph = parseInput(lines)
-            var maxHappiness = findMaximumHappiness(graph)
-            println(s"Maximum Total Happiness: $maxHappiness")
-
-            val newGraph = addYourself(graph)
-            maxHappiness = findMaximumHappiness(newGraph)
-            println(s"Maximum Total Happiness (including yourself): $maxHappiness")
-        }
-        case Failure(exception) => {
-            println(s"Error reading file: ${exception.getMessage}")
-        }
+def hello(): Unit = {
+    readLinesFromFile("day13.txt") match {
+        case Success(lines) => evaluator(lines)
+        case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
+    }
+}

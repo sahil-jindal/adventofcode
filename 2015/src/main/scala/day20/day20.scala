@@ -1,7 +1,5 @@
 package day20
 
-val input = 36000000
-
 def presentByHouse(steps: Int, mul: Int, l: Int): Int = {
     val presents = Array.ofDim[Int](1000000)
 
@@ -22,7 +20,8 @@ def presentByHouse(steps: Int, mul: Int, l: Int): Int = {
 def evaluatorOne(input: Int): Int = presentByHouse(1000000, 10, input)
 def evaluatorTwo(input: Int): Int = presentByHouse(50, 11, input)
 
-def hello() = {
-    println(s"Part One: ${evaluatorOne(input)}")
-    println(s"Part One: ${evaluatorTwo(input)}")
+def hello(): Unit = {
+    val inputLine = 36000000
+    println(s"Part One: ${evaluatorOne(inputLine)}")
+    println(s"Part One: ${evaluatorTwo(inputLine)}")
 }

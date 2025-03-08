@@ -9,21 +9,13 @@ val repeatRule = "(.).\\1".r
 def vowels = Set('a', 'e', 'i', 'o', 'u')
 def disAllowedStrings = Set("ab", "cd", "pq", "xy")
 
-def vowelsCondition(line: String): Boolean = {
-    return line.filter(vowels.contains).size >= 3
-}
-
-def repeatedLetterCondition(line: String): Boolean = {
+def checksCondition(line: String): Boolean = {
+    if line.filter(vowels.contains).size < 3 then return false
+    if line.sliding(2).exists(disAllowedStrings.contains) then return false
     return (line.init zip line.tail).exists { case (a, b) => a == b }
 }
 
-def disAllowedStringsCondition(line: String): Boolean = {
-    return line.sliding(2).forall(it => !disAllowedStrings.contains(it))
-}
-
-def evaluatorOne(lines: List[String]): Int = lines.count(line => {
-    vowelsCondition(line) && repeatedLetterCondition(line) && disAllowedStringsCondition(line)
-})
+def evaluatorOne(lines: List[String]): Int = lines.count(checksCondition)
 
 def evaluatorTwo(lines: List[String]): Int = lines.count(line => {
     pairRule.findFirstIn(line).isDefined && repeatRule.findFirstIn(line).isDefined

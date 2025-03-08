@@ -24,7 +24,7 @@ def run(input: String, actors: Int): Int = {
         seen.add(pos(i % actors))
     }
     
-    seen.size
+    return seen.size
 }
 
 def evaluatorOne(line: String): Int = run(line, 1)
@@ -33,8 +33,8 @@ def evaluatorTwo(line: String): Int = run(line, 2)
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-def hello(): Unit =
-    readLinesFromFile("day03.txt") match
+def hello(): Unit = {
+    readLinesFromFile("day03.txt") match {
         case Success(lines) => {
             println(s"Part One: ${evaluatorOne(lines.head)}")
             println(s"Part Two: ${evaluatorTwo(lines.head)}")
@@ -42,3 +42,5 @@ def hello(): Unit =
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
         }
+    }
+}

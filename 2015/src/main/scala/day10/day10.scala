@@ -1,7 +1,5 @@
 package day10
 
-val input = "3113322113"
-
 def nextSequence(seq: String): String = {
     val stringBuilder = new StringBuilder
     var count = 1
@@ -28,6 +26,7 @@ def evaluatorOne(sequence: String): Int = lookAndSaySequence(sequence, 40)
 def evaluatorTwo(sequence: String): Int = lookAndSaySequence(sequence, 50)
 
 def hello(): Unit = {
-    println(s"Part One: ${evaluatorOne(input)}")
-    println(s"Part Two: ${evaluatorTwo(input)}")
+    val inputLine = "3113322113"
+    println(s"Part One: ${evaluatorOne(inputLine)}")
+    println(s"Part Two: ${evaluatorTwo(inputLine)}")
 }
