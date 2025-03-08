@@ -36,9 +36,9 @@ def strongestBridge(input: List[String], compare: (Pair, Pair) => Int): Int = {
     return fold(0, parseInput(input)).strength
 }
 
-def partOne(input: List[String]): Int = strongestBridge(input, (a, b) => a.strength - b.strength)
+def evaluatorOne(input: List[String]): Int = strongestBridge(input, (a, b) => a.strength - b.strength)
 
-def partTwo(input: List[String]): Int = strongestBridge(input, (a, b) => {
+def evaluatorTwo(input: List[String]): Int = strongestBridge(input, (a, b) => {
     if (a.length != b.length) then { a.length - b.length } else { a.strength - b.strength }
 })
 
@@ -48,8 +48,8 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day24.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${partOne(lines)}")
-            println(s"Part Two: ${partTwo(lines)}")
+            println(s"Part One: ${evaluatorOne(lines)}")
+            println(s"Part Two: ${evaluatorTwo(lines)}")
         } 
         case Failure(exception) => {
             println(s"File not found: ${exception.getMessage()}")

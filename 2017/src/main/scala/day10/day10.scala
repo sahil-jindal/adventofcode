@@ -25,13 +25,13 @@ def knotHash(input: List[Int], rounds: Int): Array[Int] = {
     return output
 }
 
-def partOne(input: String): Int = {
+def evaluatorOne(input: String): Int = {
     val chars = input.split(",").map(_.toInt).toList
     val hash = knotHash(chars, 1)
     return hash(0) * hash(1)
 }
 
-def partTwo(input: String): String = {
+def evaluatorTwo(input: String): String = {
     val suffix = List(17, 31, 73, 47, 23)
     val chars = input.map(_.toInt).toList ++ suffix
     val hash = knotHash(chars, 64)
@@ -48,8 +48,8 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day10.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${partOne(lines.head)}")
-            println(s"Part Two: ${partTwo(lines.head)}")
+            println(s"Part One: ${evaluatorOne(lines.head)}")
+            println(s"Part Two: ${evaluatorTwo(lines.head)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
