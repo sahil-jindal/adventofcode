@@ -11,27 +11,27 @@ val numberRegex = raw"([-]?\d+)".r
 class Ingredient(var capacity: Int, var durability: Int, var flavor: Int, var texture: Int, var calories: Int)
 
 def parseInput(lines: List[String]): List[Ingredient] = lines.map(line => {
-    val qualities = numberRegex.findAllIn(line).toArray.map(_.toInt)
-    Ingredient(qualities(0), qualities(1), qualities(2), qualities(3), qualities(4))
+    val Seq(a, b, c, d, e) = numberRegex.findAllIn(line).map(_.toInt).toSeq
+    Ingredient(a, b, c, d, e)
 })
 
 def partitions(total: Int, n: Int): List[List[Int]] = {
-    def helper(remaining: Int, minValue: Int, length: Int): List[List[Int]] = {
-        if (length == 0) {
-            return if (remaining == 0) List(Nil) else Nil
-        }
-        
-        (minValue to remaining).toList.flatMap { value =>
-            helper(remaining - value, value, length - 1).map(value :: _)
+    def helper(remaining: Int, length: Int, minValue: Int): List[List[Int]] = {
+        if (length <= 0 || length > remaining) return List(Nil)
+        if (length == 1) return List(List(remaining))
+
+        val maxValue = remaining / length
+
+        return (minValue to maxValue).toList.flatMap { value =>
+            helper(remaining - value, length - 1, value).map(value :: _)
         }
     }
 
-    return helper(total, 1, n)
+    return helper(total, n, 1)
 }
 
 def allPossibleRecipes(ingredients: List[Ingredient]): List[Ingredient] = {
-    val scoopPossibilities = partitions(totalScoops, ingredients.length)
-                                .flatMap(_.permutations)
+    val scoopPossibilities = partitions(totalScoops, ingredients.length).flatMap(_.permutations)
 
     return scoopPossibilities.map { scoops =>
         val temp = Ingredient(0, 0, 0, 0, 0)

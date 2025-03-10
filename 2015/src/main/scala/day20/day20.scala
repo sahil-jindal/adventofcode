@@ -1,6 +1,6 @@
 package day20
 
-def presentByHouse(steps: Int, mul: Int, l: Int): Int = {
+def presentByHouse(l: Int, mul: Int, steps: Int): Int = {
     val presents = Array.ofDim[Int](1000000)
 
     for i <- 1 until presents.length do {
@@ -17,8 +17,8 @@ def presentByHouse(steps: Int, mul: Int, l: Int): Int = {
     return presents.indexWhere(_ >= l)
 }
 
-def evaluatorOne(input: Int): Int = presentByHouse(1000000, 10, input)
-def evaluatorTwo(input: Int): Int = presentByHouse(50, 11, input)
+def evaluatorOne(input: Int): Int = presentByHouse(input, 10, 1000000)
+def evaluatorTwo(input: Int): Int = presentByHouse(input, 11, 50)
 
 def hello(): Unit = {
     val inputLine = 36000000

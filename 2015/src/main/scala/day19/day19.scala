@@ -2,32 +2,31 @@ package day19
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
 class ReplacementString(val from: Int, val length: Int, val to: String)
-class Fabrication(val rules: Array[(String, String)], val molecule: String)
+class Fabrication(val rules: List[(String, String)], val molecule: String)
 
 def parseInput(lines: List[String]): Fabrication = {
     val index = lines.indexWhere(_.trim.isEmpty)
     val (from, to) = lines.splitAt(index)
-    val rules = from.map { case s"$a => $b" => (a, b) }.toArray
+    val rules = from.map { case s"$a => $b" => (a, b) }
     return Fabrication(rules, to(1))
 }
 
 def Replacements(fab: Fabrication): List[ReplacementString] = {
     val groupedRules = fab.rules.groupBy { case (from, _) => from.length }
-    val replacements = ListBuffer.empty[ReplacementString]
+    var replacements = List.empty[ReplacementString]
 
     for (len, similarRules) <- groupedRules do {
         for (from, to) <- similarRules do {
             for (str, i) <- fab.molecule.sliding(len).zipWithIndex do {
-                if from == str then replacements += ReplacementString(i, str.length, to)
+                if from == str then replacements :+= ReplacementString(i, str.length, to)
             }
         }
     }
 
-    return replacements.toList
+    return replacements
 }
 
 def Replace(molecule: String, repstr: ReplacementString): String = {
@@ -35,7 +34,7 @@ def Replace(molecule: String, repstr: ReplacementString): String = {
 }
 
 def evaluatorOne(fab: Fabrication): Int = {
-    return Replacements(fab).map { it => Replace(fab.molecule, it) }.toSet.size
+    return Replacements(fab).map(Replace(fab.molecule, _)).toSet.size
 }
 
 def evaluatorTwo(fab: Fabrication): Int = {

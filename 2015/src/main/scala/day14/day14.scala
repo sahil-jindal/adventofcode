@@ -5,26 +5,25 @@ import scala.io.Source
 
 val raceTotalTime = 2503
 
-class Reindeer(val speed: Int, val durationTime: Int, val restTime: Int)
+class Reindeer(val speed: Int, val durationTime: Int, val restTime: Int) {
+    val restartTime = durationTime + restTime
+}
 
 def parseInput(lines: List[String]): List[Reindeer] = lines.map(line => {
-    val details = raw"\d+".r.findAllIn(line).toArray.map(_.toInt)
-    Reindeer(details(0), details(1), details(2))
+    val Seq(a, b, c) = raw"\d+".r.findAllIn(line).map(_.toInt).toSeq
+    Reindeer(a, b, c)
 })
 
 def totalDistance(reindeer: Reindeer, totalTime: Int): Int = {
-    val restartTime = reindeer.durationTime + reindeer.restTime
-    var totalRuns = totalTime / restartTime
-    val remainingTime = totalTime % restartTime
+    var totalRuns = totalTime / reindeer.restartTime
+    val remainingTime = totalTime % reindeer.restartTime
     if remainingTime >= reindeer.durationTime then totalRuns += 1
     return reindeer.speed * reindeer.durationTime * totalRuns
 }
 
-def distanceTravelledEverySecond(reindeer: Reindeer, totalTime: Int): Array[Int] = {
-    val restartTime = reindeer.durationTime + reindeer.restTime
-    val result = Array.tabulate(totalTime) { i => if (i % restartTime < reindeer.durationTime) 1 else 0 }
-    for i <- 1 until totalTime do result(i) += result(i - 1)
-    return result.map(_ * reindeer.speed)
+def distanceTravelledEverySecond(reindeer: Reindeer, totalTime: Int): List[Int] = {
+    val result = List.tabulate(totalTime) { i => if (i % reindeer.restartTime < reindeer.durationTime) 1 else 0 }
+    return result.scanLeft(0)(_ + _).map(_ * reindeer.speed).tail
 }
 
 def evaluatorOne(reindeers: List[Reindeer]): Int = {
@@ -37,11 +36,7 @@ def evaluatorTwo(reindeers: List[Reindeer]): Int = {
 
     raceTimeStamps.foreach(raceTimeStamp => {
         val maxDistance = raceTimeStamp.max
-        
-        val players = raceTimeStamp.zipWithIndex.collect {
-            case (distance, playerNo) if distance == maxDistance => playerNo
-        }
-
+        val players = raceTimeStamp.zipWithIndex.collect { case (distance, id) if distance == maxDistance => id }
         for i <- players do pointsCollection(i) += 1
     })
 

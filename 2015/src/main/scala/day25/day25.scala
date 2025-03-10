@@ -3,9 +3,9 @@ package day25
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def parseInput(line: String): Vector[Int] = raw"(\d+)".r.findAllIn(line).map(_.toInt).toVector
+def evaluatorOne(line: String): Long = {
+    val Seq(rowDst, colDst) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toSeq
 
-def evaluatorOne(rowDst: Int, colDst: Int): Long = {
     var m = 20151125L;
     var (irow, icol) = (1, 1);
     
@@ -29,12 +29,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 
 def hello(): Unit = {
     readLinesFromFile("day25.txt") match {
-        case Success(lines) => {
-            val Vector(rowDst, colDst) = parseInput(lines.head)
-            println(s"Part One: ${evaluatorOne(rowDst, colDst)}")
-        }
-        case Failure(exception) => {
-            println(s"Error reading file: ${exception.getMessage}")
-        }
+        case Success(lines) => println(s"Part One: ${evaluatorOne(lines.head)}")
+        case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
     }
 }
