@@ -6,41 +6,38 @@ import scala.collection.mutable
 import scala.util.matching.Regex
 import scala.util.boundary, boundary.break;
 
-case class TestCase(regsBefore: Array[Int], regsAfter: Array[Int], stm: Array[Int])
+case class TestCase(regsBefore: List[Int], regsAfter: List[Int], stm: Array[Int])
 
-def ints(pattern: String, lines: List[String], index: Int): Option[Array[Int]] = {
+def ints(pattern: String, lines: List[String], index: Int): Option[List[Int]] = {
     if (index >= lines.length) return None
-    val regex = new Regex(pattern)
-    return regex.findFirstMatchIn(lines(index)).map(_.subgroups.map(_.toInt).toArray)
+    return new Regex(pattern).findFirstMatchIn(lines(index)).map(_.subgroups.map(_.toInt))
 }
 
 def parseInput(lines: List[String]): (List[TestCase], List[Array[Int]]) = {
     var iline = 0
-    val testCases = mutable.ListBuffer[TestCase]()
+    var testCases = List.empty[TestCase]
     
     while (ints("Before: \\[(\\d+), (\\d+), (\\d+), (\\d+)\\]", lines, iline).isDefined) {
         val regsBefore = ints("Before: \\[(\\d+), (\\d+), (\\d+), (\\d+)\\]", lines, iline).get
-        val stm = ints("(\\d+) (\\d+) (\\d+) (\\d+)", lines, iline + 1).get
+        val stm = ints("(\\d+) (\\d+) (\\d+) (\\d+)", lines, iline + 1).get.toArray
         val regsAfter = ints("After:  \\[(\\d+), (\\d+), (\\d+), (\\d+)\\]", lines, iline + 2).get
         iline += 4
-        testCases.append(TestCase(regsBefore, regsAfter, stm))
+        testCases :+= TestCase(regsBefore, regsAfter, stm)
     }
 
     iline += 2
-    val prg = mutable.ListBuffer[Array[Int]]()
+    var prg = List.empty[Array[Int]]
     
     while (iline < lines.length && ints("(\\d+) (\\d+) (\\d+) (\\d+)", lines, iline).isDefined) {
-        prg.append(ints("(\\d+) (\\d+) (\\d+) (\\d+)", lines, iline).get)
+        prg :+= ints("(\\d+) (\\d+) (\\d+) (\\d+)", lines, iline).get.toArray
         iline += 1
     }
 
-    return (testCases.toList, prg.toList)
+    return (testCases, prg)
 }
 
-def step(regs: Array[Int], stm: Array[Int]): Array[Int] = {
-    val newRegs = regs.clone()
-
-    newRegs(stm(3)) = stm(0) match {
+def step(regs: List[Int], stm: Array[Int]): List[Int] = {
+    val newValue = stm(0) match {
         case 0 => regs(stm(1)) + regs(stm(2))
         case 1 => regs(stm(1)) + stm(2)
         case 2 => regs(stm(1)) * regs(stm(2))
@@ -60,25 +57,32 @@ def step(regs: Array[Int], stm: Array[Int]): Array[Int] = {
         case _ => throw new IllegalArgumentException()
     }
 
-    return newRegs
+    return regs.updated(stm(3), newValue)
 }
 
-def workOutMapping(constraints: Map[Int, List[Int]], used: Array[Boolean], res: mutable.Map[Int, Int]): Map[Int, Int] = {
-    if (res.size == 16) return res.toMap
-    val op = res.size
-    
-    boundary {
-        for (i <- constraints(op) if !used(i)) {
-            used(i) = true
-            res(op) = i
-            val x = workOutMapping(constraints, used, res)
-            if (x.nonEmpty) break(x)
-            res.remove(op)
-            used(i) = false
-        }
+def workOutMapping(mapping: Map[Int, List[Int]]): Map[Int, Int] = {
+    val used = Array.fill(16)(false)
+    val res = mutable.Map.empty[Int, Int]
 
-        Map.empty[Int, Int]
+    def helper(constraints: Map[Int, List[Int]]): Map[Int, Int] = {
+        if (res.size == 16) return res.toMap
+        val op = res.size
+        
+        boundary {
+            for (i <- constraints(op) if !used(i)) {
+                used(i) = true
+                res(op) = i
+                val x = helper(constraints)
+                if (x.nonEmpty) break(x)
+                res.remove(op)
+                used(i) = false
+            }
+
+            return Map.empty[Int, Int]
+        }
     }
+
+    return helper(mapping)
 }
 
 def evaluatorOne(input: List[String]): Int = {
@@ -93,7 +97,7 @@ def evaluatorOne(input: List[String]): Int = {
 }
 
 def evaluatorTwo(input: List[String]): Int = {
-    val constraints = (0 until 16).map(i => i -> (0 until 16).toList).toMap
+    val constraints = (0 until 16).map(_ -> (0 until 16).toList).toMap
     val (testCases, prg) = parseInput(input)
     
     val updatedConstraints = testCases.foldLeft(constraints) { (cons, testCase) =>
@@ -107,9 +111,9 @@ def evaluatorTwo(input: List[String]): Int = {
         cons.updated(op, newMapping)
     }
 
-    val mapping = workOutMapping(updatedConstraints, Array.fill(16)(false), mutable.Map())
+    val mapping = workOutMapping(updatedConstraints)
     
-    var regs = Array(0, 0, 0, 0)
+    var regs = List.fill(4)(0)
     
     for (stm <- prg) {
         stm(0) = mapping(stm(0))

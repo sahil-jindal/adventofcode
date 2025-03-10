@@ -17,37 +17,37 @@ case object RightTurn extends Turn
 
 case class Cart(var x: Int, var y: Int, var dir: Direction, var nextTurn: Turn, var crashed: Boolean)
 
-def parseInput(lines: List[String]): (Array[Array[Char]], ListBuffer[Cart]) = {
-    val height = lines.length
-    val width = lines(0).length
-    val track = Array.ofDim[Char](height, width)
-    val carts = ListBuffer[Cart]()
+def parseInput(lines: List[String]): (Map[(Int, Int), Char], List[Cart]) = {
+    var trackMap = Map.empty[(Int, Int), Char]
+    var carts = List.empty[Cart]
 
     for ((row, y) <- lines.zipWithIndex; (c, x) <- row.zipWithIndex) {
         c match {
             case '^' =>
-                track(y)(x) = '|'
-                carts += Cart(x, y, Up, LeftTurn, crashed = false)
+                trackMap += (y, x) -> '|'
+                carts :+= Cart(x, y, Up, LeftTurn, crashed = false)
             case 'v' =>
-                track(y)(x) = '|'
-                carts += Cart(x, y, Down, LeftTurn, crashed = false)
+                trackMap += (y, x) -> '|'
+                carts :+= Cart(x, y, Down, LeftTurn, crashed = false)
             case '<' =>
-                track(y)(x) = '-'
-                carts += Cart(x, y, Left, LeftTurn, crashed = false)
+                trackMap += (y, x) -> '-'
+                carts :+= Cart(x, y, Left, LeftTurn, crashed = false)
             case '>' =>
-                track(y)(x) = '-'
-                carts += Cart(x, y, Right, LeftTurn, crashed = false)
+                trackMap += (y, x) -> '-'
+                carts :+= Cart(x, y, Right, LeftTurn, crashed = false)
             case _ =>
-                track(y)(x) = c
+                trackMap += (y, x) -> c
         }
     }
 
-    return (track, carts)
+    return (trackMap, carts)
 }
 
-def solver(track: Array[Array[Char]], carts: ListBuffer[Cart]): Unit = {
+def solver(lines: List[String]): Unit = {
+    var (trackMap, carts) = parseInput(lines)
+
     var firstCollision: Option[(Int, Int)] = None
-    var part1Solved = false
+    var partOneSolved = false
 
     while (carts.size > 1) {
         val sortedCarts = carts.toList.sortBy(c => (c.y, c.x))
@@ -73,7 +73,7 @@ def solver(track: Array[Array[Char]], carts: ListBuffer[Cart]): Unit = {
                     cart.x = newX
                     cart.y = newY
 
-                    track(newY)(newX) match {
+                    trackMap((newY, newX)) match {
                         case '/' =>
                             cart.dir = cart.dir match {
                                 case Up => Right
@@ -114,17 +114,17 @@ def solver(track: Array[Array[Char]], carts: ListBuffer[Cart]): Unit = {
             }
         }
         
-        carts.filterInPlace(!_.crashed)
+        carts = carts.filter(!_.crashed)
 
-        if (firstCollision.isDefined && !part1Solved) {
-            println(s"Part 1: ${firstCollision.get._1},${firstCollision.get._2}")
-            part1Solved = true
+        if (firstCollision.isDefined && !partOneSolved) {
+            println(s"Part One: ${firstCollision.get._1},${firstCollision.get._2}")
+            partOneSolved = true
         }
     }
 
     if (carts.size == 1) {
         val lastCart = carts.head
-        println(s"Part 2: ${lastCart.x},${lastCart.y}")
+        println(s"Part Two: ${lastCart.x},${lastCart.y}")
     }
 }
 
@@ -133,12 +133,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 
 def hello(): Unit = {
     readLinesFromFile("day13.txt") match {
-        case Success(lines) => {
-            val (grid, carts) = parseInput(lines)
-            solver(grid, carts)
-        }
-        case Failure(exception) => {
-            println(s"Error reading file: ${exception.getMessage}")
-        }
+        case Success(lines) => solver(lines)
+        case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
     }
 }

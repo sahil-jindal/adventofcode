@@ -1,4 +1,4 @@
-package day13
+package day23
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source

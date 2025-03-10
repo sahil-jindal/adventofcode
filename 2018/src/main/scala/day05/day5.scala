@@ -5,7 +5,7 @@ import scala.io.Source
 import scala.collection.mutable.Stack
 
 def react(polymer: String): String = {
-    val stack = Stack[Char]()
+    val stack = Stack.empty[Char]
 
     for (unit <- polymer) {
         if (stack.nonEmpty && math.abs(stack.top - unit) == 32) then stack.pop()

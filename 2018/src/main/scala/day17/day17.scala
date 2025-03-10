@@ -3,16 +3,16 @@ package day17
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.StringBuilder
-import scala.util.boundary, boundary.break;
+import scala.util.boundary, boundary.break
 
 def isStill(mtx: Array[Array[Char]], x: Int, y: Int): Boolean = {
-    val width = mtx.length
+    val width = mtx(0).length
     
     boundary {
         for (dx <- Seq(-1, 1)) {
             var xT = x
-            while (xT >= 0 && xT < width && mtx(xT)(y) != '#') {
-                if (mtx(xT)(y) == '.' || mtx(xT)(y + 1) == '|') break(false)
+            while (xT >= 0 && xT < width && mtx(y)(xT) != '#') {
+                if (mtx(y)(xT) == '.' || mtx(y + 1)(xT) == '|') break(false)
                 xT += dx
             }
         }
@@ -22,18 +22,18 @@ def isStill(mtx: Array[Array[Char]], x: Int, y: Int): Boolean = {
 }
 
 def fillRecursive(mtx: Array[Array[Char]], x: Int, y: Int): Unit = {
-    val width = mtx.length
-    val height = mtx(0).length
+    val height = mtx.length
+    val width = mtx(0).length
     
-    if (mtx(x)(y) != '.') return
+    if (mtx(y)(x) != '.') return
     
-    mtx(x)(y) = '|'
+    mtx(y)(x) = '|'
     
     if (y == height - 1) return
 
     fillRecursive(mtx, x, y + 1)
 
-    if (mtx(x)(y + 1) == '#' || mtx(x)(y + 1) == '~') {
+    if (mtx(y + 1)(x) == '#' || mtx(y + 1)(x) == '~') {
         if (x > 0) fillRecursive(mtx, x - 1, y)
         if (x < width - 1) fillRecursive(mtx, x + 1, y)
     }
@@ -41,25 +41,24 @@ def fillRecursive(mtx: Array[Array[Char]], x: Int, y: Int): Unit = {
     if (isStill(mtx, x, y)) {
         for (dx <- Seq(-1, 1)) {
             var xT = x
-            while (xT >= 0 && xT < width && mtx(xT)(y) == '|') {
-                mtx(xT)(y) = '~'
+            while (xT >= 0 && xT < width && mtx(y)(xT) == '|') {
+                mtx(y)(xT) = '~'
                 xT += dx
             }
         }
     }
 }
 
-def fill(lines: List[String]): String = {
+def fill(lines: List[String]): Seq[Char] = {
     val (width, height) = (2000, 2000)
-    val mtx = Array.fill(width, height)('.')
-    val numberPattern = """\d+""".r
+    val mtx = Array.fill(height, width)('.')
 
     lines.foreach(line => {
-        val nums = numberPattern.findAllIn(line).map(_.toInt).toArray
+        val nums = """\d+""".r.findAllIn(line).map(_.toInt).toArray
         
         for (i <- nums(1) to nums(2)) {
-            if (line.startsWith("x")) mtx(nums(0))(i) = '#' 
-            else mtx(i)(nums(0)) = '#'
+            if (line.startsWith("x")) mtx(i)(nums(0)) = '#' 
+            else mtx(nums(0))(i) = '#'
         }
     })
     
@@ -68,27 +67,17 @@ def fill(lines: List[String]): String = {
     var (minY, maxY) = (Int.MaxValue, Int.MinValue)
     
     for (y <- 0 until height; x <- 0 until width) {
-        if (mtx(x)(y) == '#') {
+        if (mtx(y)(x) == '#') {
             minY = math.min(minY, y)
             maxY = math.max(maxY, y)
         }
     }
-
-    val sb = new StringBuilder
     
-    for (y <- minY to maxY) {
-        for (x <- 0 until width) {
-            sb.append(mtx(x)(y))
-        }
-        
-        sb.append("\n")
-    }
-
-    sb.toString
+    return for (y <- minY to maxY; x <- 0 until width) yield mtx(y)(x)
 }
 
-def evaluatorOne(input: List[String]): Int = "[~|]".r.findAllMatchIn(fill(input)).length
-def evaluatorTwo(input: List[String]): Int = "[~]".r.findAllMatchIn(fill(input)).length
+def evaluatorOne(input: List[Char]): Int = input.count(it => it == '~' || it == '|')
+def evaluatorTwo(input: List[Char]): Int = input.count(it => it == '~')
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -96,8 +85,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day17.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val lastScene = fill(lines).toList
+            println(s"Part One: ${evaluatorOne(lastScene)}")
+            println(s"Part Two: ${evaluatorTwo(lastScene)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

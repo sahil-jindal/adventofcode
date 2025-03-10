@@ -8,26 +8,27 @@ case class State(regs: Vector[Int], ip: Int, ipReg: Int)
 def executeInstruction(state: State, op: String, a: Int, b: Int, c: Int): State = {
     val regs = state.regs.updated(state.ipReg, state.ip)
     
-    val newregs = op match {
-        case "addr" => regs.updated(c, regs(a) + regs(b))
-        case "addi" => regs.updated(c, regs(a) + b)
-        case "mulr" => regs.updated(c, regs(a) * regs(b))
-        case "muli" => regs.updated(c, regs(a) * b)
-        case "banr" => regs.updated(c, regs(a) & regs(b))
-        case "bani" => regs.updated(c, regs(a) & b)
-        case "borr" => regs.updated(c, regs(a) | regs(b))
-        case "bori" => regs.updated(c, regs(a) | b)
-        case "setr" => regs.updated(c, regs(a))
-        case "seti" => regs.updated(c, a)
-        case "gtir" => regs.updated(c, if (a > regs(b)) 1 else 0)
-        case "gtri" => regs.updated(c, if (regs(a) > b) 1 else 0)
-        case "gtrr" => regs.updated(c, if (regs(a) > regs(b)) 1 else 0)
-        case "eqir" => regs.updated(c, if (a == regs(b)) 1 else 0)
-        case "eqri" => regs.updated(c, if (regs(a) == b) 1 else 0)
-        case "eqrr" => regs.updated(c, if (regs(a) == regs(b)) 1 else 0)
+    val newValue = op match {
+        case "addr" => regs(a) + regs(b)
+        case "addi" => regs(a) + b
+        case "mulr" => regs(a) * regs(b)
+        case "muli" => regs(a) * b
+        case "banr" => regs(a) & regs(b)
+        case "bani" => regs(a) & b
+        case "borr" => regs(a) | regs(b)
+        case "bori" => regs(a) | b
+        case "setr" => regs(a)
+        case "seti" => a
+        case "gtir" => if (a > regs(b)) 1 else 0
+        case "gtri" => if (regs(a) > b) 1 else 0
+        case "gtrr" => if (regs(a) > regs(b)) 1 else 0
+        case "eqir" => if (a == regs(b)) 1 else 0
+        case "eqri" => if (regs(a) == b) 1 else 0
+        case "eqrr" => if (regs(a) == regs(b)) 1 else 0
         case _ => throw new IllegalArgumentException(s"Unknown opcode: $op")
     }
     
+    val newregs = regs.updated(c, newValue)
     val newIp = newregs(state.ipReg) + 1
 
     return State(newregs, newIp, state.ipReg)

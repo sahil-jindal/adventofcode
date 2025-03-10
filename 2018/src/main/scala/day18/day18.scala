@@ -2,10 +2,10 @@ package day18
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{ListBuffer, Map}
+import scala.collection.mutable.Map
 
 def step(mtx: List[String]): List[String] = {
-    val res = ListBuffer.empty[String]
+    var res = List.empty[String]
 
     val crow = mtx.length
     val ccol = mtx(0).length
@@ -36,10 +36,10 @@ def step(mtx: List[String]): List[String] = {
             })
         }
         
-        res.append(line)
+        res :+= line
     }
 
-    return res.toList
+    return res
 }
 
 def iterate(input: List[String], lim: Int): Int = {
@@ -49,7 +49,7 @@ def iterate(input: List[String], lim: Int): Int = {
     var t = 0
     
     while (t < lim) {
-        val hash = mtx.mkString("")
+        val hash = mtx.mkString
         
         if (seen.contains(hash)) {
             val loopLength = t - seen(hash)
@@ -64,12 +64,10 @@ def iterate(input: List[String], lim: Int): Int = {
         t += 1
     }
 
-    val res = mtx.mkString("")
+    val treeCount = mtx.flatten.count(_ == '|')
+    val lumberyardCount = mtx.flatten.count(_ == '#')
 
-    val treeCount = "\\|".r.findAllIn(res).length
-    val lumberyardCount = "#".r.findAllIn(res).length
-
-    treeCount * lumberyardCount
+    return treeCount * lumberyardCount
 }
 
 def evaluatorOne(input: List[String]): Int = iterate(input, 10)
@@ -78,6 +76,7 @@ def evaluatorTwo(input: List[String]): Int = iterate(input, 1000000000)
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
+@main
 def hello(): Unit = {
     readLinesFromFile("day18.txt") match {
         case Success(lines) => {

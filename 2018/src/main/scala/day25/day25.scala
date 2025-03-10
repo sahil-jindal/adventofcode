@@ -60,12 +60,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 
 def hello(): Unit = {
     readLinesFromFile("day25.txt") match {
-        case Success(lines) => {
-            val points = parseInput(lines)
-            println(s"Part One: ${formConstellations(points)}")
-        }
-        case Failure(exception) => {
-            println(s"Error reading file: ${exception.getMessage}")
-        }
+        case Success(lines) => println(s"Part One: ${formConstellations(parseInput(lines))}")
+        case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
     }
 }

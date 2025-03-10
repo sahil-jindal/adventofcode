@@ -17,7 +17,7 @@ def preCompute(gridSerialNumber: Int): Array[Array[Int]] = {
     return gridOriginal
 }
 
-def solver(gridOriginal: Array[Array[Int]], D: Int) = {
+def solver(gridOriginal: Array[Array[Int]], D: Int): (Int, Int, Int) = {
     var maxTotalPower = Int.MinValue;
     var yMax = Int.MinValue;
     var xMax = Int.MinValue;
@@ -48,7 +48,7 @@ def solver(gridOriginal: Array[Array[Int]], D: Int) = {
         }
     }
     
-    (xMax, yMax, dMax);
+    return (xMax, yMax, dMax)
 }
 
 def evaluatorOne(grid: Array[Array[Int]]): String = {

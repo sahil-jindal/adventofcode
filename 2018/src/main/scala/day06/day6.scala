@@ -4,7 +4,9 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Map, Set}
 
-case class Point(x: Int, y: Int)
+case class Point(x: Int, y: Int) {
+    def manhattanDistance(other: Point): Int = (x - other.x).abs + (y - other.y).abs
+}
 
 case class Plane(val minX: Int, val maxX: Int, val minY: Int, val maxY: Int) {
     def grid = for {y <- minY to maxY; x <- minX to maxX} yield Point(x, y)
@@ -22,12 +24,8 @@ def parseInput(lines: List[String]): (Plane, List[Point]) = {
     return (Plane(xs.min, xs.max, ys.min, ys.max), points)
 }
 
-def manhattanDistance(p1: Point, p2: Point): Int = {
-    return Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y)
-}
-
 def findClosest(point: Point, points: List[Point]): Option[Int] = {
-    val distances = points.map(p => manhattanDistance(point, p))
+    val distances = points.map(point.manhattanDistance)
     val minDistance = distances.min
     
     val closestIndices = distances.zipWithIndex.collect {
@@ -39,8 +37,8 @@ def findClosest(point: Point, points: List[Point]): Option[Int] = {
 }
 
 def evaluatorOne(plane: Plane, points: List[Point]): Int = {
-    val closestPointCounts = Map[Int, Int]().withDefaultValue(0)
-    val infinitePoints = Set[Int]()
+    val closestPointCounts = Map.empty[Int, Int].withDefaultValue(0)
+    val infinitePoints = Set.empty[Int]
 
     plane.grid.foreach { point =>
         val found = findClosest(point, points)
@@ -59,7 +57,7 @@ def evaluatorOne(plane: Plane, points: List[Point]): Int = {
 }
 
 def evaluatorTwo(plane: Plane, points: List[Point]): Int = plane.grid.count { point =>
-    points.map(p => manhattanDistance(point, p)).sum < 10000
+    points.map(point.manhattanDistance).sum < 10000
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
