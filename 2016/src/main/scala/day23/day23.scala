@@ -6,35 +6,38 @@ import scala.collection.mutable.Map
 
 def solve(input: Array[String], a: Int): Int = {
     val prg = input.map(_.split(' '))
-    var regs = Map[String, Int]("a" -> a)
+    var regs = Map("a" -> a)
     var ip = 0
 
     def getReg(reg: String): Int = reg.toIntOption.getOrElse(regs.getOrElse(reg, 0))
     def setReg(reg: String, value: Int): Unit = if (reg.toIntOption.isEmpty) regs(reg) = value
 
-    while (ip >= 0 && ip < prg.length) do
-        prg(ip) match
-            case Array("cpy", x, y) => setReg(y, getReg(x)); ip += 1
+    while (ip >= 0 && ip < prg.length) do {
+        prg(ip) match {
             case Array("inc", x) => setReg(x, getReg(x) + 1); ip += 1
-            case Array("mul", x, y) => setReg(y, getReg(x) * getReg(y)); ip += 1
             case Array("dec", x) => setReg(x, getReg(x) - 1); ip += 1
+            case Array("cpy", x, y) => setReg(y, getReg(x)); ip += 1
+            case Array("mul", x, y) => setReg(y, getReg(x) * getReg(y)); ip += 1
             case Array("jnz", x, y) => ip += (if getReg(x) != 0 then getReg(y) else 1)
             case Array("tgl", x) => {
                 val ipDst = ip + getReg(x)
 
                 if ipDst >= 0 && ipDst < prg.length then {
-                    prg(ipDst)(0) = prg(ipDst)(0) match
+                    prg(ipDst)(0) = prg(ipDst)(0) match {
                         case "cpy" => "jnz"
                         case "inc" => "dec"
                         case "dec" => "inc"
                         case "jnz" => "cpy"
                         case "tgl" => "inc"
                         case other => other
+                    }
                 }
                 
                 ip += 1
             }
             case stm => throw new Exception(s"Cannot parse ${stm.mkString(" ")}")
+        }
+    }
 
     return getReg("a")
 }

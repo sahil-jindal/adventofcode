@@ -33,16 +33,11 @@ def steps(input: Int): Iterator[(Int, Int, Int)] = {
     }.flatten
 }
 
-def evaluatorOne(input: String): Int = steps(input.toInt)
-    .find { case (_, y, x) => y == 39 && x == 31 }
-    .map(_._1)
-    .getOrElse(-1)
-
-def evaluatorTwo(input: String): Int = steps(input.toInt)
-    .takeWhile(_._1 <= 50)
-    .size
+def evaluatorOne(input: Int): Int = steps(input).collectFirst { case (steps, y, x) if y == 39 && x == 31 => steps }.get
+def evaluatorTwo(input: Int): Int = steps(input).takeWhile(_._1 <= 50).size
 
 def hello(): Unit = {
-    println(s"Part One: ${evaluatorOne("1350")}")
-    println(s"Part Two: ${evaluatorTwo("1350")}")
+    val inputLine = 1350
+    println(s"Part One: ${evaluatorOne(inputLine)}")
+    println(s"Part Two: ${evaluatorTwo(inputLine)}")
 }

@@ -53,13 +53,11 @@ def executeInstructions(instructions: List[String]): Array[Array[Boolean]] = {
 }
 
 def evaluatorOne(instructions: List[String]): Int = {
-    val screen = executeInstructions(instructions)
-    return screen.flatten.count(identity)
+    return executeInstructions(instructions).flatten.count(identity)
 }
 
 def evaluatorTwo(instructions: List[String]): String = {
-    val screen = executeInstructions(instructions)
-    return screen.map { row => row.map(if (_) '#' else ' ').mkString }.mkString("\n")
+    return executeInstructions(instructions).map { row => row.map(if (_) '#' else ' ').mkString }.mkString("\n")
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

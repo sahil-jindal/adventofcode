@@ -3,7 +3,6 @@ package day11
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Set, Queue, Map}
-import scala.util.boundary, boundary.break
 
 case class State(elevator: Int, elements: List[(Int, Int)])
 
@@ -24,20 +23,15 @@ def parseInput(input: List[String]): Map[String, (Int, Int)] = {
 }
 
 def isValid(elements: List[(Int, Int)]): Boolean = {
-    boundary {
-        for (floor <- 1 to 4) {
-            val generators = elements.exists { case (a, _) => a == floor }
-            val chips = elements.exists { case (a, b) => a != floor && b == floor }
-            if generators && chips then break(false)
-        }
-        
-        true
+    return (1 to 4).forall { floor =>
+        val generators = elements.exists { case (a, _) => a == floor }
+        val chips = elements.exists { case (a, b) => a != floor && b == floor }
+        !(generators && chips)
     }
 }
 
 def nextStates(current: State): List[State] = {
-    val currentFloor = current.elevator
-    val elements = current.elements
+    val State(currentFloor, elements) = current
 
     val items = elements.zipWithIndex.flatMap { case ((g, c), i) =>
         var list = List.empty[(Int, Char)]
@@ -87,18 +81,15 @@ def bfs(initial: State): Int = {
     return -1
 }
 
-def evaluatorOne(input: List[String]): Int = {
+def solver(input: List[String]): Unit = {
     val initialElements = parseInput(input)
-    return bfs(State(1, initialElements.values.toList))
-}
-
-def evaluatorTwo(input: List[String]): Int = {
-    val initialElements = parseInput(input)
-
+    
+    println(s"Part One: ${bfs(State(1, initialElements.values.toList))}")
+    
     initialElements("elerium") = (1, 1)
     initialElements("dilithium") = (1, 1)
     
-    return bfs(State(1, initialElements.values.toList))
+    println(s"Part Two: ${bfs(State(1, initialElements.values.toList))}")
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -106,12 +97,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 
 def hello(): Unit = {
     readLinesFromFile("day11.txt") match {
-        case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
-        }
-        case Failure(exception) => {
-            println(s"Error reading file: ${exception.getMessage}")
-        }
+        case Success(lines) => solver(lines)
+        case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
     }
 }

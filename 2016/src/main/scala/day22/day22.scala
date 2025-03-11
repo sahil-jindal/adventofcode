@@ -4,7 +4,7 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
 case class Node(irow: Int, icol: Int, size: Int, used: Int, goal: Boolean = false) {
-    def avail: Int = size - used
+    val avail: Int = size - used
 }
 
 class Grid(nodes: Array[Array[Node]]) {
@@ -48,18 +48,18 @@ class Grid(nodes: Array[Array[Node]]) {
 
 
 def parseInput(input: List[String]): Array[Array[Node]] = {
-    val pattern = "(\\d+)".r
-    
-    val nodes = input.drop(2).map { line =>
-        val parts = pattern.findAllIn(line).map(_.toInt).toArray
-        Node(parts(1), parts(0), parts(2), parts(3))
-    }.toArray
+    val nodes = input.drop(2).map(line => {
+        val Seq(irow, icol, size, used) = "(\\d+)".r.findAllIn(line).map(_.toInt).toSeq
+        Node(irow, icol, size, used)
+    })
 
     val crow = nodes.map(_.irow).max + 1
     val ccol = nodes.map(_.icol).max + 1
 
     val grid = Array.ofDim[Node](crow, ccol)
+
     nodes.foreach(n => grid(n.irow)(n.icol) = n)
+    
     grid(0)(ccol - 1) = grid(0)(ccol - 1).copy(goal = true)
     
     return grid

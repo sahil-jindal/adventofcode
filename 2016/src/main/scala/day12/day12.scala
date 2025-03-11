@@ -6,7 +6,7 @@ import scala.collection.mutable.Map
 
 def Solve(input: List[String], c: Int): Int = {
     val prg = input.map(_.split(' '))
-    val regs = Map[String, Int]("c" -> c)
+    val regs = Map("c" -> c)
     var ip = 0
 
     def getReg(reg: String): Int = reg.toIntOption.getOrElse(regs.getOrElse(reg, 0))

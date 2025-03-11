@@ -99,7 +99,6 @@ def hello(): Unit = {
         case Success(lines) => {
             val (locations, walls) = parseInput(lines)
             val dist = precomputeDistances(locations, walls)
-            
             println(s"Part One: ${evaluatorOne(locations.size, dist)}")
             println(s"Part Two: ${evaluatorTwo(locations.size, dist)}")
         }

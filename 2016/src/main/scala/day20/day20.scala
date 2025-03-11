@@ -28,17 +28,11 @@ def mergeRanges(ranges: List[Range]): List[Range] = {
 }
 
 def evaluatorOne(ranges: List[Range]): Long = {
-    val newRanges = mergeRanges(ranges)
-    return (newRanges.init zip newRanges.tail).collectFirst { 
-        case (r1, r2) if r2.start - r1.end > 1 => r1.end + 1 
-    }.get
+    return (ranges.init zip ranges.tail).collectFirst { case (r1, r2) if r2.start - r1.end > 1 => r1.end + 1 }.get
 }
 
 def evaluatorTwo(ranges: List[Range]): Long = {
-    val newRanges = mergeRanges(ranges)
-    return (newRanges.init zip newRanges.tail).collect {
-        case (r1, r2) if r2.start - r1.end > 1 => r2.start - r1.end - 1 
-    }.sum
+    return (ranges.init zip ranges.tail).collect { case (r1, r2) if r2.start - r1.end > 1 => r2.start - r1.end - 1 }.sum
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -47,7 +41,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day20.txt") match {
         case Success(lines) => {
-            val ranges = parseInput(lines)
+            val ranges = mergeRanges(parseInput(lines))
             println(s"Part One: ${evaluatorOne(ranges)}")
             println(s"Part Two: ${evaluatorTwo(ranges)}")
         }

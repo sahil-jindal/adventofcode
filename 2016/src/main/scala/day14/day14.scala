@@ -59,9 +59,9 @@ def evaluatorOne(input: String): Int = compute(input, 64, false)
 def evaluatorTwo(input: String): Int = compute(input, 64, true)
 
 def hello() = {
-    val salt = "jlmsuwbz" // Replace with your input
-    println(s"Part One: ${evaluatorOne(salt)}")
-    println(s"Part Two: ${evaluatorTwo(salt)}")
+    val inputLine = "jlmsuwbz" // Replace with your input
+    println(s"Part One: ${evaluatorOne(inputLine)}")
+    println(s"Part Two: ${evaluatorTwo(inputLine)}")
 }
   
 

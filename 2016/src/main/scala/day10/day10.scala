@@ -2,76 +2,85 @@ package day10
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{TreeSet, Map, Queue}
+import scala.collection.mutable.Map
 
-case class Bot(id: Int) {
-    val chips = TreeSet.empty[Int]
-    var lowTarget: Option[(String, Int)] = None
-    var highTarget: Option[(String, Int)] = None
+sealed trait Destination
+case class Bot(id: Int) extends Destination
+case class Output(id: Int) extends Destination
 
-    def receiveChip(value: Int): Unit = chips.add(value)
-    def isReady: Boolean = chips.size == 2
+def parseInstructions(input: List[String]): (Map[Int, List[Int]], Map[Int, (Destination, Destination)]) = {
+    val valuePattern = """value (\d+) goes to bot (\d+)""".r
+    val botPattern = """bot (\d+) gives low to (bot|output) (\d+) and high to (bot|output) (\d+)""".r
 
-    def process(): Option[(Int, Int, Int)] = {
-        if !isReady then return None
-        
-        val low = chips.head
-        val high = chips.last
-        chips.clear()
-        
-        return Some(id, low, high)
+    val initialValues = Map.empty[Int, List[Int]].withDefaultValue(List())
+    val rules = Map.empty[Int, (Destination, Destination)]
+
+    for (line <- input) {
+        line match {
+            case valuePattern(value, bot) => {
+                val botId = bot.toInt
+                initialValues(botId) = initialValues(botId) :+ value.toInt
+            }
+            case botPattern(botId, lowType, lowId, highType, highId) => {
+                val lowDest = if (lowType == "bot") Bot(lowId.toInt) else Output(lowId.toInt)
+                val highDest = if (highType == "bot") Bot(highId.toInt) else Output(highId.toInt)
+                rules(botId.toInt) = (lowDest, highDest)
+            }
+            case _ => throw new IllegalArgumentException(s"Cannot parse instruction: $line")
+        }
     }
+
+    return (initialValues, rules)
 }
 
-object BalanceBots {
-    val botPattern = """bot (\d+) gives low to (bot|output) (\d+) and high to (bot|output) (\d+)""".r
-    val valuePattern = """value (\d+) goes to bot (\d+)""".r
+def solve(input: List[String], targetLow: Int = 17, targetHigh: Int = 61): (Int, Int) = {
+    val (initialValues, rules) = parseInstructions(input)
 
-    val bots = Map.empty[Int, Bot]
-    val outputs = Map.empty[Int, Int]
+    val botValues = Map.empty[Int, List[Int]].withDefaultValue(List())
+    val outputValues = Map.empty[Int, List[Int]].withDefaultValue(List())
+    var targetBot = -1
 
-    def getBot(id: Int): Bot = bots.getOrElseUpdate(id, Bot(id))
+    for ((botId, values) <- initialValues) {
+        botValues(botId) = values
+    }
 
-    def processInstructions(instructions: List[String]): Unit = {
-        val actionQueue = Queue.empty[String]
+    var madeProgress = true
 
-        instructions.foreach {
-            case valuePattern(value, botId) => getBot(botId.toInt).receiveChip(value.toInt)
-            case instr => actionQueue.enqueue(instr)
-        }
+    while (madeProgress) {
 
-        while actionQueue.nonEmpty do {
-            val instr = actionQueue.dequeue()
+        madeProgress = false
+        
+        for ((botId, values) <- botValues.toMap if values.length == 2) {
+
+            madeProgress = true
             
-            instr match {
-                case botPattern(botId, lowType, lowId, highType, highId) =>
-                    val bot = getBot(botId.toInt)
-                    
-                    if bot.isReady then {
-                        val (id, low, high) = bot.process().get
-                    
-                        if (low == 17 && high == 61) || (low == 61 && high == 17) then {
-                            println(s"Bot responsible: $id")
-                        }
-                    
-                        if lowType == "bot" then getBot(lowId.toInt).receiveChip(low)
-                        else outputs(lowId.toInt) = low
-                        
-                        if highType == "bot" then getBot(highId.toInt).receiveChip(high)
-                        else outputs(highId.toInt) = high
-                    
-                    } else {
-                        actionQueue.enqueue(instr) // Retry later
-                    }
-                case _ =>
+            val sortedValues = values.sorted
+            val lowValue = sortedValues.head
+            val highValue = sortedValues.last
+            
+            if (lowValue == targetLow && highValue == targetHigh) {
+                targetBot = botId
+            }
+            
+            val (lowDest, highDest) = rules(botId)
+            
+            botValues(botId) = List()
+            
+            lowDest match {
+                case Bot(id) => botValues(id) :+= lowValue
+                case Output(id) => outputValues(id) :+= lowValue
+            }
+            
+            highDest match {
+                case Bot(id) => botValues(id) :+= highValue
+                case Output(id) => outputValues(id) :+= highValue
             }
         }
-
-        if outputs.contains(0) && outputs.contains(1) && outputs.contains(2) then {
-            val product = outputs(0) * outputs(1) * outputs(2)
-            println(s"Product of outputs 0, 1, and 2: $product")
-        }
     }
+
+    val outputProduct = outputValues(0).head * outputValues(1).head * outputValues(2).head
+
+    return (targetBot, outputProduct)
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -80,7 +89,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day10.txt") match {
         case Success(lines) => {
-            BalanceBots.processInstructions(lines)
+            val (part1, part2) = solve(lines)
+            println(s"Part 1: $part1")
+            println(s"Part 2: $part2")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

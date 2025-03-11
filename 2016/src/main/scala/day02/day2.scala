@@ -6,18 +6,18 @@ import scala.io.Source
 case class Direction(val dy: Int, val dx: Int)
 case class Point(val y: Int, val x: Int)
 
-def firstKeyPad = Array(
-    Array('1', '2', '3'),
-    Array('4', '5', '6'),
-    Array('7', '8', '9')
+def firstKeyPad = List(
+    List('1', '2', '3'),
+    List('4', '5', '6'),
+    List('7', '8', '9')
 )
 
-def secondKeyPad = Array(
-    Array(' ', ' ', '1', ' ', ' '),
-    Array(' ', '2', '3', '4', ' '),
-    Array('5', '6', '7', '8', '9'),
-    Array(' ', 'A', 'B', 'C', ' '),
-    Array(' ', ' ', 'D', ' ', ' ')
+def secondKeyPad = List(
+    List(' ', ' ', '1', ' ', ' '),
+    List(' ', '2', '3', '4', ' '),
+    List('5', '6', '7', '8', '9'),
+    List(' ', 'A', 'B', 'C', ' '),
+    List(' ', ' ', 'D', ' ', ' ')
 )
 
 def getDirections(dir: Char) = dir match {
@@ -35,7 +35,7 @@ def boundaryConditionTwo(y: Int, x: Int): Boolean = {
 }
 
 def getCode(
-    currPoint: Point, directions: List[String], keyPad: Array[Array[Char]],
+    currPoint: Point, directions: List[String], keyPad: List[List[Char]],
     boundaryCondition: (Int, Int) => Boolean
 ): String = {
     val code = new StringBuilder

@@ -7,17 +7,13 @@ def parseInput(lines: List[String]) = lines.map(line => {
     raw"(\d+)".r.findAllIn(line).map(_.toInt).toList
 })
 
-def validTriangles(triangles: List[List[Int]]): Int = triangles.count(triangle => {
+def isValidTriangle(triangle: List[Int]): Boolean = {
     val List(a, b, c) = triangle
     a + b > c && b + c > a && c + a > b
-})
-    
-def evaluatorOne(triangles: List[List[Int]]): Int = validTriangles(triangles)
-
-def evaluatorTwo(triangles: List[List[Int]]): Int = {
-    val columnWiseTriangles = triangles.transpose.flatMap(_.grouped(3))
-    return validTriangles(columnWiseTriangles)
 }
+    
+def evaluatorOne(triangles: List[List[Int]]): Int = triangles.count(isValidTriangle)
+def evaluatorTwo(triangles: List[List[Int]]): Int = triangles.transpose.flatten.grouped(3).count(isValidTriangle)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
