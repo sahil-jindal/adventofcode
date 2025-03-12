@@ -2,29 +2,25 @@ package day07
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.util.matching.Regex
-import scala.collection.mutable.Map
+
+val pattern =  """(\w+) \((\d+)\)(?: -> ([\w, ]+))?""".r
 
 case class Node(id: String, children: Seq[String], weight: Int, var treeWeight: Int = -1)
 
 type Tree = Map[String, Node]
 
-def parseInput(input: List[String]): Tree = {
-    val tree = Map.empty[String, Node]
-    val pattern =  """([a-z]+) \((\d+)\)( -> (.*))?""".r
-    
-    input.foreach {
-        case pattern(id, weight, _, childrenOpt) =>
-            val children = Option(childrenOpt).map(_.split(", ").toSeq).getOrElse(Seq.empty)
-            tree(id) = Node(id, children, weight.toInt)
-        case _ => () // Handle unmatched cases gracefully
-    }
-    
-    return tree
+def parseInput(input: List[String]): Tree = {    
+    return input.map(line => {
+        val List(id, weight, childrenOpt) = pattern.findFirstMatchIn(line).get.subgroups
+        val children = Option(childrenOpt).map(_.split(", ").toSeq).getOrElse(Seq.empty)
+        id -> Node(id, children, weight.toInt)
+    }).toMap
 }
 
 def root(tree: Tree): Node = {
-    return tree.values.find(node => !tree.values.exists(_.children.contains(node.id))).get
+    val allNodes = tree.keySet
+    val allChildren = tree.values.flatMap(_.children).toSet
+    return tree(allNodes.diff(allChildren).head)
 }
     
 def computeTreeWeights(node: Node, tree: Tree): Int = {
@@ -38,21 +34,18 @@ def bogusChild(node: Node, tree: Tree): Node = {
 }
     
 def fix(node: Node, desiredWeight: Int, tree: Tree): Int = {
-    if node.children.size < 2 then throw new NotImplementedError() 
-
     val bogus = bogusChild(node, tree)
     if bogus == null then return desiredWeight - node.treeWeight + node.weight
     return fix(bogus, desiredWeight - node.treeWeight + bogus.treeWeight, tree)
 }
 
-def evaluatorOne(tree: Tree): String = root(tree).id
-
-def evaluatorTwo(tree: Tree): Int = {
+def solver(tree: Tree): (String, Int) = {
     val rootNode = root(tree)
     computeTreeWeights(rootNode, tree)
     val bogusChildNode = bogusChild(rootNode, tree)
     val desiredWeight = tree(rootNode.children.find(_ != bogusChildNode.id).get).treeWeight
-    return fix(bogusChildNode, desiredWeight, tree)
+    val correctWeight = fix(bogusChildNode, desiredWeight, tree)
+    return (rootNode.id, correctWeight)
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -61,9 +54,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day07.txt") match {
         case Success(lines) => {
-            val tree = parseInput(lines)
-            println(s"Part One: ${evaluatorOne(tree)}")
-            println(s"Part Two: ${evaluatorTwo(tree)}")
+            val (root, correctWeight) = solver(parseInput(lines))
+            println(s"Part One: $root")
+            println(s"Part Two: $correctWeight")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

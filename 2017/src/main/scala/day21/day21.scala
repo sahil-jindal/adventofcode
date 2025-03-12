@@ -9,10 +9,7 @@ class Mtx(val size: Int) {
 
     def codeNumber: Int = {
         if (size != 2 && size != 3) throw new IllegalArgumentException()
-        
-        (0 until size * size).foldLeft(0) { (acc, i) =>
-            if (flags(i)) then acc | (1 << i) else acc
-        }
+        return flags.zipWithIndex.collect { case (true, i) => 1 << i }.fold(0)(_ | _)
     }
 
     def apply(irow: Int, icol: Int): Boolean = flags(size * irow + icol)

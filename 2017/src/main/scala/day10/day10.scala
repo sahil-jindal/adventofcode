@@ -3,7 +3,7 @@ package day10
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def knotHash(input: List[Int], rounds: Int): Array[Int] = {
+def knotHash(input: List[Int], rounds: Int): List[Int] = {
     val output = (0 until 256).toArray
     var (current, skip) = (0, 0)
 
@@ -22,7 +22,7 @@ def knotHash(input: List[Int], rounds: Int): Array[Int] = {
         }
     }
 
-    return output
+    return output.toList
 }
 
 def evaluatorOne(input: String): Int = {

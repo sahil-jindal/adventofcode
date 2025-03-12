@@ -5,10 +5,10 @@ import scala.io.Source
 import scala.collection.mutable.{Queue, Set, Stack}
 
 def parseInput(lines: List[String]): Map[String, List[String]] = {
-    return lines.map { line =>
+    return lines.map(line => {
         val Array(first, second) = line.split(" <-> ")
         first -> second.split(", ").toList
-    }.toMap
+    }).toMap
 }
 
 def dfs(graph: Map[String, List[String]], start: String): Set[String] = {
