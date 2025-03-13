@@ -45,11 +45,11 @@ fun evaluatorOne(input: List<String>): Int {
     }
 }
 
-fun lcm(a: Long, b: Long): Long = a * (b / gcd(a, b))
 fun gcd(a: Long, b: Long): Long = if (b == 0L) a else gcd(b, a % b)
+fun lcm(a: Long, b: Long): Long = a * (b / gcd(a, b))
 
 fun evaluatorTwo(input: List<String>): Long {
-    val states= mutableSetOf<List<Int>>()
+    val states = mutableSetOf<List<Int>>()
 
     for (planets in simulate(input)) {
         val state = planets.map { it.pos.x } + planets.map { it.vel.x }
