@@ -11,7 +11,7 @@ class IntCodeMachine(program: String) {
     private val modeMask = listOf(0, 100, 1000, 10000)
 
     init {
-        memory = Memory(program.split(",").map { it.toLong() }.toLongArray())
+        memory = Memory(program.split(",").filter { it.isNotEmpty() }.map { it.toLong() }.toLongArray())
     }
 
     private constructor(memory: Memory, ip: Long, bp: Long, input: Queue<Long>) : this("") {
