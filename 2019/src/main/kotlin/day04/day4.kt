@@ -19,11 +19,11 @@ fun solve(input: String, tripletsAllowed: Boolean): Int {
     return (start..end).count { ok(it.toString(), tripletsAllowed) }
 }
 
-fun partOne(input: String): Int = solve(input, true)
-fun partTwo(input: String): Int = solve(input, false)
+fun evaluatorOne(input: String): Int = solve(input, true)
+fun evaluatorTwo(input: String): Int = solve(input, false)
 
 fun main() {
     val input = "145852-616942"
-    println("Part One: ${partOne(input)}")
-    println("Part Two: ${partTwo(input)}")
+    println("Part One: ${evaluatorOne(input)}")
+    println("Part Two: ${evaluatorTwo(input)}")
 }
