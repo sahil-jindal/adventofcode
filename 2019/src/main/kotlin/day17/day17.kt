@@ -130,8 +130,8 @@ fun path(input: String): String {
 fun evaluatorOne(input: String): Int {
     val mx = screenShot(input)
 
-    val crow = mx.size
-    val ccol = mx[0].length
+    val height = mx.size
+    val width = mx[0].length
 
     val cross = listOf(".#.", "###", ".#.")
 
@@ -141,8 +141,8 @@ fun evaluatorOne(input: String): Int {
 
     var sum = 0
 
-    for (y in 1 .. (crow - 2)) {
-        for (x in 1 .. (ccol - 2)) {
+    for (y in 1 .. (height - 2)) {
+        for (x in 1 .. (width - 2)) {
             if (crossing(y, x)) {
                 sum += y*x
             }

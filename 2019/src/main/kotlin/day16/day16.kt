@@ -37,21 +37,21 @@ fun evaluatorTwo(input: String): String {
 
     val t = input.substring(0, 7).toInt()
 
-    val crow = 8
-    val ccol = input.length * 10000 - t
+    val height = 8
+    val width = input.length * 10000 - t
 
-    val bijMods = IntArray(ccol + 1)
+    val bijMods = IntArray(width + 1)
     var bij = BigInteger.ONE
 
-    for (j in 1..ccol) {
+    for (j in 1..width) {
         bijMods[j] = (bij % BigInteger.TEN).toInt()
         bij = bij * BigInteger.valueOf((j + 99).toLong()) / BigInteger.valueOf(j.toLong())
     }
 
-    for (i in 1..crow) {
+    for (i in 1..height) {
         var s = 0
 
-        for (j in i..ccol) {
+        for (j in i..width) {
             val x = xs[(t + j - 1) % input.length]
             s += x * bijMods[j - i + 1]
         }
