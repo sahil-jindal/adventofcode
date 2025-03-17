@@ -11,8 +11,8 @@ fun evaluatorTwo(input: String): Int {
     icm.memory[0] = 2
 
     var score = 0
-    var icolBall = -1
-    var icolPaddle = -1
+    var xBall = -1
+    var xPaddle = -1
     var dir = 0L
 
     while (true) {
@@ -24,15 +24,15 @@ fun evaluatorTwo(input: String): Int {
             }
 
             if (block == 3L) {
-                icolPaddle = x.toInt()
+                xPaddle = x.toInt()
             } else if (block == 4L) {
-                icolBall = x.toInt()
+                xBall = x.toInt()
             }
         }
 
         if (icm.halted()) break
 
-        dir = (icolBall - icolPaddle).sign.toLong()
+        dir = (xBall - xPaddle).sign.toLong()
     }
 
     return score

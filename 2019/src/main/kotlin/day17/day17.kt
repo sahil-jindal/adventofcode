@@ -70,9 +70,9 @@ fun generatePrograms(path: String): Sequence<String> {
 }
 
 fun findRobot(mx: List<String>): Pair<Point, Direction> {
-    return mx.indices.asSequence().flatMap { irow ->
-        mx[irow].indices.asSequence().mapNotNull { icol ->
-            val ch = mx[irow][icol]
+    return mx.indices.asSequence().flatMap { y ->
+        mx[y].indices.asSequence().mapNotNull { x ->
+            val ch = mx[y][x]
             if (ch in "^v<>") {
                 val dir = when (ch) {
                     '^' -> Direction(-1, 0)
@@ -81,7 +81,7 @@ fun findRobot(mx: List<String>): Pair<Point, Direction> {
                     '>' -> Direction(0, 1)
                     else -> error("Unexpected")
                 }
-                Point(irow, icol) to dir
+                Point(y, x) to dir
             } else null
         }
     }.first()
