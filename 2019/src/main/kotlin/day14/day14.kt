@@ -1,6 +1,8 @@
 package day14
 
 import java.io.File
+import java.util.LinkedList
+import java.util.Queue
 
 data class Chemical(val name: String, val amount: Long)
 
@@ -20,10 +22,12 @@ fun parseInput(productionRules: List<String>): (Long) -> Long {
     return { fuel ->
         var ore = 0L
         val inventory = reactions.keys.associateWith { 0L }.toMutableMap()
-        val productionList = ArrayDeque(listOf(Chemical("FUEL", fuel)))
+
+        val productionList: Queue<Chemical> = LinkedList()
+        productionList.add(Chemical("FUEL", fuel))
 
         while (productionList.isNotEmpty()) {
-            val (chemical, amount) = productionList.removeFirst()
+            val (chemical, amount) = productionList.remove()
 
             if (chemical == "ORE") {
                 ore += amount

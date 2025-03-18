@@ -2,6 +2,8 @@ package day15
 
 import intcode.ImmutableIntCodeMachine
 import java.io.File
+import java.util.LinkedList
+import java.util.Queue
 
 enum class Tile { Wall, Empty, O2 }
 
@@ -15,20 +17,22 @@ fun bfs(startIicm: ImmutableIntCodeMachine): Sequence<GroupOne> = sequence {
 
     val startPoint = Point(0, 0)
 
-    val q = ArrayDeque(listOf(GroupTwo(startIicm, emptyList(), startPoint)))
+    val q: Queue<GroupTwo> = LinkedList()
+    q.add(GroupTwo(startIicm, emptyList(), startPoint))
+
     val seen = mutableSetOf(startPoint)
 
     while (q.isNotEmpty()) {
-        val current = q.removeFirst()
+        val (iicm, path, p) = q.remove()
 
         for (i in dirs.indices) {
-            val next = Point(current.p.x + dirs[i].dx, current.p.y + dirs[i].dy)
+            val next = Point(p.x + dirs[i].dx, p.y + dirs[i].dy)
 
             if (!seen.contains(next)) {
                 seen.add(next)
 
-                val nextPath = current.path.plus(i + 1)
-                val (nextIicm, output) = current.iicm.run((i + 1).toLong())
+                val nextPath = path.plus(i + 1)
+                val (nextIicm, output) = iicm.run((i + 1).toLong())
 
                 val tile = Tile.entries[output.single().toInt()]
 

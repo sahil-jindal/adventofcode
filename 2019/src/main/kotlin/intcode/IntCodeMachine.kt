@@ -5,7 +5,7 @@ import kotlin.math.min
 
 class IntCodeMachine(program: String) {
     var memory: Memory
-    val inputQueue = ArrayDeque<Long>()
+    val inputQueue: Queue<Long> = LinkedList()
     private var ip: Long = 0
     private var bp: Long = 0
     private val modeMask = listOf(0, 100, 1000, 10000)
@@ -84,7 +84,7 @@ class IntCodeMachine(program: String) {
                 }
                 Opcode.In -> {
                     if (inputQueue.isNotEmpty()) {
-                        memory[addr(1)] = inputQueue.removeFirst()
+                        memory[addr(1)] = inputQueue.remove()
                         ip += 2
                     } else {
                         // Wait for input
