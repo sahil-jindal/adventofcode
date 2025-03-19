@@ -1,0 +1,20 @@
+Items in your inventory:
+- coin
+- astronaut ice cream
+- dark matter
+- klein bottle
+- mutex
+- pointer
+- whirled peas
+- festive hat
+
+Items in their supposed increasing weight (Not sure tho):
+
+- coin
+- astronaut ice cream
+- pointer
+- festive hat
+- whirled peas
+- mutex
+- dark matter
+- klein bottle
