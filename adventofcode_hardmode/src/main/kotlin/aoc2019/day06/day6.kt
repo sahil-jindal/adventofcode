@@ -1,4 +1,4 @@
-package day06
+package aoc2019.day06
 
 import java.io.File
 
@@ -33,7 +33,7 @@ fun readLinesFromFile(filePath: String): Result<List<String>> =
     runCatching { File(filePath).readLines() }
 
 fun main() {
-    readLinesFromFile("src/main/resources/day06.txt")
+    readLinesFromFile("src/main/resources/aoc2019/day06.txt")
         .onSuccess {
             val childToParent = parseTree(it)
             println("Part One: ${evaluatorOne(childToParent)}")
