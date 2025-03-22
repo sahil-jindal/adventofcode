@@ -5,7 +5,6 @@ import scala.io.Source
 import scala.collection.mutable
 
 case class Point(y: Int, x: Int)
-case class Edge(key: Char, dist: Int, req: Int)
 
 class Maze(private val maze: Seq[String]) extends Seq[String] {
     private val height = maze.size
@@ -68,7 +67,6 @@ def solveSingle(start: Point, maze: Maze, allKeys: Set[Char]): Int = {
 
 def solveMultiOptimized(starts: Seq[Point], maze: Maze, allKeys: Set[Char]): Int = {
     val keyMask = allKeys.zipWithIndex.map { case (c, idx) => c -> (1 << idx) }.toMap
-    val targetMask = (1 << allKeys.size) - 1
 
     def bfsFrom(start: Point): Map[Char, (Int, Int)] = {
         val queue = mutable.Queue((start, 0, 0))
@@ -77,23 +75,26 @@ def solveMultiOptimized(starts: Seq[Point], maze: Maze, allKeys: Set[Char]): Int
 
         while (queue.nonEmpty) {
             val (p, dist, req) = queue.dequeue()
+
             if (!seen.contains(p)) {
                 seen.add(p)
-
+                
                 val c = maze(p.y)(p.x)
                 val newReq = if (c.isUpper) req | keyMask.getOrElse(c.toLower, 0) else req
+                
                 if (c.isLower && dist > 0) result(c) = (dist, newReq)
 
                 queue.enqueueAll(maze.getAdjacent(p).filterNot(seen.contains).map(n => (n, dist + 1, newReq)))
             }
         }
         
-        result.toMap
+        return result.toMap
     }
 
     val sources = (starts.indices.map(_.toString) zip starts).toMap ++ maze.getKeyPositions.map { case (k, p) => k.toString -> p }
-    val graph = sources.mapValues(bfsFrom).view.mapValues(_.map { case (k, (d, r)) => Edge(k, d, r) }.toList).toMap
+    val graph = sources.view.mapValues(bfsFrom).mapValues(_.map { case (k, (d, r)) => (k, d, r) }.toList).toMap
 
+    val targetMask = (1 << allKeys.size) - 1
     val memo = mutable.Map.empty[(Seq[String], Int), Int]
 
     def dfs(positions: Seq[String], collected: Int): Int = {
@@ -101,16 +102,15 @@ def solveMultiOptimized(starts: Seq[Point], maze: Maze, allKeys: Set[Char]): Int
 
         return memo.getOrElseUpdate((positions, collected), {
             (for {
-                i <- positions.indices
-                pos = positions(i)
-                edge <- graph.getOrElse(pos, Nil)
-                keyBit = keyMask(edge.key)
-                if (collected & keyBit) == 0 && (collected & edge.req) == edge.req
-            } yield edge.dist + dfs(positions.updated(i, edge.key.toString), collected | keyBit)).minOption.getOrElse(Int.MaxValue)
+                (pos, i) <- positions.zipWithIndex
+                (key, dist, req) <- graph.getOrElse(pos, Nil)
+                keyBit = keyMask(key)
+                if (collected & keyBit) == 0 && (collected & req) == req
+            } yield dist + dfs(positions.updated(i, key.toString), collected | keyBit)).minOption.getOrElse(Int.MaxValue)
         })
     }
 
-    dfs(starts.indices.map(_.toString), 0)
+    return dfs(starts.indices.map(_.toString), 0)
 }
 
 def evaluatorOne(input: List[String]): Int = {
