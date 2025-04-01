@@ -12,15 +12,26 @@ val Empty = 'L'
 val Occupied = '#'
 val Floor = '.'
 
-def gridsEqual(grid1: Grid, grid2: Grid): Boolean = {
-    return (grid1 zip grid2).forall { case (row1, row2) => row1.sameElements(row2) }
-}
+def helper(occupiedLimit: Int, countFunction: (Grid, Int, Int) => Int): Grid => Grid = {
+    def applyRules(grid: Grid): Grid = {
+        val rows = grid.length
+        val cols = grid(0).length
+        val result = Array.ofDim[Char](rows, cols)
+    
+        for (r <- 0 until rows; c <- 0 until cols) {
+            val adjacentOccupied = countFunction(grid, r, c)
+      
+            result(r)(c) = grid(r)(c) match {
+                case Empty if adjacentOccupied == 0 => Occupied
+                case Occupied if adjacentOccupied >= occupiedLimit => Empty
+                case seat => seat
+            }
+        }
+    
+        return result
+    }
 
-@tailrec
-def evolveUntilStable(grid: Grid, ruleFunc: Grid => Grid): Grid = {
-    val newGrid = ruleFunc(grid)
-    if (gridsEqual(grid, newGrid)) return newGrid
-    return evolveUntilStable(newGrid, ruleFunc)
+    return applyRules
 }
 
 def countAdjacentOccupied(grid: Grid, row: Int, col: Int): Int = {
@@ -56,36 +67,25 @@ def countVisibleOccupied(grid: Grid, row: Int, col: Int): Int = {
     }
 }
 
-def helper(occupiedLimit: Int, countFunction: (Grid, Int, Int) => Int): Grid => Grid = {
-    def applyRules(grid: Grid): Grid = {
-        val rows = grid.length
-        val cols = grid(0).length
-        val result = Array.ofDim[Char](rows, cols)
-    
-        for (r <- 0 until rows; c <- 0 until cols) {
-            val adjacentOccupied = countFunction(grid, r, c)
-      
-            result(r)(c) = grid(r)(c) match {
-                case Empty if adjacentOccupied == 0 => Occupied
-                case Occupied if adjacentOccupied >= occupiedLimit => Empty
-                case seat => seat
-            }
-        }
-    
-        return result
-    }
+def gridsEqual(grid1: Grid, grid2: Grid): Boolean = {
+    return (grid1 zip grid2).forall { case (row1, row2) => row1.sameElements(row2) }
+}
 
-    return applyRules
+@tailrec
+def evolveUntilStable(grid: Grid, ruleFunc: Grid => Grid): Grid = {
+    val newGrid = ruleFunc(grid)
+    if (gridsEqual(grid, newGrid)) return newGrid
+    return evolveUntilStable(newGrid, ruleFunc)
 }
 
 def evaluatorOne(grid: Grid): Int = {
-    val applyRulesPart1 = helper(4, countAdjacentOccupied)
-    return evolveUntilStable(grid, applyRulesPart1).flatten.count(_ == Occupied)
+    val applyRulesPartOne = helper(4, countAdjacentOccupied)
+    return evolveUntilStable(grid, applyRulesPartOne).flatten.count(_ == Occupied)
 }
 
 def evaluatorTwo(grid: Grid): Int = {
-    val applyRulesPart2 = helper(5, countVisibleOccupied)
-    return evolveUntilStable(grid, applyRulesPart2).flatten.count(_ == Occupied)
+    val applyRulesPartTwo = helper(5, countVisibleOccupied)
+    return evolveUntilStable(grid, applyRulesPartTwo).flatten.count(_ == Occupied)
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
