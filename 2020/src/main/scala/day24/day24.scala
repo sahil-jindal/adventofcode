@@ -72,4 +72,4 @@ def hello(): Unit = {
         case Success(lines) => solve(lines)
         case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
     }
-}   
+}
