@@ -1,0 +1,53 @@
+package day10
+
+import scala.util.{Try, Success, Failure, Using}
+import scala.io.Source
+import scala.collection.mutable.Stack
+import scala.util.boundary, boundary.break;
+
+def getScore(line: String, getSyntaxErrorScore: Boolean): Long = {
+    val stack = Stack.empty[Char]
+
+    boundary {
+        for (ch <- line) {
+            (stack.headOption, ch) match {
+                case (Some('('), ')') | (Some('['), ']') | (Some('{'), '}') | (Some('<'), '>') => stack.pop()
+                case (_, ')') => break(if (getSyntaxErrorScore) 3L     else 0L)
+                case (_, ']') => break(if (getSyntaxErrorScore) 57L    else 0L)
+                case (_, '}') => break(if (getSyntaxErrorScore) 1197L  else 0L)
+                case (_, '>') => break(if (getSyntaxErrorScore) 25137L else 0L)
+                case _        => stack.push(ch)
+            }
+        }
+
+        if (getSyntaxErrorScore) return 0L
+    
+        return stack.map(ch => 1 + "([{<".indexOf(ch)).foldLeft(0L)((acc, item) => acc * 5 + item)
+    }
+}
+
+def getScores(input: List[String], getSyntaxErrorScore: Boolean): Seq[Long] = {
+    input.map(line => getScore(line, getSyntaxErrorScore)).filter(_ > 0)
+}
+
+def evaluatorOne(input: List[String]): Any = getScores(input, true).sum
+
+def evaluatorTwo(input: List[String]): Any = {
+    val scores = getScores(input, false).sorted
+    scores(scores.size / 2)
+}
+
+def readLinesFromFile(filePath: String): Try[List[String]] =
+    Using(Source.fromResource(filePath))(_.getLines().toList)
+
+def hello(): Unit = {
+    readLinesFromFile("day10.txt") match {
+        case Success(lines) => {
+            println(s"Part One: ${evaluatorOne(lines)}")
+            println(s"Part Two: ${evaluatorTwo(lines)}")
+        }
+        case Failure(exception) => {
+            println(s"Error reading file: ${exception.getMessage}")
+        }
+    }
+}
