@@ -136,7 +136,7 @@ fun readLinesFromFile(filePath: String): Result<List<String>> =
     runCatching { File(filePath).readLines() }
 
 fun main() {
-    readLinesFromFile("src/main/resources/aoc2018/day24.txt")
+    readLinesFromFile("src/main/resources/aoc2018/day23.txt")
         .onSuccess {
             println("Part One: ${evaluatorOne(it)}")
             println("Part Two: ${evaluatorTwo(it)}")
