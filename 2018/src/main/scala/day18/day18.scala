@@ -7,18 +7,19 @@ import scala.collection.mutable.Map
 def step(mtx: List[String]): List[String] = {
     var res = List.empty[String]
 
-    val crow = mtx.length
-    val ccol = mtx(0).length
+    val height = mtx.length
+    val width = mtx(0).length
   
-    for (irow <- 0 until crow) {
+    for (y <- 0 until height) {
         var line = ""
-        for (icol <- 0 until ccol) {
+
+        for (x <- 0 until width) {
             var (tree, lumberyard, empty) = (0, 0, 0)
       
-            for (drow <- Seq(-1, 0, 1); dcol <- Seq(-1, 0, 1) if drow != 0 || dcol != 0) {
-                val (icolT, irowT) = (icol + dcol, irow + drow)
-                if (icolT >= 0 && icolT < ccol && irowT >= 0 && irowT < crow) {
-                    mtx(irowT)(icolT) match {
+            for (dy <- Seq(-1, 0, 1); dx <- Seq(-1, 0, 1) if dy != 0 || dx != 0) {
+                val (xT, yT) = (x + dx, y + dy)
+                if (xT >= 0 && xT < width && yT >= 0 && yT < height) {
+                    mtx(yT)(xT) match {
                         case '#' => lumberyard += 1
                         case '|' => tree += 1
                         case '.' => empty += 1
@@ -27,7 +28,7 @@ def step(mtx: List[String]): List[String] = {
                 }
             }
 
-            line += (mtx(irow)(icol) match {
+            line += (mtx(y)(x) match {
                 case '#' if lumberyard >= 1 && tree >= 1 => '#'
                 case '|' if lumberyard >= 3 => '#'
                 case '.' if tree >= 3 => '|'

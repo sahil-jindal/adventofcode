@@ -26,22 +26,22 @@ def solver(gridOriginal: Array[Array[Int]], D: Int): (Int, Int, Int) = {
     var grid = Array.ofDim[Int](300, 300)
 
     for (d <- 1 to D) {
-        for (irow <- 0 until 300 - d) {
-            for (icol <- 0 until 300) {
-                grid(irow)(icol) += gridOriginal(irow + d - 1)(icol)
+        for (y <- 0 until 300 - d) {
+            for (x <- 0 until 300) {
+                grid(y)(x) += gridOriginal(y + d - 1)(x)
             }
         
-            for (icol <- 0 until 300 - d) {
+            for (x <- 0 until 300 - d) {
                 var totalPower = 0;
 
                 for (i <- 0 until d) {
-                    totalPower += grid(irow)(icol + i)
+                    totalPower += grid(y)(x + i)
                 }
 
                 if (totalPower > maxTotalPower) {
                     maxTotalPower = totalPower;
-                    yMax = irow + 1;
-                    xMax = icol + 1;
+                    yMax = y + 1;
+                    xMax = x + 1;
                     dMax = d;
                 }
             }
