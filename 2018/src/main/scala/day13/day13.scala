@@ -117,7 +117,8 @@ def solver(lines: List[String]): Unit = {
         carts = carts.filter(!_.crashed)
 
         if (firstCollision.isDefined && !partOneSolved) {
-            println(s"Part One: ${firstCollision.get._1},${firstCollision.get._2}")
+            val (x, y) = firstCollision.get
+            println(s"Part One: $x,$y")
             partOneSolved = true
         }
     }

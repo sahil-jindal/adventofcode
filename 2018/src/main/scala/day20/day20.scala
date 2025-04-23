@@ -8,15 +8,17 @@ case class Point(x: Int, y: Int) {
     def move(dx: Int, dy: Int): Point = Point(x + dx, y + dy)
 }
 
-def doors(input: String): List[(Point, Point)] = {
+case class Pair(posFrom: Point, posTo: Point)
+
+def doors(input: String): List[Pair] = {
     val s = Stack.empty[Point]
     var pos = Point(0, 0)
     
     return input.collect {
-        case 'N' => val prev = pos; pos = pos.move(0, -1); Seq((prev, pos), (pos, prev))
-        case 'S' => val prev = pos; pos = pos.move(0, 1); Seq((prev, pos), (pos, prev))
-        case 'E' => val prev = pos; pos = pos.move(1, 0); Seq((prev, pos), (pos, prev))
-        case 'W' => val prev = pos; pos = pos.move(-1, 0); Seq((prev, pos), (pos, prev))
+        case 'N' => val prev = pos; pos = pos.move(0, -1); Seq(Pair(prev, pos), Pair(pos, prev))
+        case 'S' => val prev = pos; pos = pos.move(0, 1); Seq(Pair(prev, pos), Pair(pos, prev))
+        case 'E' => val prev = pos; pos = pos.move(1, 0); Seq(Pair(prev, pos), Pair(pos, prev))
+        case 'W' => val prev = pos; pos = pos.move(-1, 0); Seq(Pair(prev, pos), Pair(pos, prev))
         case '(' => s.push(pos); Seq.empty
         case '|' => pos = s.top; Seq.empty
         case ')' => pos = s.pop(); Seq.empty
@@ -24,7 +26,7 @@ def doors(input: String): List[(Point, Point)] = {
 }
 
 def solver(input: String): (Int, Int) = {
-    val grid = doors(input).groupMap(_._1)(_._2)
+    val grid = doors(input).groupMap(_.posFrom)(_.posTo)
 
     val queue = Queue((Point(0, 0), 0))
     val seen = Set.empty[Point]
