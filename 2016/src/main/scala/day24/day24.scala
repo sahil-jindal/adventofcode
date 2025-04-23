@@ -27,21 +27,23 @@ def parseInput(grid: List[String]): (Map[Int, Point], Set[Point]) = {
 
 // A* Search to compute shortest paths between POIs
 def aStar(start: Point, goal: Point, walls: Set[Point]): Int = {
-    val openSet = PriorityQueue((0, start))(Ordering.by(-_._1))
-    val gScore = Map(start -> 0)
-
-    def heuristic(p: Point): Int = Math.abs(p.x - goal.x) + Math.abs(p.y - goal.y)
+    def evaluation(pair: (Int, Point)): Int = {
+        val (costSoFar, current) = pair
+        return costSoFar + (current.x - goal.x).abs + (current.y - goal.y).abs
+    }
+        
+    val openSet = PriorityQueue((0, start))(Ordering.by(evaluation).reverse)
+    val visited = Set.empty[Point]
 
     while (openSet.nonEmpty) {
-        val (_, current) = openSet.dequeue()
-        if (current == goal) return gScore(current)
-        for (dir <- directions) {
-            val neighbor = Point(current.x + dir.x, current.y + dir.y)
-            if (!walls.contains(neighbor)) {
-                val tentativeGScore = gScore(current) + 1
-                if (!gScore.contains(neighbor) || tentativeGScore < gScore(neighbor)) {
-                    gScore(neighbor) = tentativeGScore
-                    openSet.enqueue((tentativeGScore + heuristic(neighbor), neighbor))
+        val (costSoFar, current) = openSet.dequeue()
+        if (current == goal) return costSoFar
+        if (!visited.contains(current)) {
+            visited += current
+            for (dir <- directions) {
+                val neighbor = Point(current.x + dir.x, current.y + dir.y)
+                if (!walls.contains(neighbor) && !visited.contains(neighbor)) {
+                    openSet.enqueue((costSoFar + 1, neighbor))
                 }
             }
         }
