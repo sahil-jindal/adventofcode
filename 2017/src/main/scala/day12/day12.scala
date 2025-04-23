@@ -2,7 +2,7 @@ package day12
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Queue, Set, Stack}
+import scala.collection.mutable.{Set, Stack}
 
 def parseInput(lines: List[String]): Map[String, List[String]] = {
     return lines.map(line => {
