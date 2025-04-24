@@ -39,12 +39,12 @@ def solveSingle(start: Point, maze: Maze, allKeys: Set[Char]): Int = {
     val keyMask = allKeys.zipWithIndex.map { case (c, idx) => c -> (1 << idx) }.toMap
     val targetMask = (1 << allKeys.size) - 1
     val visited = mutable.Set.empty[(Point, Int)]
-    val queue = mutable.PriorityQueue.empty(Ordering.by[(Int, (Point, Int)), Int](-_._1))
+    val pq = mutable.PriorityQueue.empty(Ordering.by[(Int, (Point, Int)), Int](_._1).reverse)
 
-    queue.enqueue((0, (start, 0)))
+    pq.enqueue((0, (start, 0)))
 
-    while (queue.nonEmpty) {
-        val (dist, (pos, mask)) = queue.dequeue()
+    while (pq.nonEmpty) {
+        val (dist, (pos, mask)) = pq.dequeue()
         if (mask == targetMask) return dist
         
         if (!visited.contains((pos, mask))) {
@@ -56,7 +56,9 @@ def solveSingle(start: Point, maze: Maze, allKeys: Set[Char]): Int = {
 
                 if (!c.isUpper || (mask & keyMask.getOrElse(c.toLower, 0)) != 0) {
                     if (c.isLower) newMask |= keyMask.getOrElse(c, 0)
-                    if (!visited.contains((nextPos, newMask))) queue.enqueue((dist + 1, (nextPos, newMask)))
+                    if (!visited.contains((nextPos, newMask))) {
+                        pq.enqueue((dist + 1, (nextPos, newMask)))
+                    }
                 }
             }
         }
@@ -69,12 +71,12 @@ def solveMultiOptimized(starts: Seq[Point], maze: Maze, allKeys: Set[Char]): Int
     val keyMask = allKeys.zipWithIndex.map { case (c, idx) => c -> (1 << idx) }.toMap
 
     def bfsFrom(start: Point): Map[Char, (Int, Int)] = {
-        val queue = mutable.Queue((start, 0, 0))
+        val q = mutable.Queue((start, 0, 0))
         val seen = mutable.Set.empty[Point]    
         val result = mutable.Map.empty[Char, (Int, Int)]
 
-        while (queue.nonEmpty) {
-            val (p, dist, req) = queue.dequeue()
+        while (q.nonEmpty) {
+            val (p, dist, req) = q.dequeue()
 
             if (!seen.contains(p)) {
                 seen.add(p)
@@ -84,7 +86,7 @@ def solveMultiOptimized(starts: Seq[Point], maze: Maze, allKeys: Set[Char]): Int
                 
                 if (c.isLower && dist > 0) result(c) = (dist, newReq)
 
-                queue.enqueueAll(maze.getAdjacent(p).filterNot(seen.contains).map(n => (n, dist + 1, newReq)))
+                q.enqueueAll(maze.getAdjacent(p).filterNot(seen.contains).map(n => (n, dist + 1, newReq)))
             }
         }
         
@@ -92,7 +94,7 @@ def solveMultiOptimized(starts: Seq[Point], maze: Maze, allKeys: Set[Char]): Int
     }
 
     val sources = (starts.indices.map(_.toString) zip starts).toMap ++ maze.getKeyPositions.map { case (k, p) => k.toString -> p }
-    val graph = sources.view.mapValues(bfsFrom).mapValues(_.map { case (k, (d, r)) => (k, d, r) }.toList).toMap
+    val graph = sources.view.mapValues(it => bfsFrom(it).map { case (k, (d, r)) => (k, d, r) }.toList).toMap
 
     val targetMask = (1 << allKeys.size) - 1
     val memo = mutable.Map.empty[(Seq[String], Int), Int]

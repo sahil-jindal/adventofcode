@@ -23,16 +23,14 @@ def step(planets: List[Planet]): List[Planet] = {
         planet.pos.z += planet.vel.z
     }
 
-    planets
+    return planets
 }
 
 def simulate(input: List[String]): LazyList[List[Planet]] = {
-    val planets = input.map { line =>
-        val coords = "-?\\d+".r.findAllIn(line).map(_.toInt).toList
-        val pos = Point(coords(0), coords(1), coords(2))
-        val vel = Point(0, 0, 0)
-        Planet(pos, vel)
-    }
+    val planets = input.map(line => {
+        val List(x, y, z) = "-?\\d+".r.findAllIn(line).map(_.toInt).toList
+        Planet(Point(x, y, z), Point(0, 0, 0))
+    })
 
     return LazyList.iterate(planets)(step)
 }
@@ -41,18 +39,14 @@ def gcd(a: Long, b: Long): Long = if (b == 0) a else gcd(b, a % b)
 def lcm(a: Long, b: Long): Long = a * (b / gcd(a, b))
 
 def evaluatorOne(input: List[String]): Int = {
-    return simulate(input).drop(1000).head.foldLeft(0) { case (acc, planet) =>
-        val pot = planet.pos.absValue
-        val kin = planet.vel.absValue
-        acc + (pot * kin)
-    }
+    return simulate(input).drop(1000).head.map(planet => planet.pos.absValue * planet.vel.absValue).sum
 }
 
 def evaluatorTwo(input: List[String]): Long = {
     def findCycle(dimExtract: Planet => (Int, Int)): Long = {
         val states = Set.empty[List[Int]]
         return simulate(input).indexWhere { planets =>
-            val state = planets.flatMap(p => List(dimExtract(p)._1, dimExtract(p)._2))
+            val state = planets.map(dimExtract).flatMap { case (posD, vecD) => List(posD, vecD) }
             !states.add(state)
         }
     }

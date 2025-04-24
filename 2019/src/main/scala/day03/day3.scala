@@ -4,19 +4,20 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable
 
-case class GroupOne(dir: Char, amount: Int)
-case class GroupTwo(y: Int, x: Int, distance1: Int, distance2: Int)
+case class Point(y: Int, x: Int)
+case class Group(y: Int, x: Int, distance1: Int, distance2: Int)
 
 def parseInput(lines: List[String]) = lines.map(line => {
-    line.split(",").map { it => GroupOne(it.head, it.tail.toInt) }.toList
+    line.split(",").map(it => (it.head, it.tail.toInt)).toList
 })
 
-def trace(path: List[GroupOne]): Map[(Int, Int), Int] = {
-    val res = mutable.Map.empty[(Int, Int), Int]
-    var (y, x, distance) = (0, 0, 0)
+def trace(path: List[(Char, Int)]): Map[Point, Int] = {
+    val res = mutable.Map.empty[Point, Int]
+    var current = Point(0, 0)
+    var distance = 0
 
-    for (it <- path) {
-        val (dy, dx) = it.dir match {
+    for ((dir, amount) <- path) {
+        val (dy, dx) = dir match {
             case 'U' => (-1, 0)
             case 'D' => (1, 0)
             case 'R' => (0, -1)
@@ -24,13 +25,12 @@ def trace(path: List[GroupOne]): Map[(Int, Int), Int] = {
             case _ => throw Exception() 
         }
 
-        for (_ <- 0 until it.amount) {
-            y += dy
-            x += dx
+        for (_ <- 0 until amount) {
+            current = Point(current.y + dy, current.x + dx)
             distance += 1
 
-            if (!res.contains((y, x))) {
-                res.put((y, x), distance)
+            if (!res.contains(current)) {
+                res.put(current, distance)
             }
         }
     }
@@ -38,13 +38,13 @@ def trace(path: List[GroupOne]): Map[(Int, Int), Int] = {
     return res.toMap
 }
 
-def solve(paths: List[String], distance: GroupTwo => Int): Int = {
+def solve(paths: List[String], distance: Group => Int): Int = {
     val List(path1, path2) = parseInput(paths)
     val trace1 = trace(path1)
     val trace2 = trace(path2)
 
     val commonKeys = trace1.keySet & trace2.keySet
-    return commonKeys.map { it => distance(GroupTwo(it._1, it._2, trace1(it), trace2(it))) }.min
+    return commonKeys.map(it => distance(Group(it.y, it.x, trace1(it), trace2(it)))).min
 }
 
 def evaluatorOne(input: List[String]) = solve(input, it => it.x.abs + it.y.abs)

@@ -119,8 +119,8 @@ def evaluatorTwo(input: List[String]): Int = {
     for (_ <- 1 to 200) { levels = step(levels, recursiveNeighbours) }
 
     return (for {
-        level <- levels;
-        pos <- positions();
+        level <- levels
+        pos <- positions()
         if pos != Point(2, 2) && hasBug(level, pos.y, pos.x)
     } yield 1).sum
 }
