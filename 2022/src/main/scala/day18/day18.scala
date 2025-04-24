@@ -35,7 +35,7 @@ def getBounds(points: List[Point]): Bounds = {
 def within(bounds: Bounds, point: Point): Boolean = {
     bounds.min.x <= point.x && point.x <= bounds.max.x &&
     bounds.min.y <= point.y && point.y <= bounds.max.y &&
-    bounds.min.z <= point.z && point.z <= bounds.max.z;
+    bounds.min.z <= point.z && point.z <= bounds.max.z
 }
 
 def fillWithWater(from: Point, bounds: Bounds, lavaLocations: List[Point]): Set[Point] = {

@@ -21,10 +21,10 @@ case class Rect(x: Int, y: Int, width: Int, height: Int) {
     )
 
     def split(): Seq[Rect] = {
-        val w0 = width / 2;
-        val w1 = width - w0;
-        val h0 = height / 2;
-        val h1 = height - h0;
+        val w0 = width / 2
+        val w1 = width - w0
+        val h0 = height / 2
+        val h1 = height - h0
 
         return Seq(
             Rect(left, top, w0, h0),

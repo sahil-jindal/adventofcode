@@ -2,17 +2,16 @@ package day11
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Queue, PriorityQueue}
+import scala.collection.mutable.Queue
 
 case class Monkey(
-    val items: Queue[Long] = Queue.empty,
-    val operation: Long => Long = identity,
-    val mod: Int = 1,
-    val passToMonkeyIfDivides: Int = -1,
-    val passToMonkeyOtherwise: Int = -1
-) {
+    val items: Queue[Long],
+    val operation: Long => Long,
+    val mod: Int,
+    val passToMonkeyIfDivides: Int,
+    val passToMonkeyOtherwise: Int,
     var inspectedItems: Int = 0
-}
+)
 
 def groupLines(input: List[String]): List[List[String]] = {
     return input.foldLeft(List(List.empty[String])) {
@@ -71,16 +70,21 @@ def run(rounds: Int, monkeys: Array[Monkey], updateWorryLevel: Long => Long): Un
 }
 
 def getMonkeyBusinessLevel(monkeys: Array[Monkey]): Long = {
-    val sortedMax = PriorityQueue.empty[Long]
+    var topMost: Option[Long] = None
+    var secondMost: Option[Long] = None
 
     for(monkey <- monkeys) {
-        sortedMax += monkey.inspectedItems.toLong
+        val value = monkey.inspectedItems.toLong
+
+        if (topMost.isEmpty || value >= topMost.get) {
+            secondMost = topMost
+            topMost = Some(value)
+        } else if (secondMost.isEmpty || value >= secondMost.get) {
+            secondMost = Some(value)
+        }
     }
 
-    val topMost = sortedMax.dequeue()
-    val secondMost = sortedMax.dequeue()
-
-    return topMost * secondMost
+    return topMost.get * secondMost.get
 }
 
 def evaluatorOne(input: List[String]): Long = {

@@ -11,10 +11,10 @@ case class Elevation(value: Char)
 // locations on the map will be represented by the following structure of points-of-interests.
 case class Poi(symbol: Symbol, elevation: Elevation, distanceFromGoal: Int)
 
-val startSymbol = Symbol('S');
-val goalSymbol = Symbol('E');
-val lowestElevation = Elevation('a');
-val highestElevation = Elevation('z');
+val startSymbol = Symbol('S')
+val goalSymbol = Symbol('E')
+val lowestElevation = Elevation('a')
+val highestElevation = Elevation('z')
 
 def parseInput(input: List[String]): Map[Coord, Symbol] = {
     return (for {

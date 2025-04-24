@@ -89,7 +89,7 @@ def step(topology: Map[Char, List[Pair]], state: State): State = {
         }
     }
 
-    return new State(dstBlock, coord, dir);
+    return State(dstBlock, coord, dir)
 }
 
 def toGlobal(state: State) = { 

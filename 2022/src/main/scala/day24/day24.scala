@@ -36,7 +36,7 @@ case class Maps(private val map: List[String]) {
         if map(yN)(pos.x) == 'v' then return 'v'
         if map(yS)(pos.x) == '^' then return '^'
         
-        return '.';
+        return '.'
     }
 }
 

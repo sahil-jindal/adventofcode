@@ -38,7 +38,7 @@ def evaluatorOne(signals: List[Signal]): Int = {
 
 def evaluatorTwo(signals: List[Signal]): String = {
     val sprites = signals.map { case Signal(cycle, x) => 
-        var screenColumn = (cycle - 1) % 40;
+        var screenColumn = (cycle - 1) % 40
         if (x - screenColumn).abs < 2 then '#' else ' '    
     }
 
