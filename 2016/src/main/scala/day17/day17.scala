@@ -19,9 +19,9 @@ def routes(input: String): (String, Int) = {
     val pq = Queue(("", 0, 0))
 
     while pq.nonEmpty do {
-        val (path, irow, icol) = pq.dequeue()
+        val (path, y, x) = pq.dequeue()
 
-        if(icol == 3 && irow == 3) {
+        if(x == 3 && y == 3) {
             if path.length <= minDistanceLength then {
                 minDistanceLength = path.length
                 minDistance = path
@@ -34,10 +34,10 @@ def routes(input: String): (String, Int) = {
         } else {
             var Seq(up, down, left, right) = doorHash(input + path)
 
-            if (up && irow > 0) pq.enqueue((path + "U", irow - 1, icol))
-            if (down && irow < 3) pq.enqueue((path + "D", irow + 1, icol))
-            if (left && icol > 0) pq.enqueue((path + "L", irow, icol - 1))
-            if (right && icol < 3) pq.enqueue((path + "R", irow, icol + 1))
+            if (up && y > 0) pq.enqueue((path + "U", y - 1, x))
+            if (down && y < 3) pq.enqueue((path + "D", y + 1, x))
+            if (left && x > 0) pq.enqueue((path + "L", y, x - 1))
+            if (right && x < 3) pq.enqueue((path + "R", y, x + 1))
         }
     }
 

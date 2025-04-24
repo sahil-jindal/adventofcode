@@ -3,45 +3,45 @@ package day22
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Node(irow: Int, icol: Int, size: Int, used: Int, goal: Boolean = false) {
+case class Node(y: Int, x: Int, size: Int, used: Int, goal: Boolean = false) {
     val avail: Int = size - used
 }
 
 class Grid(nodes: Array[Array[Node]]) {
-    var irowEmpty: Int = 0
-    var icolEmpty: Int = 0
-    var moves: Int = 0
+    var yEmpty = 0
+    var xEmpty = 0
+    var moves = 0
 
     for { row <- nodes; node <- row if node.used == 0 } {
-        irowEmpty = node.irow
-        icolEmpty = node.icol
+        yEmpty = node.y
+        xEmpty = node.x
     }
 
-    val crow: Int = nodes.length
-    val ccol: Int = nodes.head.length
+    val height = nodes.length
+    val width = nodes.head.length
 
-    def wall(irow: Int, icol: Int): Boolean = {
-        nodes(irow)(icol).used > nodes(irowEmpty)(icolEmpty).size
+    def wall(y: Int, x: Int): Boolean = {
+        nodes(y)(x).used > nodes(yEmpty)(xEmpty).size
     }
 
-    def move(drow: Int, dcol: Int): Unit = {
-        require(math.abs(drow) + math.abs(dcol) == 1, "Invalid move")
+    def move(dy: Int, dx: Int): Unit = {
+        require(dy.abs + dx.abs == 1, "Invalid move")
 
-        val irowT = irowEmpty + drow
-        val icolT = icolEmpty + dcol
+        val yT = yEmpty + dy
+        val xT = xEmpty + dx
 
-        require(irowT >= 0 && irowT < crow, "Row out of bounds")
-        require(icolT >= 0 && icolT < ccol, "Column out of bounds")
-        require(nodes(irowT)(icolT).used <= nodes(irowEmpty)(icolEmpty).avail, "Move not possible")
+        require(yT >= 0 && yT < height, "Row out of bounds")
+        require(xT >= 0 && xT < width, "Column out of bounds")
+        require(nodes(yT)(xT).used <= nodes(yEmpty)(xEmpty).avail, "Move not possible")
 
-        nodes(irowEmpty)(icolEmpty) = nodes(irowEmpty)(icolEmpty).copy(
-            used = nodes(irowT)(icolT).used, 
-            goal = nodes(irowT)(icolT).goal
+        nodes(yEmpty)(xEmpty) = nodes(yEmpty)(xEmpty).copy(
+            used = nodes(yT)(xT).used, 
+            goal = nodes(yT)(xT).goal
         )
 
-        nodes(irowT)(icolT) = nodes(irowT)(icolT).copy(used = 0, goal = false)
-        irowEmpty = irowT
-        icolEmpty = icolT
+        nodes(yT)(xT) = nodes(yT)(xT).copy(used = 0, goal = false)
+        yEmpty = yT
+        xEmpty = xT
         moves += 1
     }
 }
@@ -49,18 +49,18 @@ class Grid(nodes: Array[Array[Node]]) {
 
 def parseInput(input: List[String]): Array[Array[Node]] = {
     val nodes = input.drop(2).map(line => {
-        val Seq(irow, icol, size, used) = "(\\d+)".r.findAllIn(line).map(_.toInt).toSeq
-        Node(irow, icol, size, used)
+        val Seq(y, x, size, used) = "(\\d+)".r.findAllIn(line).map(_.toInt).toSeq
+        Node(y, x, size, used)
     })
 
-    val crow = nodes.map(_.irow).max + 1
-    val ccol = nodes.map(_.icol).max + 1
+    val height = nodes.map(_.y).max + 1
+    val width = nodes.map(_.x).max + 1
 
-    val grid = Array.ofDim[Node](crow, ccol)
+    val grid = Array.ofDim[Node](height, width)
 
-    nodes.foreach(n => grid(n.irow)(n.icol) = n)
+    nodes.foreach(n => grid(n.y)(n.x) = n)
     
-    grid(0)(ccol - 1) = grid(0)(ccol - 1).copy(goal = true)
+    grid(0)(width - 1) = grid(0)(width - 1).copy(goal = true)
     
     return grid
 }
@@ -74,12 +74,12 @@ def evaluatorOne(nodes: Array[Array[Node]]): Int = {
 def evaluatorTwo(nodes: Array[Array[Node]]): Int = {
     val grid = new Grid(nodes)
 
-    while (grid.irowEmpty != 0) {
-        if (!grid.wall(grid.irowEmpty - 1, grid.icolEmpty)) grid.move(-1, 0)
+    while (grid.yEmpty != 0) {
+        if (!grid.wall(grid.yEmpty - 1, grid.xEmpty)) grid.move(-1, 0)
         else grid.move(0, -1)
     }
 
-    while (grid.icolEmpty != grid.ccol - 1) grid.move(0, 1)
+    while (grid.xEmpty != grid.width - 1) grid.move(0, 1)
 
     while (!nodes(0)(0).goal) {
         grid.move(1, 0)

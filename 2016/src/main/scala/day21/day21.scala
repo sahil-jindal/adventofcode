@@ -30,9 +30,9 @@ def reverse(input: Array[Char], pos1: Int, pos2: Int): Unit = {
 
 def rotateRight(input: Array[Char], pos: Int): Unit = {
     val t = pos % input.length
-    reverse(input, 0, input.length - 1);
-    reverse(input, 0, t - 1);
-    reverse(input, t, input.length - 1);
+    reverse(input, 0, input.length - 1)
+    reverse(input, 0, t - 1)
+    reverse(input, t, input.length - 1)
 }
 
 def executeInstructions(input: String, instructions: List[String]): String = {
@@ -54,9 +54,9 @@ def executeInstructions(input: String, instructions: List[String]): String = {
             }
             case operation3(a) => {
                 val t = a.toInt % temp.length
-                reverse(temp, 0, t - 1);
-                reverse(temp, t, temp.length - 1);
-                reverse(temp, 0, temp.length - 1);
+                reverse(temp, 0, t - 1)
+                reverse(temp, t, temp.length - 1)
+                reverse(temp, 0, temp.length - 1)
             }
             case operation4(a) => {
                 rotateRight(temp, a.toInt)
@@ -74,13 +74,13 @@ def executeInstructions(input: String, instructions: List[String]): String = {
                 val y = b.toInt
 
                 var d = if x < y then 1 else -1
-                var ch = temp(x);
+                var ch = temp(x)
 
                 for (i <- x + d until y + d by d) {
                     temp(i - d) = temp(i)
                 }
 
-                temp(y) = ch;
+                temp(y) = ch
             }
             case _ => println(s"Unrecognized instruction: $instruction")
         }

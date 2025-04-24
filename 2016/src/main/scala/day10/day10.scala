@@ -2,24 +2,24 @@ package day10
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.Map
+import scala.collection.mutable.{Map, ListBuffer}
 
 sealed trait Destination
 case class Bot(id: Int) extends Destination
 case class Output(id: Int) extends Destination
 
-def parseInstructions(input: List[String]): (Map[Int, List[Int]], Map[Int, (Destination, Destination)]) = {
+def parseInstructions(input: List[String]): (Map[Int, ListBuffer[Int]], Map[Int, (Destination, Destination)]) = {
     val valuePattern = """value (\d+) goes to bot (\d+)""".r
     val botPattern = """bot (\d+) gives low to (bot|output) (\d+) and high to (bot|output) (\d+)""".r
 
-    val initialValues = Map.empty[Int, List[Int]].withDefaultValue(List())
+    val initialValues = Map.empty[Int, ListBuffer[Int]]
     val rules = Map.empty[Int, (Destination, Destination)]
 
     for (line <- input) {
         line match {
             case valuePattern(value, bot) => {
                 val botId = bot.toInt
-                initialValues(botId) = initialValues(botId) :+ value.toInt
+                initialValues.getOrElseUpdate(botId, ListBuffer.empty) += value.toInt
             }
             case botPattern(botId, lowType, lowId, highType, highId) => {
                 val lowDest = if (lowType == "bot") Bot(lowId.toInt) else Output(lowId.toInt)
@@ -36,8 +36,8 @@ def parseInstructions(input: List[String]): (Map[Int, List[Int]], Map[Int, (Dest
 def solve(input: List[String], targetLow: Int = 17, targetHigh: Int = 61): (Int, Int) = {
     val (initialValues, rules) = parseInstructions(input)
 
-    val botValues = Map.empty[Int, List[Int]].withDefaultValue(List())
-    val outputValues = Map.empty[Int, List[Int]].withDefaultValue(List())
+    val botValues = Map.empty[Int, ListBuffer[Int]]
+    val outputValues = Map.empty[Int, ListBuffer[Int]]
     var targetBot = -1
 
     for ((botId, values) <- initialValues) {
@@ -63,17 +63,17 @@ def solve(input: List[String], targetLow: Int = 17, targetHigh: Int = 61): (Int,
             }
             
             val (lowDest, highDest) = rules(botId)
-            
-            botValues(botId) = List()
-            
+
+            botValues(botId) = ListBuffer.empty
+
             lowDest match {
-                case Bot(id) => botValues(id) :+= lowValue
-                case Output(id) => outputValues(id) :+= lowValue
+                case Bot(id) => botValues.getOrElseUpdate(id, ListBuffer.empty) += lowValue
+                case Output(id) => outputValues.getOrElseUpdate(id, ListBuffer.empty) += lowValue
             }
             
             highDest match {
-                case Bot(id) => botValues(id) :+= highValue
-                case Output(id) => outputValues(id) :+= highValue
+                case Bot(id) => botValues.getOrElseUpdate(id, ListBuffer.empty) += highValue
+                case Output(id) => outputValues.getOrElseUpdate(id, ListBuffer.empty) += highValue
             }
         }
     }

@@ -32,18 +32,18 @@ def aStar(start: Point, goal: Point, walls: Set[Point]): Int = {
         return costSoFar + (current.x - goal.x).abs + (current.y - goal.y).abs
     }
         
-    val openSet = PriorityQueue((0, start))(Ordering.by(evaluation).reverse)
+    val pq = PriorityQueue((0, start))(Ordering.by(evaluation).reverse)
     val visited = Set.empty[Point]
 
-    while (openSet.nonEmpty) {
-        val (costSoFar, current) = openSet.dequeue()
+    while (pq.nonEmpty) {
+        val (costSoFar, current) = pq.dequeue()
         if (current == goal) return costSoFar
         if (!visited.contains(current)) {
             visited += current
             for (dir <- directions) {
                 val neighbor = Point(current.x + dir.x, current.y + dir.y)
                 if (!walls.contains(neighbor) && !visited.contains(neighbor)) {
-                    openSet.enqueue((costSoFar + 1, neighbor))
+                    pq.enqueue((costSoFar + 1, neighbor))
                 }
             }
         }
@@ -64,12 +64,14 @@ def precomputeDistances(locations: Map[Int, Point], walls: Set[Point]): Map[(Int
 
 // A* for solving TSP using state-space search
 def tspAStar(start: Int, numLocations: Int, dist: Map[(Int, Int), Int], returnToStart: Boolean): Int = {
-    val openSet = PriorityQueue(State(0, start, 1 << start))(Ordering.by(-_.cost))
+    val pq = PriorityQueue.empty(Ordering.by[State, Int](_.cost).reverse)
     val best = Map.empty[(Int, Int), Int].withDefaultValue(Int.MaxValue)
     var minCost = Int.MaxValue
 
-    while (openSet.nonEmpty) {
-        val State(cost, pos, visited) = openSet.dequeue()
+    pq.enqueue(State(0, start, 1 << start))
+
+    while (pq.nonEmpty) {
+        val State(cost, pos, visited) = pq.dequeue()
         
         if (visited == (1 << numLocations) - 1) {
             val finalCost = if (returnToStart) cost + dist((pos, start)) else cost
@@ -81,7 +83,7 @@ def tspAStar(start: Int, numLocations: Int, dist: Map[(Int, Int), Int], returnTo
                 
                 if (newCost < best((next, newVisited))) {
                     best((next, newVisited)) = newCost
-                    openSet.enqueue(State(newCost, next, newVisited))
+                    pq.enqueue(State(newCost, next, newVisited))
                 }
             }
         }

@@ -2,12 +2,13 @@ package day11
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Set, Queue, Map}
+import scala.collection.mutable.{Set, Queue, Map, ListBuffer}
 
-case class State(elevator: Int, elements: List[(Int, Int)])
+case class Pair(g: Int, c: Int)
+case class State(elevator: Int, elements: List[Pair])
 
-def parseInput(input: List[String]): Map[String, (Int, Int)] = {
-    val elementMap = Map.empty[String, (Int, Int)].withDefaultValue((0, 0))
+def parseInput(input: List[String]): Map[String, Pair] = {
+    val elementMap = Map.empty[String, Pair].withDefaultValue(Pair(0, 0))
 
     for ((line, idx) <- input.zipWithIndex) {
         val floor = idx + 1
@@ -15,17 +16,17 @@ def parseInput(input: List[String]): Map[String, (Int, Int)] = {
         val generators = "([a-z]+) generator".r.findAllMatchIn(line).map(_.group(1))
         val microchips = "([a-z]+)-compatible microchip".r.findAllMatchIn(line).map(_.group(1))
         
-        generators.foreach { element => elementMap(element) = (floor, elementMap(element)._2) }
-        microchips.foreach { element => elementMap(element) = (elementMap(element)._1, floor) }
+        generators.foreach { element => elementMap(element) = Pair(floor, elementMap(element).c) }
+        microchips.foreach { element => elementMap(element) = Pair(elementMap(element).g, floor) }
     }
     
     return elementMap
 }
 
-def isValid(elements: List[(Int, Int)]): Boolean = {
+def isValid(elements: List[Pair]): Boolean = {
     return (1 to 4).forall { floor =>
-        val generators = elements.exists { case (a, _) => a == floor }
-        val chips = elements.exists { case (a, b) => a != floor && b == floor }
+        val generators = elements.exists(_.g == floor)
+        val chips = elements.exists(it => it.g != floor && it.c == floor)
         !(generators && chips)
     }
 }
@@ -33,11 +34,11 @@ def isValid(elements: List[(Int, Int)]): Boolean = {
 def nextStates(current: State): List[State] = {
     val State(currentFloor, elements) = current
 
-    val items = elements.zipWithIndex.flatMap { case ((g, c), i) =>
-        var list = List.empty[(Int, Char)]
-        if (g == currentFloor) list = list :+ (i, 'G')
-        if (c == currentFloor) list = list :+ (i, 'M')
-        list
+    val items = elements.zipWithIndex.flatMap { case (it, i) =>
+        val list = ListBuffer.empty[(Int, Char)]
+        if (it.g == currentFloor) list += ((i, 'G'))
+        if (it.c == currentFloor) list += ((i, 'M'))
+        list.toList
     }
 
     val combinations = items.combinations(1).toList ++ items.combinations(2).toList
@@ -45,21 +46,21 @@ def nextStates(current: State): List[State] = {
 
     return combinations.flatMap { combo =>
         newFloors.flatMap { newFloor =>
-            val newElements = elements.zipWithIndex.map { case ((g, c), idx) =>
+            val newElements = elements.zipWithIndex.map { case (it, idx) =>
                 val moves = combo.collect { case (i, t) if i == idx => t }
-                val newG = if (moves.contains('G')) newFloor else g
-                val newC = if (moves.contains('M')) newFloor else c
-                (newG, newC)
+                val newG = if (moves.contains('G')) newFloor else it.g
+                val newC = if (moves.contains('M')) newFloor else it.c
+                Pair(newG, newC)
             }
         
-            val sortedElements = newElements.sortBy(t => (t._1, t._2))
+            val sortedElements = newElements.sortBy(t => (t.g, t.c))
             val newState = State(newFloor, sortedElements)
             if (isValid(sortedElements)) Some(newState) else None
         }
     }
 }
 
-def isGoal(state: State): Boolean = state.elements.forall { case (g, c) => g == 4 && c == 4 }
+def isGoal(state: State): Boolean = state.elements.forall(it => it.g == 4 && it.c == 4)
 
 def bfs(initial: State): Int = {
     val queue = Queue((initial, 0))
@@ -86,8 +87,8 @@ def solver(input: List[String]): Unit = {
     
     println(s"Part One: ${bfs(State(1, initialElements.values.toList))}")
     
-    initialElements("elerium") = (1, 1)
-    initialElements("dilithium") = (1, 1)
+    initialElements("elerium") = Pair(1, 1)
+    initialElements("dilithium") = Pair(1, 1)
     
     println(s"Part Two: ${bfs(State(1, initialElements.values.toList))}")
 }
