@@ -15,25 +15,25 @@ def ints(pattern: String, lines: List[String], index: Int): Option[List[Int]] = 
 
 def parseInput(lines: List[String]): (List[TestCase], List[Array[Int]]) = {
     var iline = 0
-    var testCases = List.empty[TestCase]
+    var testCases = mutable.ListBuffer.empty[TestCase]
     
     while (ints("Before: \\[(\\d+), (\\d+), (\\d+), (\\d+)\\]", lines, iline).isDefined) {
         val regsBefore = ints("Before: \\[(\\d+), (\\d+), (\\d+), (\\d+)\\]", lines, iline).get
         val stm = ints("(\\d+) (\\d+) (\\d+) (\\d+)", lines, iline + 1).get.toArray
         val regsAfter = ints("After:  \\[(\\d+), (\\d+), (\\d+), (\\d+)\\]", lines, iline + 2).get
         iline += 4
-        testCases :+= TestCase(regsBefore, regsAfter, stm)
+        testCases += TestCase(regsBefore, regsAfter, stm)
     }
 
     iline += 2
-    var prg = List.empty[Array[Int]]
+    var prg = mutable.ListBuffer.empty[Array[Int]]
     
     while (iline < lines.length && ints("(\\d+) (\\d+) (\\d+) (\\d+)", lines, iline).isDefined) {
-        prg :+= ints("(\\d+) (\\d+) (\\d+) (\\d+)", lines, iline).get.toArray
+        prg += ints("(\\d+) (\\d+) (\\d+) (\\d+)", lines, iline).get.toArray
         iline += 1
     }
 
-    return (testCases, prg)
+    return (testCases.toList, prg.toList)
 }
 
 def step(regs: List[Int], stm: Array[Int]): List[Int] = {

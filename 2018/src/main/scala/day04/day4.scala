@@ -2,6 +2,7 @@ package day04
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
+import scala.collection.mutable.ListBuffer
 import com.github.nscala_time.time.Imports._
 
 case class Day(guard: Int, sleep: Array[Int]) {
@@ -16,7 +17,7 @@ def extractMinute(line: String): Int = {
 def parseInput(input: List[String]): Seq[Day] = {
     val lines = input.sorted
     
-    var result = Seq.empty[Day]
+    val result = ListBuffer.empty[Day]
     var iline = 0
     
     while (iline < lines.length) {
@@ -35,10 +36,10 @@ def parseInput(input: List[String]): Seq[Day] = {
             for (min <- start until end) { sleep(min) = 1 }
         }
 
-        result :+= Day(guard, sleep)
+        result += Day(guard, sleep)
     }
 
-    return result
+    return result.toSeq
 }
 
 def evaluatorOne(records: Seq[Day]): Int = {

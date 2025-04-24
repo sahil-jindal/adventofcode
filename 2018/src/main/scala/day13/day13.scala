@@ -2,7 +2,7 @@ package day13
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable
 
 sealed trait Direction
 case object Up extends Direction
@@ -18,29 +18,29 @@ case object RightTurn extends Turn
 case class Cart(var x: Int, var y: Int, var dir: Direction, var nextTurn: Turn, var crashed: Boolean)
 
 def parseInput(lines: List[String]): (Map[(Int, Int), Char], List[Cart]) = {
-    var trackMap = Map.empty[(Int, Int), Char]
-    var carts = List.empty[Cart]
+    var trackMap = mutable.Map.empty[(Int, Int), Char]
+    var carts = mutable.ListBuffer.empty[Cart]
 
     for ((row, y) <- lines.zipWithIndex; (c, x) <- row.zipWithIndex) {
         c match {
             case '^' =>
-                trackMap += (y, x) -> '|'
-                carts :+= Cart(x, y, Up, LeftTurn, crashed = false)
+                trackMap((y, x)) = '|'
+                carts += Cart(x, y, Up, LeftTurn, crashed = false)
             case 'v' =>
-                trackMap += (y, x) -> '|'
-                carts :+= Cart(x, y, Down, LeftTurn, crashed = false)
+                trackMap((y, x)) = '|'
+                carts += Cart(x, y, Down, LeftTurn, crashed = false)
             case '<' =>
-                trackMap += (y, x) -> '-'
-                carts :+= Cart(x, y, Left, LeftTurn, crashed = false)
+                trackMap((y, x)) = '-'
+                carts += Cart(x, y, Left, LeftTurn, crashed = false)
             case '>' =>
-                trackMap += (y, x) -> '-'
-                carts :+= Cart(x, y, Right, LeftTurn, crashed = false)
+                trackMap((y, x)) = '-'
+                carts += Cart(x, y, Right, LeftTurn, crashed = false)
             case _ =>
-                trackMap += (y, x) -> c
+                trackMap((y, x)) = c
         }
     }
 
-    return (trackMap, carts)
+    return (trackMap.toMap, carts.toList)
 }
 
 def solver(lines: List[String]): Unit = {

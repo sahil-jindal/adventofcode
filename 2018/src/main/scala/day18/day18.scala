@@ -2,16 +2,16 @@ package day18
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.Map
+import scala.collection.mutable.{Map, ListBuffer}
 
 def step(mtx: List[String]): List[String] = {
-    var res = List.empty[String]
+    var res = ListBuffer.empty[String]
 
     val height = mtx.length
     val width = mtx(0).length
   
     for (y <- 0 until height) {
-        var line = ""
+        val line = new StringBuffer
 
         for (x <- 0 until width) {
             var (tree, lumberyard, empty) = (0, 0, 0)
@@ -28,7 +28,7 @@ def step(mtx: List[String]): List[String] = {
                 }
             }
 
-            line += (mtx(y)(x) match {
+            line.append(mtx(y)(x) match {
                 case '#' if lumberyard >= 1 && tree >= 1 => '#'
                 case '|' if lumberyard >= 3 => '#'
                 case '.' if tree >= 3 => '|'
@@ -37,10 +37,10 @@ def step(mtx: List[String]): List[String] = {
             })
         }
         
-        res :+= line
+        res += line.toString()
     }
 
-    return res
+    return res.toList
 }
 
 def iterate(input: List[String], lim: Int): Int = {
@@ -77,7 +77,6 @@ def evaluatorTwo(input: List[String]): Int = iterate(input, 1000000000)
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-@main
 def hello(): Unit = {
     readLinesFromFile("day18.txt") match {
         case Success(lines) => {

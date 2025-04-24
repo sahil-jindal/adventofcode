@@ -56,14 +56,14 @@ def evaluatorTwo(input: List[String]): Int = {
     
         return moves :+ (pos, switchTool, 7)
     }
+
+    def evaluation(group: (Point, Tool, Int)): Int = {
+        val (pos, _, time) = group
+        return time + (target.x - pos.x).abs + (target.y - pos.y).abs
+    }
     
-    val pq = PriorityQueue.empty(Ordering.by[(Point, Tool, Int), Int] { case (pos, _, time) =>
-        -(time + (target.x - pos.x).abs + (target.y - pos.y).abs) // Negative for max-heap
-    })
-
+    val pq = PriorityQueue((Point(0, 0), Tool.Torch, 0))(Ordering.by(evaluation).reverse)
     val seen = Set.empty[(Point, Tool)]
-
-    pq.enqueue((Point(0, 0), Tool.Torch, 0))
 
     while (pq.nonEmpty) {
         val (pos, tool, t) = pq.dequeue()

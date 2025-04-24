@@ -1,9 +1,9 @@
 package day14
 
-import scala.collection.mutable.Queue
+import scala.collection.mutable.{ListBuffer, Queue}
 
 def evaluatorOne(num: Int): String = {
-    var scoreboard = Vector(3, 7)
+    val scoreboard = ListBuffer(3, 7)
     var (pos1, pos2) = (0, 1)
 
     while (scoreboard.size < num + 10) {
@@ -11,8 +11,8 @@ def evaluatorOne(num: Int): String = {
         val b = scoreboard(pos2)
         val sum = a + b
 
-        if(sum >= 10) scoreboard :+= sum / 10
-        scoreboard :+= sum % 10
+        if(sum >= 10) scoreboard += sum / 10
+        scoreboard += sum % 10
 
         val newLength = scoreboard.size
         pos1 = (pos1 + a + 1) % newLength
@@ -24,9 +24,9 @@ def evaluatorOne(num: Int): String = {
 
 def evaluatorTwo(num: Int): Int = {
     val target = num.toString.map(_.asDigit).toList
-    var scoreboard = Vector(3, 7)
+    val scoreboard = ListBuffer(3, 7)
     var (pos1, pos2) = (0, 1)
-    val buffer = Queue[Int](3, 7)
+    val buffer = Queue(3, 7)
 
     def addAndCheck(num: Int): Boolean = {
         buffer.enqueue(num)
@@ -42,8 +42,8 @@ def evaluatorTwo(num: Int): Int = {
         if (sum >= 10 && addAndCheck(sum / 10)) return scoreboard.size - target.length + 1
         if (addAndCheck(sum % 10)) return scoreboard.size - target.length
 
-        if(sum >= 10) scoreboard :+= sum / 10
-        scoreboard :+= sum % 10
+        if(sum >= 10) scoreboard += sum / 10
+        scoreboard += sum % 10
         
         val newLength = scoreboard.size
         pos1 = (pos1 + a + 1) % newLength

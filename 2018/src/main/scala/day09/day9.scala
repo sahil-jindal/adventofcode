@@ -10,32 +10,32 @@ val matchRegex = "(\\d+) players; last marble is worth (\\d+) points".r
 def solver(line: String, mul: Int): Long = {
     val m = matchRegex.findFirstMatchIn(line).get
     var players = Array.ofDim[Long](m.group(1).toInt)
-    var targetPoints = m.group(2).toInt * mul;
+    var targetPoints = m.group(2).toInt * mul
 
     var current = new Node(value = 0)
-    current.left = current;
-    current.right = current;
+    current.left = current
+    current.right = current
 
-    var points = 1;
-    var iplayer = 1;
+    var points = 1
+    var iplayer = 1
 
     while (points <= targetPoints) {
         if (points % 23 == 0) {
-            for (_ <- 0 until 7) do current = current.left;
+            for (_ <- 0 until 7) do current = current.left
 
-            players(iplayer) += points + current.value;
+            players(iplayer) += points + current.value
 
-            val left = current.left;
-            val right = current.right;
-            right.left = left;
-            left.right = right;
-            current = right;
+            val left = current.left
+            val right = current.right
+            right.left = left
+            left.right = right
+            current = right
         } else {
-            val left = current.right;
-            val right = current.right.right;
+            val left = current.right
+            val right = current.right.right
             current = Node(value = points, left = left, right = right)
-            left.right = current;
-            right.left = current;
+            left.right = current
+            right.left = current
         }
 
         points += 1
