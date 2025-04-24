@@ -24,14 +24,14 @@ def solve(input: List[String], partOne: Boolean): Long = {
             }
         }
 
-        opStack.push('(');
+        opStack.push('(')
 
         for (ch <- line) {
             ch match {
                 case ' ' => ()
-                case '*' => evalUtil("("); opStack.push('*');  
-                case '+' => evalUtil((if partOne then "(" else "(*")); opStack.push('+'); 
-                case '(' => opStack.push('(');
+                case '*' => evalUtil("("); opStack.push('*') 
+                case '+' => evalUtil((if partOne then "(" else "(*")); opStack.push('+') 
+                case '(' => opStack.push('(')
                 case ')' => evalUtil("("); opStack.pop()
                 case _   => valStack.push(ch.asDigit)
             }        
@@ -42,7 +42,7 @@ def solve(input: List[String], partOne: Boolean): Long = {
         sum += valStack.head
     }
 
-    return sum;
+    return sum
 }
 
 def evaluatorOne(input: List[String]) = solve(input, true)

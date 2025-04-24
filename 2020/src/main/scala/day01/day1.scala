@@ -7,7 +7,7 @@ def parseInput(input: List[String]): Set[Int] = input.map(_.toInt).toSet
 
 def evaluatorOne(numbers: Set[Int]): Int = {
     return (for {
-        x <- numbers;
+        x <- numbers
         y = 2020 - x
         if numbers.contains(y)
     } yield x * y).head
@@ -15,8 +15,8 @@ def evaluatorOne(numbers: Set[Int]): Int = {
 
 def evaluatorTwo(numbers: Set[Int]): Int = {
     return (for {
-        x <- numbers;
-        y <- numbers;
+        x <- numbers
+        y <- numbers
         z = 2020 - x - y
         if numbers.contains(z)
     } yield x * y * z).head

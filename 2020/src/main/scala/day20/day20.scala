@@ -196,9 +196,9 @@ def assembleImage(tiles: List[Tile]): Array[Array[Char]] = {
         val leftTile = arrangementGrid(0)(x - 1)
         val leftBorder = leftTile.currentBorders(1)  // Right border of left tile
       
-        val matchingTileId = borderMatches
-            .filter(m => m._2.contains(leftBorder) && !arrangementGrid.flatten.exists(t => t != null && t.id == m._1))
-            .keys.head
+        val matchingTileId = borderMatches.filter { case (id, matches) => 
+            matches.contains(leftBorder) && !arrangementGrid.flatten.exists(t => t != null && t.id == id)
+        }.keys.head
       
         val matchingTile = tilesById(matchingTileId)
         val orientedTile = orientTileToMatchLeft(matchingTile, leftBorder)
@@ -211,9 +211,9 @@ def assembleImage(tiles: List[Tile]): Array[Array[Char]] = {
             val topTile = arrangementGrid(y - 1)(x)
             val topBorder = topTile.currentBorders(2)  // Bottom border of top tile
         
-            val matchingTileId = borderMatches
-                .filter(m => m._2.contains(topBorder) && !arrangementGrid.flatten.exists(t => t != null && t.id == m._1))
-                .keys.head
+            val matchingTileId = borderMatches.filter { case (id, matches) => 
+                matches.contains(topBorder) && !arrangementGrid.flatten.exists(t => t != null && t.id == id)
+            }.keys.head
         
             val matchingTile = tilesById(matchingTileId)
             val orientedTile = orientTileToMatchTop(matchingTile, topBorder)
