@@ -6,19 +6,19 @@ import scala.io.Source
 def evaluatorOne(line: String): Long = {
     val Seq(rowDst, colDst) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toSeq
 
-    var m = 20151125L;
-    var (irow, icol) = (1, 1);
+    var m = 20151125L
+    var (y, x) = (1, 1)
     
-    while (irow != rowDst || icol != colDst) {
-        irow -= 1
-        icol += 1
+    while (y != rowDst || x != colDst) {
+        y -= 1
+        x += 1
             
-        if (irow == 0) {
-            irow = icol;
-            icol = 1;
+        if (y == 0) {
+            y = x
+            x = 1
         }
         
-        m = (m * 252533L) % 33554393L;
+        m = (m * 252533L) % 33554393L
     }
     
     return m
