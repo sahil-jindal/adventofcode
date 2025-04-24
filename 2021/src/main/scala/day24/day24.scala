@@ -46,7 +46,7 @@ def getSerials(input: List[String]): (String, String) = {
 
             // Find the best a and b so that the equation holds
             for(a <- digits) {
-                val b = a + shift;
+                val b = a + shift
 
                 if (digits.contains(b)) {
                     if (a > max(i)) {

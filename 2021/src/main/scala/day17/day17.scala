@@ -17,8 +17,8 @@ def solve(input: String): List[Int] = {
     val res = ListBuffer.empty[Int]
 
     for (vx0 <- vx0Min to vx0Max; vy0 <- vy0Min to vy0Max) {
-        var (x, y, vx, vy) = (0, 0, vx0, vy0);
-        var maxY = 0;
+        var (x, y, vx, vy) = (0, 0, vx0, vy0)
+        var maxY = 0
 
         breakable {
             while (x <= xMax && y >= yMin) {

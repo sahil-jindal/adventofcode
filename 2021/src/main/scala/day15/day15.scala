@@ -6,11 +6,11 @@ import scala.collection.mutable
 
 case class Point(x: Int, y: Int)
 
-def parseInput(lines: List[String]): Map[Point, Int] = {
+def parseInput(input: List[String]): Map[Point, Int] = {
     return (for {
-        y <- lines.indices;
-        x <- lines(y).indices
-    } yield Point(x, y) -> lines(y)(x).asDigit).toMap
+        (line, y) <- input.zipWithIndex
+        (ch, x) <- line.zipWithIndex
+    } yield Point(x, y) -> ch.asDigit).toMap
 }
 
 def neighbours(point: Point): Seq[Point] = Seq(

@@ -31,7 +31,7 @@ def explore(input: List[String], partTwo: Boolean): Int = {
             }
         }
 
-        return res;
+        return res
     }
 
     return pathCount("start", Set("start"), false)

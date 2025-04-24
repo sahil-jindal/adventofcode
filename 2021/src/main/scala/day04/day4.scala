@@ -2,7 +2,6 @@ package day04
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.util.control.Breaks._
 import scala.collection.mutable.{ListBuffer, Set}
 
 case class Cell(number: String, marked: Boolean = false)
@@ -16,18 +15,15 @@ case class BingoBoard(st: List[String]) {
 
     def addNumber(number: String): Unit = {
         val index = cells.indexWhere(_.number == number)
-        if (index < 0) return;
+        if (index < 0) return
         
         cells = cells.updated(index, cells(index).copy(marked = true))
 
-        breakable {
-            for (i <- 0 until 5) {
-                if (cellsInRow(i).forall(_.marked) || cellsInCol(i).forall(_.marked)) {
-                    val unmarkedSum = cells.collect { case Cell(number, marked) if !marked => number.toInt }.sum
-                    score = number.toInt * unmarkedSum
-                    break()
-                }
-            }
+        val gameEnded = (0 until 5).exists(i => cellsInRow(i).forall(_.marked) || cellsInCol(i).forall(_.marked))
+        
+        if (gameEnded) {
+            val unmarkedSum = cells.collect { case Cell(number, marked) if !marked => number.toInt }.sum
+            score = number.toInt * unmarkedSum
         }
     }
 }

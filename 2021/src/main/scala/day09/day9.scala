@@ -8,9 +8,9 @@ case class Point(x: Int, y: Int)
 
 def parseInput(map: List[String]): Map[Point, Int] = {
     return (for { 
-        y <- 0 until map.length; 
-        x <- 0 until map(0).length
-    } yield Point(x, y) -> map(y)(x).asDigit ).toMap
+        (line, y) <- map.zipWithIndex 
+        (ch, x) <- line.zipWithIndex 
+    } yield Point(x, y) -> ch.asDigit ).toMap
 }
 
 def neighbours(point: Point): Seq[Point] = {

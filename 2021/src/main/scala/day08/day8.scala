@@ -49,7 +49,7 @@ def evaluatorTwo(input: List[Pair]): Int = {
         res += pair.second.foldLeft(0) { case (n, digit) => n * 10 + decode(digit) }
     }
 
-    return res;
+    return res
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

@@ -2,7 +2,6 @@ package day21
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.util.control.Breaks._
 import scala.collection.mutable.Map
 
 case class Player(score: Int, pos: Int) {
@@ -40,16 +39,16 @@ def diracThrows(): Seq[Int] = {
 def evaluatorOne(opponents: PairOne): Int = {
     var PairOne(active, other) = opponents
     var rounds = 0
+    var done = false
 
-    breakable {
-        for (steps <- threeRolls()) {
-            rounds += 1
-            active = active.move(steps)
+    while (!done) {
+        val steps = threeRolls().next()
+        rounds += 1
+        active = active.move(steps)
 
-            if (active.score >= 1000) {
-                break()
-            }
-
+        if (active.score >= 1000) {
+            done = true
+        } else {
             val temp = active
             active = other
             other = temp
@@ -66,17 +65,17 @@ def evaluatorTwo(opponents: PairOne): Long = {
         if (players.other.score >= 21) return PairTwo(0L, 1L)
 
         return cache.getOrElseUpdate(players, {
-            var (activeWins, otherWins) = (0L, 0L);
+            var (activeWins, otherWins) = (0L, 0L)
             
             for (steps <- diracThrows()) {
-                var wins = winCounts(PairOne(players.other, players.active.move(steps)));
+                var wins = winCounts(PairOne(players.other, players.active.move(steps)))
                 // they are switching roles here ^
                 // hence the return value needs to be swapped as well
-                activeWins += wins.otherWins;
-                otherWins += wins.activeWins;
+                activeWins += wins.otherWins
+                otherWins += wins.activeWins
             }
 
-            PairTwo(activeWins, otherWins);
+            PairTwo(activeWins, otherWins)
         })
     }
 
