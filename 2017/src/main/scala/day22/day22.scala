@@ -10,20 +10,20 @@ case class Direction(val dy: Int, val dx: Int)
 case class Virus(val currDirection: Direction, val state: State)
 
 def iterate(lines: List[String], iterations: Int, update: Virus => Virus): Int = {
-    val crow = lines.length
-    val ccol = lines.head.length
+    val height = lines.length
+    val width = lines.head.length
     val cells = Map.empty[Point, State]
 
-    for (irowT <- 0 until crow; icolT <- 0 until ccol; if lines(irowT)(icolT) == '#') do {
-        cells += Point(irowT, icolT) -> State.Infected
+    for (yT <- 0 until height; xT <- 0 until width; if lines(yT)(xT) == '#') do {
+        cells += Point(yT, xT) -> State.Infected
     }
 
-    var (irow, icol) = (crow / 2, ccol / 2)
+    var (y, x) = (height / 2, width / 2)
     var (dy, dx) = (-1, 0)
     var infections = 0
 
     for(_ <- 0 until iterations) {
-        var state = cells.getOrElse(Point(irow, icol), State.Clean)
+        var state = cells.getOrElse(Point(y, x), State.Clean)
         val newVirus = update(Virus(Direction(dy, dx), state))
 
         state = newVirus.state
@@ -33,36 +33,36 @@ def iterate(lines: List[String], iterations: Int, update: Virus => Virus): Int =
         if(state == State.Infected) infections += 1
 
         if(state == State.Clean) {
-            cells -= Point(irow, icol)
+            cells -= Point(y, x)
         } else {
-            cells += Point(irow, icol) -> state
+            cells += Point(y, x) -> state
         }
 
-        irow += dy
-        icol += dx
+        y += dy
+        x += dx
     } 
 
     return infections
 }
 
 def evaluatorOne(input: List[String]) = iterate(input, 10000, it => {
-    val Virus(Direction(drow, dcol), state) = it
+    val Virus(Direction(dy, dx), state) = it
 
     state match {
-        case State.Clean => Virus(Direction(-dcol, drow), State.Infected)
-        case State.Infected => Virus(Direction(dcol, -drow), State.Clean)
+        case State.Clean => Virus(Direction(-dx, dy), State.Infected)
+        case State.Infected => Virus(Direction(dx, -dy), State.Clean)
         case _ => ??? // Purposely left as this returns "Nothing"
     }
 })
 
 def evaluatorTwo(input: List[String]) = iterate(input, 10000000, it => {
-    val Virus(Direction(drow, dcol), state) = it
+    val Virus(Direction(dy, dx), state) = it
 
     state match {
-        case State.Clean => Virus(Direction(-dcol, drow), State.Weakened)
-        case State.Weakened => Virus(Direction(drow, dcol), State.Infected)
-        case State.Infected => Virus(Direction(dcol, -drow), State.Flagged)       
-        case State.Flagged => Virus(Direction(-drow, -dcol), State.Clean)
+        case State.Clean => Virus(Direction(-dx, dy), State.Weakened)
+        case State.Weakened => Virus(Direction(dy, dx), State.Infected)
+        case State.Infected => Virus(Direction(dx, -dy), State.Flagged)       
+        case State.Flagged => Virus(Direction(-dy, -dx), State.Clean)
     }
 })
 

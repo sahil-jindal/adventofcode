@@ -28,8 +28,8 @@ def knotHash(input: String): List[Int] = {
 }
 
 def extract(input: String): Seq[List[Char]] = {
-    return (0 until 128).map { irow =>
-        knotHash(s"$input-$irow").flatMap { n =>
+    return (0 until 128).map { y =>
+        knotHash(s"$input-$y").flatMap { n =>
             (7 to 0 by -1).map { bit => if ((n & (1 << bit)) != 0) '#' else '.' }
         }
     }

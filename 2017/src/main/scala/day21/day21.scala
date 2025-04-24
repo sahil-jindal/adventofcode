@@ -2,7 +2,7 @@ package day21
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.Map
+import scala.collection.mutable.{Map, ListBuffer}
 
 class Mtx(val size: Int) {
     private val flags = Array.ofDim[Boolean](size * size)
@@ -12,14 +12,14 @@ class Mtx(val size: Int) {
         return flags.zipWithIndex.collect { case (true, i) => 1 << i }.fold(0)(_ | _)
     }
 
-    def apply(irow: Int, icol: Int): Boolean = flags(size * irow + icol)
-    def update(irow: Int, icol: Int, value: Boolean): Unit = flags(size * irow + icol) = value
+    def apply(y: Int, x: Int): Boolean = flags(size * y + x)
+    def update(y: Int, x: Int, value: Boolean): Unit = flags(size * y + x) = value
 
     def flip(): Mtx = {
         val res = new Mtx(size)
         
-        for (irow <- 0 until size; icol <- 0 until size) {
-            res(irow, size - icol - 1) = this(irow, icol)
+        for (y <- 0 until size; x <- 0 until size) {
+            res(y, size - x - 1) = this(y, x)
         }
         
         return res
@@ -44,13 +44,13 @@ class Mtx(val size: Int) {
         }
         
         return (for {
-            irow <- 0 until size by blockSize
-            icol <- 0 until size by blockSize
+            y <- 0 until size by blockSize
+            x <- 0 until size by blockSize
         } yield {
             val mtx = new Mtx(blockSize)
             
-            for (drow <- 0 until blockSize; dcol <- 0 until blockSize) {
-                mtx(drow, dcol) = this(irow + drow, icol + dcol)
+            for (dy <- 0 until blockSize; dx <- 0 until blockSize) {
+                mtx(dy, dx) = this(y + dy, x + dx)
             }
             
             mtx
@@ -78,10 +78,10 @@ object Mtx {
         val res = new Mtx(mtxPerRow * rgmtx.head.size)
         
         for ((mtx, imtx) <- rgmtx.zipWithIndex) {
-            for (irow <- 0 until mtx.size; icol <- 0 until mtx.size) {
-                val irowRes = (imtx / mtxPerRow) * mtx.size + irow
-                val icolRes = (imtx % mtxPerRow) * mtx.size + icol
-                res(irowRes, icolRes) = mtx(irow, icol)
+            for (y <- 0 until mtx.size; x <- 0 until mtx.size) {
+                val yRes = (imtx / mtxPerRow) * mtx.size + y
+                val xRes = (imtx % mtxPerRow) * mtx.size + x
+                res(yRes, xRes) = mtx(y, x)
             }
         }
         
@@ -117,13 +117,13 @@ class RuleSet(input: List[String]) {
     })
 
     def variations(mtx: Mtx): Seq[Mtx] = {
-        var variants = Seq(mtx)
+        var variants = ListBuffer(mtx)
         
         for (_ <- 0 until 4) {
-            variants :+= variants.last.rotate()
+            variants += variants.last.rotate()
         }
         
-        return variants ++ variants.map(_.flip())
+        return (variants ++ variants.map(_.flip())).toSeq
     }
 }
 
