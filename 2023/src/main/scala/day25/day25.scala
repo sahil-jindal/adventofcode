@@ -1,91 +1,105 @@
 package day25
 
-import scala.util.{Try, Success, Failure, Using}
+import scala.util.{Try, Success, Failure, Using, Random}
 import scala.io.Source
-import scala.util.Random
-import scala.collection.mutable.{Map, Set}
+import scala.collection.mutable
 
 case class Group(size: Int, c1: Int, c2: Int)
 
-def parse(input: List[String]): Map[String, Set[String]] = {
-    val graph = Map.empty[String, Set[String]]
+def parseEdges(input: List[String]): List[(String, String)] = {
+    val edgeSet = mutable.Set.empty[(String, String)]
 
     for (line <- input) {
         val parts = line.split(": ")
         val u = parts(0)
         val nodes = parts(1).split(" ")
-        
+
         for (v <- nodes) {
-            graph.getOrElseUpdate(u, Set.empty) += v
-            graph.getOrElseUpdate(v, Set.empty) += u
+            val (a, b) = if (u < v) (u, v) else (v, u)
+            edgeSet.add((a, b))
         }
     }
 
-    return graph
+    edgeSet.toList
 }
 
-// https://en.wikipedia.org/wiki/Karger%27s_algorithm
-// Karger's algorithm finds a cut of a graph and returns its size. 
-// It's not necessarily the minimal cut, because it's a randomized algorithm 
-// but it's 'likely' to find the minimal cut in reasonable time. 
-// The algorithm is extended to return the sizes of the two components 
-// separated by the cut as well.
-def findCut(input: List[String], r: Random): Group = {
-    val graph = parse(input)
-    val componentSize = Map(graph.keys.map(_ -> 1).toSeq*)
+class UnionFind(nodes: Set[String]) {
+    private val parent = mutable.Map.empty[String, String]
+    private val size = mutable.Map.empty[String, Int]
+    private var componentCount = nodes.size
 
-    // updates backreferences of oldNode to point to newNode
-    def rebind(oldNode: String, newNode: String): Unit = {
-        for (n <- graph(oldNode)) {
-            while (graph(n).remove(oldNode)) {
-                graph(n).add(newNode)
+    for (node <- nodes) {
+        parent(node) = node
+        size(node) = 1
+    }
+
+    def find(u: String): String = {
+        if (parent(u) != u) {
+            parent(u) = find(parent(u)) // Path compression
+        }
+
+        parent(u)
+    }
+
+    def union(u: String, v: String): Unit = {
+        val rootU = find(u)
+        val rootV = find(v)
+
+        if (rootU != rootV) {
+            if (size(rootU) < size(rootV)) {
+                parent(rootU) = rootV
+                size(rootV) += size(rootU)
+            } else {
+                parent(rootV) = rootU
+                size(rootU) += size(rootV)
             }
+            
+            componentCount -= 1
         }
     }
 
-    var id = 0
-    
-    while (graph.size > 2) {
-        // decrease the the number of nodes by one. First select two nodes u 
-        // and v connected with an edge. Introduce a new node that inherits 
-        // every edge going out of these (excluding the edges between them). 
-        // Set the new nodes' component size to the sum of the component 
-        // sizes of u and v. Remove u and v from the graph.
-        val u = graph.keys.toVector(r.nextInt(graph.size))
-        val v = graph(u).toVector(r.nextInt(graph(u).size))
-        
-        val merged = s"merge-$id"
-        id += 1
+    def getComponentCount: Int = componentCount
 
-        val mergedEdges = Set((graph(u).filter(_ != v) ++ graph(v).filter(_ != u)).toSeq*)
+    def getComponentSize(node: String): Int = size(find(node))
+}
 
-        graph(merged) = mergedEdges
-        
-        rebind(u, merged)
-        rebind(v, merged)
-        
-        componentSize(merged) = componentSize(u) + componentSize(v)
+def findCut(edges: List[(String, String)], r: Random): Group = {
+    val allNodes = edges.flatMap { case (u, v) => List(u, v) }.toSet
+    val shuffledEdges = r.shuffle(edges)
+    val uf = new UnionFind(allNodes)
 
-        graph.remove(u)
-        graph.remove(v)
+    var i = 0
+
+    while (uf.getComponentCount > 2 && i < shuffledEdges.length) {
+        val (u, v) = shuffledEdges(i)
+        uf.union(u, v)
+        i += 1
     }
 
-    val nodeA = graph.keys.head
-    val nodeB = graph.keys.last
+    var cutSize = 0
 
-    return Group(graph(nodeA).size, componentSize(nodeA), componentSize(nodeB))
+    for ((u, v) <- edges) {
+        if (uf.find(u) != uf.find(v)) {
+            cutSize += 1
+        }
+    }
+
+    if (uf.getComponentCount != 2) return Group(0, 0, 0)
+    
+    val components = allNodes.groupBy(uf.find).values.map(_.size).toList
+    return Group(cutSize, components.head, components(1))
 }
 
 def solver(input: List[String]): Int = {
-    val r = Random(25)
+    val edges = parseEdges(input)
+    val r = new Random()
 
-    // run Karger's algorithm until it finds a cut with 3 edges
-    var g = findCut(input, r)
+    var g = findCut(edges, r)
 
     while (g.size != 3) {
-        g = findCut(input, r)
-    }
-    
+        g = findCut(edges, r)
+    } 
+
     return g.c1 * g.c2
 }
 
