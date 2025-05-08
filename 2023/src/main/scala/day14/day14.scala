@@ -8,9 +8,13 @@ type Grid = List[Array[Char]]
 
 def parseInput(input: List[String]) = input.map(_.toArray)
 
+def deepCopy(grid: Grid): Grid = {
+    return grid.map(row => row.clone())
+}
+
  // Tilt the grid to the North, so that the 'O' tiles roll to the top.
 def tilt(gridInit: Grid): Grid = {
-    val grid = gridInit
+    val grid = deepCopy(gridInit)
 
     for (x <- grid(0).indices) {
         var yT = 0 // tells where to roll up the next 'O' tile
@@ -44,7 +48,7 @@ def rotate(src: Grid): Grid = {
 }
 
 def cycle(gridInit: Grid): Grid = {
-    var grid = gridInit
+    var grid = deepCopy(gridInit)
 
     for (_ <- 0 until 4) { grid = rotate(tilt(grid)) }
 
@@ -57,7 +61,7 @@ def iterate(gridInit: Grid, countInit: Int): Grid = {
 
     val history = ListBuffer.empty[List[String]]
     val seen = Map.empty[List[String], Int]
-    var grid = gridInit
+    var grid = deepCopy(gridInit)
     var count = countInit
 
     while (count > 0) {
