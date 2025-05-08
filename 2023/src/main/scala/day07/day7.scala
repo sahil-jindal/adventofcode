@@ -20,7 +20,7 @@ def encode(numbers: Seq[Int]): Long = numbers.foldLeft(0L) { case (acc, v) => ac
 
 // map cards to the number of their occurrences in the hand then order them 
 // such thatA8A8A becomes 33322, 9A34Q becomes 11111 and K99AA becomes 22221
-def patternValue(hand: String): Long = encode(hand.map(card => hand.count(_ == card)).sorted(Ordering.Int.reverse))
+def patternValue(hand: String): Long = encode(hand.map(card => hand.count(_ == card)).sorted(using Ordering.Int.reverse))
 
 // map cards to their indices in cardOrder. E.g. for 123456789TJQKA
 // A8A8A becomes (13)(7)(13)(7)(13), 9A34Q becomes (8)(13)(2)(3)(11)
