@@ -19,7 +19,7 @@ def evaluatorOne(elvesFood: List[Int]): Int = elvesFood.max
 
 def evaluatorTwo(elvesFood: List[Int]): Int = {
     // Min-heap (smallest element at the top)
-    val pq = PriorityQueue.empty(Ordering.Int.reverse)
+    val pq = PriorityQueue.empty(using Ordering.Int.reverse)
 
     for (num <- elvesFood) {
         if (pq.size < 3) {

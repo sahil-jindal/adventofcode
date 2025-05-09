@@ -66,7 +66,7 @@ def walkTo(start: Pos, goal: Pos, maps: Maps): Pos = {
 
     def evaluation(pos: Pos): Int = pos.time + (goal.y - pos.y).abs + (goal.x - pos.x).abs
 
-    val pq = PriorityQueue.empty(Ordering.by(evaluation).reverse)
+    val pq = PriorityQueue.empty(using Ordering.by(evaluation).reverse)
     val seen = Set.empty[Pos]
 
     pq.enqueue(start)

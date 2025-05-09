@@ -24,7 +24,7 @@ def solve(riskMap: Map[Point, Int]): Int = {
     val topLeft = Point(0, 0)
     val bottomRight = Point(riskMap.keys.map(_.x).max, riskMap.keys.map(_.y).max)
 
-    val pq = mutable.PriorityQueue.empty(Ordering.by[(Point, Int), Int](_._2).reverse)
+    val pq = mutable.PriorityQueue.empty(using Ordering.by[(Point, Int), Int](_._2).reverse)
     val totalRiskMap = mutable.Map.empty[Point, Int]
 
     totalRiskMap(topLeft) = 0

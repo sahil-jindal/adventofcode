@@ -53,7 +53,7 @@ def evaluatorOne(packets: List[Pair]): Int = packets.zipWithIndex.collect {
 
 def evaluatorTwo(packets: List[Pair]): Int = {
     val divider = Pair(Json.parse("[[2]]"), Json.parse("[[6]]"))
-    val sortedPackets = (packets :+ divider).flatMap { case Pair(a, b) => List(a, b) }.sorted(PacketOrdering)
+    val sortedPackets = (packets :+ divider).flatMap { case Pair(a, b) => List(a, b) }.sorted(using PacketOrdering)
     val i1 = sortedPackets.indexOf(divider.a) + 1
     val i2 = sortedPackets.indexOf(divider.b) + 1
     return i1 * i2

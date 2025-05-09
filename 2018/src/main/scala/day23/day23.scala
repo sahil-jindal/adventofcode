@@ -64,7 +64,7 @@ def evaluatorTwo(drones: List[Drone]): Int = {
 
     val box = Box(Point(minX, minY, minZ), Point(maxX - minX + 1, maxY - minY + 1, maxZ - minZ + 1))
 
-    val pq = PriorityQueue.empty(Ordering.by[(Box, List[Drone]), (Int, Int)] { 
+    val pq = PriorityQueue.empty(using Ordering.by[(Box, List[Drone]), (Int, Int)] { 
         case (box, drones) => (drones.size, -box.dist) 
     })
 

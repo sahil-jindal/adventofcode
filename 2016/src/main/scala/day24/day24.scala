@@ -32,7 +32,7 @@ def aStar(start: Point, goal: Point, walls: Set[Point]): Int = {
         return costSoFar + (current.x - goal.x).abs + (current.y - goal.y).abs
     }
         
-    val pq = PriorityQueue((0, start))(Ordering.by(evaluation).reverse)
+    val pq = PriorityQueue((0, start))(using Ordering.by(evaluation).reverse)
     val visited = Set.empty[Point]
 
     while (pq.nonEmpty) {
@@ -64,7 +64,7 @@ def precomputeDistances(locations: Map[Int, Point], walls: Set[Point]): Map[(Int
 
 // A* for solving TSP using state-space search
 def tspAStar(start: Int, numLocations: Int, dist: Map[(Int, Int), Int], returnToStart: Boolean): Int = {
-    val pq = PriorityQueue.empty(Ordering.by[State, Int](_.cost).reverse)
+    val pq = PriorityQueue.empty(using Ordering.by[State, Int](_.cost).reverse)
     val best = Map.empty[(Int, Int), Int].withDefaultValue(Int.MaxValue)
     var minCost = Int.MaxValue
 

@@ -52,7 +52,7 @@ def maxGeodes(blueprint: Blueprint, timeLimit: Int): Int = {
         (state.producing + robot.producing) <= blueprint.maxCost
     } 
 
-    val pq = PriorityQueue.empty(Ordering.by[State, Int](potentialGeodeCount))
+    val pq = PriorityQueue.empty(using Ordering.by[State, Int](potentialGeodeCount))
     val seen = Set.empty[State]
 
     pq.enqueue(State(timeLimit, Nothing, Ore, 0))

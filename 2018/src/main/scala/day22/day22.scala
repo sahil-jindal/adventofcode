@@ -62,7 +62,7 @@ def evaluatorTwo(input: List[String]): Int = {
         return time + (target.x - pos.x).abs + (target.y - pos.y).abs
     }
     
-    val pq = PriorityQueue((Point(0, 0), Tool.Torch, 0))(Ordering.by(evaluation).reverse)
+    val pq = PriorityQueue((Point(0, 0), Tool.Torch, 0))(using Ordering.by(evaluation).reverse)
     val seen = Set.empty[(Point, Tool)]
 
     while (pq.nonEmpty) {

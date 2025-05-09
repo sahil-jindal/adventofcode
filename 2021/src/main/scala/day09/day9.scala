@@ -54,7 +54,7 @@ def evaluatorOne(map: Map[Point, Int]): Int = {
 def evaluatorTwo(map: Map[Point, Int]): Int = {
     return getLowPoints(map)
         .map(p => basicInSize(map, p))
-        .sorted(Ordering[Int].reverse)
+        .sorted(using Ordering.Int.reverse)
         .take(3)
         .product
 }
