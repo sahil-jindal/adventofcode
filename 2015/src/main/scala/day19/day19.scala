@@ -1,15 +1,14 @@
 package day19
 
-import scala.util.{Try, Success, Failure, Using}
+import scala.util.{Try, Success, Failure, Using, Random}
 import scala.io.Source
-import scala.util.Random
 
-class ReplacementString(val from: Int, val length: Int, val to: String)
-class Fabrication(val rules: List[(String, String)], val molecule: String)
+case class ReplacementString(from: Int, length: Int, to: String)
+case class Fabrication(rules: List[(String, String)], molecule: String)
 
-def parseInput(lines: List[String]): Fabrication = {
-    val index = lines.indexWhere(_.trim.isEmpty)
-    val (from, to) = lines.splitAt(index)
+def parseInput(input: List[String]): Fabrication = {
+    val index = input.indexWhere(_.trim.isEmpty)
+    val (from, to) = input.splitAt(index)
     val rules = from.map { case s"$a => $b" => (a, b) }
     return Fabrication(rules, to(1))
 }

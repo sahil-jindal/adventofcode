@@ -2,28 +2,17 @@ package day01
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.util.boundary, boundary.break
 
-def floorMovement(ch: Char): Int = ch match {
-    case '(' => 1
-    case ')' => -1
-    case _ => 0
-}
-
-def evaluatorOne(line: String): Int = line.map(floorMovement).sum
-
-def evaluatorTwo(line: String): Int = {
-    var sum = 0
-
-    boundary {
-        for (ch, i) <- line.zipWithIndex do {
-            sum += floorMovement(ch)
-            if sum == -1 then break(i + 1) 
-        }
-
-        return -1
+def parseInput(input: String) = input.map(ch => {
+    ch match {
+        case '(' => 1
+        case ')' => -1
+        case _ => 0
     }
-}
+})
+
+def evaluatorOne(input: Seq[Int]): Int = input.sum
+def evaluatorTwo(input: Seq[Int]): Int = input.scanLeft(0)(_ + _).indexWhere(_ == -1)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -31,8 +20,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day01.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines.head)}")
-            println(s"Part Two: ${evaluatorTwo(lines.head)}")
+            val input = parseInput(lines.head)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

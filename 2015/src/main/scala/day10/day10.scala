@@ -13,13 +13,13 @@ def nextSequence(seq: String): String = {
         }
     }
 
-    stringBuilder.append(count).append(seq.last).toString
+    return stringBuilder.append(count).append(seq.last).toString
 }
 
 def lookAndSaySequence(sequence: String, iterations: Int): Int = {
     var currentSequence = sequence
     for (_ <- 1 to iterations) do currentSequence = nextSequence(currentSequence)
-    currentSequence.length
+    return currentSequence.length
 }
 
 def evaluatorOne(sequence: String): Int = lookAndSaySequence(sequence, 40)

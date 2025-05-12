@@ -6,12 +6,16 @@ import scala.io.Source
 val totalScoops = 100
 val maxCalories = 500
 
-val numberRegex = raw"([-]?\d+)".r
+case class Ingredient(capacity: Int, durability: Int, flavor: Int, texture: Int, calories: Int) {
+    def *(num: Int) = Ingredient(capacity * num, durability * num, flavor * num, texture * num, calories * num)
+    def +(that: Ingredient) = Ingredient(
+        capacity + that.capacity, durability + that.durability, 
+        flavor + that.flavor, texture + that.texture, calories + that.calories
+    )
+}
 
-class Ingredient(var capacity: Int, var durability: Int, var flavor: Int, var texture: Int, var calories: Int)
-
-def parseInput(lines: List[String]): List[Ingredient] = lines.map(line => {
-    val Seq(a, b, c, d, e) = numberRegex.findAllIn(line).map(_.toInt).toSeq
+def parseInput(input: List[String]): List[Ingredient] = input.map(line => {
+    val Seq(a, b, c, d, e) = raw"(-?\d+)".r.findAllIn(line).map(_.toInt).toSeq
     Ingredient(a, b, c, d, e)
 })
 
@@ -33,28 +37,20 @@ def partitions(total: Int, n: Int): List[List[Int]] = {
 def allPossibleRecipes(ingredients: List[Ingredient]): List[Ingredient] = {
     val scoopPossibilities = partitions(totalScoops, ingredients.length).flatMap(_.permutations)
 
-    return scoopPossibilities.map { scoops =>
-        val temp = Ingredient(0, 0, 0, 0, 0)
+    return scoopPossibilities.map(scoops => {
+        val temp = (ingredients zip scoops).map { case (ingr, it) => ingr * it }.reduce(_ + _)
 
-        for (ingr, it) <- (ingredients zip scoops) do {
-            temp.flavor += (ingr.flavor * it)
-            temp.texture += (ingr.texture * it)
-            temp.calories += (ingr.calories * it)
-            temp.capacity += (ingr.capacity * it)
-            temp.durability += (ingr.durability * it)
-        }
-
-        temp.flavor = math.max(temp.flavor, 0)
-        temp.texture = math.max(temp.texture, 0)
-        temp.capacity = math.max(temp.capacity, 0)
-        temp.durability = math.max(temp.durability, 0)
-        
-        temp
-    }
+        temp.copy(
+            flavor = math.max(temp.flavor, 0),
+            texture = math.max(temp.texture, 0),
+            capacity = math.max(temp.capacity, 0),
+            durability = math.max(temp.durability, 0),
+        )
+    })
 }
 
 def bestPossibleRecipe(cookeRecipes: List[Ingredient]): Int = {
-    return cookeRecipes.map { it => it.capacity * it.durability * it.flavor * it.texture }.max
+    return cookeRecipes.map(it => it.capacity * it.durability * it.flavor * it.texture).max
 }
 
 def evaluatorOne(ingredients: List[Ingredient]): Int = {

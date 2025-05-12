@@ -97,12 +97,12 @@ case class State(
     }
 }
 
-def parseInput(lines: List[String]): State = {    
+def parseInput(input: List[String]): State = {    
     return State(
         playerHp = 50,
         playerMana = 500,
-        bossHp = lines(0).split(": ")(1).toInt,
-        bossDamage = lines(1).split(": ")(1).toInt
+        bossHp = input(0).split(": ")(1).toInt,
+        bossDamage = input(1).split(": ")(1).toInt
     )
 }
 

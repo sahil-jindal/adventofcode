@@ -3,22 +3,17 @@ package day02
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Box(val l: Int, val b: Int, val h: Int)
+case class Box(l: Int, b: Int, h: Int)
 
 val BoxRegex = raw"(\d+)x(\d+)x(\d+)".r
 
-def parseInput(lines: List[String]): List[Box] = lines.map(line => {
+def parseInput(input: List[String]): List[Box] = input.map(line => {
     val boxes = BoxRegex.findFirstMatchIn(line).get.subgroups.map(_.toInt).sorted
     Box(boxes(0), boxes(1), boxes(2))
 })
 
-def evaluatorOne(boxes: List[Box]): Int = boxes.foldLeft(0) {
-    case (acc, Box(a, b, c)) => acc + 3*a*b + 2*a*c + 2*b*c
-}
-
-def evaluatorTwo(boxes: List[Box]): Int = boxes.foldLeft(0) {
-    case (acc, Box(a, b, c)) => acc + 2*(a + b) + a*b*c
-}
+def evaluatorOne(boxes: List[Box]): Int = boxes.map { case Box(a, b, c) => 3*a*b + 2*a*c + 2*b*c }.sum
+def evaluatorTwo(boxes: List[Box]): Int = boxes.map { case Box(a, b, c) => 2*(a + b) + a*b*c }.sum
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

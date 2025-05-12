@@ -3,7 +3,7 @@ package day18
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Position(val y: Int, val x: Int)
+case class Position(y: Int, x: Int)
 
 val cornersDyDx = List(
     List((0, 1), (1, 0), (1, 1)),     // Top left corner
@@ -21,8 +21,8 @@ val bordersDyDx = List(
 
 val insideBoxDyDx = List((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))
 
-def parseInput(lines: List[String]): Array[Array[Boolean]] = {
-    lines.map { line => line.map(_ == '#').toArray }.toArray
+def parseInput(input: List[String]): Array[Array[Boolean]] = {
+    return input.map(_.map(_ == '#').toArray).toArray
 }
 
 def lightCondition(grid: Array[Array[Boolean]], cell: Position, direction: List[(Int, Int)]): Boolean = {
@@ -48,17 +48,17 @@ def updateGrid(grid: Array[Array[Boolean]], stuck: Boolean): Array[Array[Boolean
         nextGrid(rowSize - 1)(0) = lightCondition(grid, Position(rowSize - 1, 0), cornersDyDx(3))
     }
 
-    for i <- 1 to colSize - 2 do {
+    for (i <- 1 to colSize - 2) {
         nextGrid(0)(i) = lightCondition(grid, Position(0, i), bordersDyDx(0))
         nextGrid(rowSize - 1)(i) = lightCondition(grid, Position(rowSize - 1, i), bordersDyDx(2))
     }
 
-    for i <- 1 to rowSize - 2 do {
+    for (i <- 1 to rowSize - 2) {
         nextGrid(i)(colSize - 1) = lightCondition(grid, Position(i, colSize - 1), bordersDyDx(1))
         nextGrid(i)(0) = lightCondition(grid, Position(i, 0), bordersDyDx(3))
     }
 
-    for (i <- 1 to rowSize - 2; j <- 1 to colSize - 2) do {
+    for (i <- 1 to rowSize - 2; j <- 1 to colSize - 2) {
         nextGrid(i)(j) = lightCondition(grid, Position(i, j), insideBoxDyDx)
     }
 
@@ -78,7 +78,7 @@ def iterateGrid(grid: Array[Array[Boolean]], stuck: Boolean): Int = {
         copyGrid(rowSize - 1)(0) = true
     }
     
-    for _ <- 1 to 100 do copyGrid = updateGrid(copyGrid, stuck)
+    for (_ <- 1 to 100) { copyGrid = updateGrid(copyGrid, stuck) }
 
     return copyGrid.flatten.count(identity)
 }

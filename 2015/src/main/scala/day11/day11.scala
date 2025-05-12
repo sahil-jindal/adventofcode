@@ -31,7 +31,7 @@ def incrementPassword(currentPassword: String): String = {
         first.mkString
     }
 
-    prefix + "a".repeat(zlength)
+    return prefix + "a".repeat(zlength)
 }
 
 def findNextPassword(currentPassword: String): String = {

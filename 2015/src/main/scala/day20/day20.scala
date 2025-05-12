@@ -3,7 +3,7 @@ package day20
 def presentByHouse(l: Int, mul: Int, steps: Int): Int = {
     val presents = Array.ofDim[Int](1000000)
 
-    for i <- 1 until presents.length do {
+    for (i <- 1 until presents.length) {
         var j = i
         var step = 0
 

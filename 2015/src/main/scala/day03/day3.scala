@@ -4,13 +4,13 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Set
 
-case class Point(val y: Int, val x: Int)
+case class Point(y: Int, x: Int)
 
 def run(input: String, actors: Int): Int = {
     val seen = Set(Point(0, 0))
     val pos = Array.fill(actors)(Point(0, 0))
 
-    input.zipWithIndex.foreach { case (ch, i) =>
+    for ((ch, i) <- input.zipWithIndex) { 
         val Point(y, x) = pos(i % actors)
         
         pos(i % actors) = ch match {
@@ -21,14 +21,14 @@ def run(input: String, actors: Int): Int = {
             case _   => Point(y, x) // Should not happen
         }
 
-        seen.add(pos(i % actors))
+        seen += pos(i % actors)
     }
     
     return seen.size
 }
 
-def evaluatorOne(line: String): Int = run(line, 1)
-def evaluatorTwo(line: String): Int = run(line, 2)
+def evaluatorOne(input: String): Int = run(input, 1)
+def evaluatorTwo(input: String): Int = run(input, 2)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

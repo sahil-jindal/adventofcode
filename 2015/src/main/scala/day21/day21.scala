@@ -3,28 +3,30 @@ package day21
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-class Opponent(val hitPoints: Int, var damage: Int, var armor: Int)
-class Item(val cost: Int, val damage: Int, val armor: Int)
+case class Opponent(hitPoints: Int, damage: Int, armor: Int)
+
+case class Item(cost: Int, damage: Int, armor: Int) {
+    def +(that: Item) = Item(cost + that.cost, damage + that.damage, armor + that.armor)
+}
 
 val weapons = List(Item(8, 4, 0), Item(10, 5, 0), Item(25, 6, 0), Item(40, 7, 0), Item(74, 8, 0))
 val armors = List(Item(13, 0, 1), Item(31, 0, 2), Item(53, 0, 3), Item(75, 0, 4), Item(102, 0, 5))
 val rings = List(Item(25, 1, 0), Item(50, 2, 0), Item(100, 3, 0), Item(20, 0, 1), Item(40, 0, 2), Item(80, 0, 3))
 
-def parseInput(lines: List[String]): Opponent = {
-    val properties = lines.map(_.split(": ")(1).toInt)
+def parseInput(input: List[String]): Opponent = {
+    val properties = input.map(_.split(": ")(1).toInt)
     return Opponent(properties(0), properties(1), properties(2))
-}
-
-def sumItems(items: List[Item]): Item = {
-    return items.reduce((a, b) => Item(a.cost + b.cost, a.damage + b.damage, a.armor + b.armor))
 }
 
 def Buy(): List[Item] = {
     val possibleArmors = Item(0, 0, 0) :: armors
-    val possibleRings = rings ::: rings.combinations(2).map(sumItems).toList
+    val possibleRings = rings ::: rings.combinations(2).map(it => it(0) + it(1)).toList
 
-    for { weapon <- weapons; armor <- possibleArmors; ring <- possibleRings } 
-        yield sumItems(List(weapon, armor, ring))
+    return (for { 
+        weapon <- weapons
+        armor <- possibleArmors 
+        ring <- possibleRings 
+    } yield weapon + armor + ring).toList
 }
 
 def defeatsBoss(player: Opponent, boss: Opponent): Boolean = {

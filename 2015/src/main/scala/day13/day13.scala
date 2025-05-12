@@ -4,20 +4,20 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Map, Set}
 
-class Graph(val people: Set[String], val happiness: Map[(String, String), Int])
+case class Graph(people: Set[String], happiness: Map[(String, String), Int])
 
-def parseInput(lines: List[String]): Graph = {
+def parseInput(input: List[String]): Graph = {
     val people = Set.empty[String]
     val happiness = Map.empty[(String, String), Int]
     
-    lines.foreach(line => {
+    for (line <- input) {
         val parts = line.split(" ")
         val person1 = parts(0)
         val person2 = parts.last.init // Remove the period
         val value = parts(3).toInt * (if (parts(2) == "gain") 1 else -1)
         happiness((person1, person2)) = value
         people ++= Set(person1, person2)
-    })
+    }
 
     return Graph(people, happiness)
 }
@@ -34,10 +34,10 @@ def findMaximumHappiness(graph: Graph): Int = {
 def addYourself(graph: Graph): Graph = {
     val updatedHappiness = Map(graph.happiness.toSeq*)
     
-    graph.people.foreach(guest => {
+    for (guest <- graph.people) {
         updatedHappiness(("You", guest)) = 0
         updatedHappiness((guest, "You")) = 0
-    })
+    }
 
     return Graph(graph.people ++ Set("You"), updatedHappiness)
 }

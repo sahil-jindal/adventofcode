@@ -3,8 +3,8 @@ package day25
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def evaluatorOne(line: String): Long = {
-    val Seq(rowDst, colDst) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toSeq
+def evaluatorOne(input: String): Long = {
+    val Seq(rowDst, colDst) = raw"(\d+)".r.findAllIn(input).map(_.toInt).toSeq
 
     var m = 20151125L
     var (y, x) = (1, 1)

@@ -16,8 +16,8 @@ val criteria = Map(
     "perfumes" -> 1
 )
 
-def parseInput(lines: List[String]): List[(Int, Map[String, Int])] = {
-    return lines.map(line => {
+def parseInput(input: List[String]): List[(Int, Map[String, Int])] = {
+    return input.map(line => {
         val parts = line.split(": ", 2)
         val sueNumber = parts(0).split(" ")(1).toInt
 

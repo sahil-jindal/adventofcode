@@ -4,8 +4,6 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import play.api.libs.json._
 
-val numberRegex = raw"([-]?\d+)".r
-
 def sumJsonValue(value: JsValue): Int = value match {
     case JsNumber(n) => n.toInt
     case JsArray(arr) => arr.map(sumJsonValue).sum
@@ -15,8 +13,8 @@ def sumJsonValue(value: JsValue): Int = value match {
     case _ => 0
 }
 
-def evaluatorOne(line: String): Int = numberRegex.findAllIn(line).map(_.toInt).sum
-def evaluatorTwo(line: String): Int = sumJsonValue(Json.parse(line))
+def evaluatorOne(input: String): Int = raw"(-?\d+)".r.findAllIn(input).map(_.toInt).sum
+def evaluatorTwo(input: String): Int = sumJsonValue(Json.parse(input))
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

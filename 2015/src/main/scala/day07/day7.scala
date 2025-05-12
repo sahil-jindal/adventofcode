@@ -2,20 +2,14 @@ package day07
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.Map
+import scala.collection.mutable.{Map => MutableMap}
 
- def parseInstructions(input: List[String]): Map[String, Seq[String]] = {
-    val instructions = Map.empty[String, Seq[String]]
-    
-    input.foreach(line => {
-        val Array(expr, wire) = line.split(" -> ")
-        instructions(wire) = expr.split(" ").toSeq
-    })
+ def parseInstructions(input: List[String]) = input.map(line => {
+    val Array(expr, wire) = line.split(" -> ")
+    wire -> expr.split(" ").toSeq
+}).toMap
 
-    return instructions
-}
-
-def evaluate(wire: String, instructions: Map[String, Seq[String]], cache: Map[String, Int]): Int = {
+def evaluate(wire: String, instructions: Map[String, Seq[String]], cache: MutableMap[String, Int]): Int = {
     if (cache.contains(wire)) return cache(wire)
     if (wire.forall(_.isDigit)) return wire.toInt
 
@@ -34,11 +28,11 @@ def evaluate(wire: String, instructions: Map[String, Seq[String]], cache: Map[St
 
 def evaluator(input: List[String]) = {
     val originalInstructions = parseInstructions(input)
-    val signalA = evaluate("a", originalInstructions, Map.empty[String, Int])
+    val signalA = evaluate("a", originalInstructions, MutableMap.empty[String, Int])
     println(s"Signal to wire 'a' (Part One): $signalA")
 
     val modifiedInstructions = originalInstructions + ("b" -> Seq(signalA.toString))
-    val newSignalA = evaluate("a", modifiedInstructions, Map.empty[String, Int])
+    val newSignalA = evaluate("a", modifiedInstructions, MutableMap.empty[String, Int])
     println(s"Signal to wire 'a' (Part Two): $newSignalA")
 }
 

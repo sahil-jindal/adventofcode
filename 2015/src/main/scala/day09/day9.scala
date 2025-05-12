@@ -4,20 +4,20 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Map, Set}
 
-class Graph(val locations: Set[String], val distances: Map[(String, String), Int])
+case class Graph(locations: Set[String], distances: Map[(String, String), Int])
 
-def parseLines(lines: List[String]): Graph = {
+def parseLines(input: List[String]): Graph = {
     val locations = Set.empty[String]
     val distances = Map.empty[(String, String), Int]
 
-    lines.foreach(line => {
+    for (line <- input) {
         val Array(pair, cost) = line.split(" = ")
         val Array(place_1, place_2) = pair.split(" to ")
 
         locations ++= Set(place_1, place_2)
         distances((place_1, place_2)) = cost.toInt
         distances((place_2, place_1)) = cost.toInt
-    })
+    }
 
     return Graph(locations, distances)
 }

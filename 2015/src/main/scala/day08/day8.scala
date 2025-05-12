@@ -3,7 +3,7 @@ package day08
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def evaluatorOne(lines: List[String]): Int = lines.map(line => {
+def evaluatorOne(input: List[String]): Int = input.map(line => {
     line.length - line.substring(1, line.length - 1)
         .replace("\\\\", "\\") // Replace \\ with a single backslash
         .replace("\\\"", "\"") // Replace \" with a double-quote
@@ -11,7 +11,7 @@ def evaluatorOne(lines: List[String]): Int = lines.map(line => {
         .length
 }).sum
 
-def evaluatorTwo(lines: List[String]): Int = lines.map(line => {
+def evaluatorTwo(input: List[String]): Int = input.map(line => {
     ("\"" + line.flatMap {
         case '\\' => "\\\\"  // Escape backslash
         case '"'  => "\\\"" // Escape double-quote

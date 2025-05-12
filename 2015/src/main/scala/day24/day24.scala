@@ -3,10 +3,10 @@ package day24
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def parseInput(lines: List[String]): List[Long] = lines.map(_.toLong).sorted
+def parseInput(input: List[String]): List[Long] = input.map(_.toLong).sorted
 
 def findCombinations(numbers: List[Long], len: Int, target: Long): List[List[Long]] = {
-    numbers.combinations(len).filter(_.sum == target).toList
+    return numbers.combinations(len).filter(_.sum == target).toList
 }
 
 def solver(numbers: List[Long], groupLength: Int): Long = {
