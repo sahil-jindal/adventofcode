@@ -3,91 +3,183 @@ package day14
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Map, ListBuffer}
+import scala.util.boundary, boundary.break
 
 type Grid = List[Array[Char]]
 
-def parseInput(input: List[String]) = input.map(_.toArray)
+def parseInput(input: List[String]) = input.map(_.toCharArray).toArray
 
-def deepCopy(grid: Grid): Grid = {
-    return grid.map(row => row.clone())
-}
-
- // Tilt the grid to the North, so that the 'O' tiles roll to the top.
-def tilt(gridInit: Grid): Grid = {
-    val grid = deepCopy(gridInit)
-
-    for (x <- grid(0).indices) {
-        var yT = 0 // tells where to roll up the next 'O' tile
-        for (yS <- grid.indices) {
-            if (grid(yS)(x) == '#') {
-                yT = yS + 1
-            } else if (grid(yS)(x) == 'O') {
-                grid(yS)(x) = '.' 
-                grid(yT)(x) = 'O' 
-                yT += 1
+// Tilt the platform north
+def tiltNorth(platform: Array[Array[Char]]): Array[Array[Char]] = {
+    val rows = platform.length
+    val cols = platform(0).length
+    val result = platform.map(_.clone())
+    
+    for (col <- 0 until cols) {
+        var nextEmptyRow = 0
+        for (row <- 0 until rows) {
+            result(row)(col) match {
+                case 'O' => 
+                    if (nextEmptyRow < row) {
+                        // Move the rounded rock to the empty spot
+                        result(nextEmptyRow)(col) = 'O'
+                        result(row)(col) = '.'
+                        nextEmptyRow += 1
+                    } else {
+                        nextEmptyRow = row + 1
+                    }
+                case '#' => 
+                    // Cube-shaped rocks don't move, but block movement
+                    nextEmptyRow = row + 1
+                case '.' => 
+                    // Do nothing for empty spaces
             }
         }
     }
-
-    return grid
+    
+    result
 }
-
-// returns the cummulated distances of 'O' tiles from the bottom of the grid
-def measure(grid: Grid): Int = grid.zipWithIndex.map { 
-    case (row, y) => (row.length - y) * row.count(_ == 'O')
-}.sum
-
-def rotate(src: Grid): Grid = {
-    val dist = Array.fill(src(0).length, src.length)(' ')
-
-    for (y <- src(0).indices; x <- src.indices) {
-        dist(y)(x) = src(src.length - x - 1)(y)
-    }
-
-    return dist.toList
-}
-
-def cycle(gridInit: Grid): Grid = {
-    var grid = deepCopy(gridInit)
-
-    for (_ <- 0 until 4) { grid = rotate(tilt(grid)) }
-
-    return grid
-}
-
-def iterate(gridInit: Grid, countInit: Int): Grid = {
-    // The usual trick: keep iterating until we find a loop, make a shortcut
-    // and read the result from the accumulated history.
-
-    val history = ListBuffer.empty[List[String]]
-    val seen = Map.empty[List[String], Int]
-    var grid = deepCopy(gridInit)
-    var count = countInit
-
-    while (count > 0) {
-        grid = cycle(grid)
-        count -= 1
-
-        val currentKey = grid.map(_.toString)
-
-        seen.get(currentKey) match {
-            case Some(prevIndex) =>
-                val loopLength = history.size - prevIndex
-                val remainder = count % loopLength
-                val targetIndex = prevIndex + remainder
-                val targetKey = history(targetIndex)
-                return targetKey.map(_.toArray)
-            case None =>
-                seen(currentKey) = history.size
-                history += currentKey
+  
+// Tilt the platform south
+def tiltSouth(platform: Array[Array[Char]]): Array[Array[Char]] = {
+    val rows = platform.length
+    val cols = platform(0).length
+    val result = platform.map(_.clone())
+    
+    for (col <- 0 until cols) {
+        var nextEmptyRow = rows - 1
+        for (row <- (rows - 1) to 0 by -1) {
+            result(row)(col) match {
+                case 'O' => 
+                    if (nextEmptyRow > row) {
+                        // Move the rounded rock to the empty spot
+                        result(nextEmptyRow)(col) = 'O'
+                        result(row)(col) = '.'
+                        nextEmptyRow -= 1
+                    } else {
+                        nextEmptyRow = row - 1
+                    }
+                case '#' => 
+                    // Cube-shaped rocks don't move, but block movement
+                    nextEmptyRow = row - 1
+                case '.' => 
+                    // Do nothing for empty spaces
+            }
         }
     }
-
-    return grid
+    
+    result
 }
+  
+// Tilt the platform west
+def tiltWest(platform: Array[Array[Char]]): Array[Array[Char]] = {
+    val rows = platform.length
+    val cols = platform(0).length
+    val result = platform.map(_.clone())
+    
+    for (row <- 0 until rows) {
+        var nextEmptyCol = 0
+        for (col <- 0 until cols) {
+            result(row)(col) match {
+                case 'O' => 
+                    if (nextEmptyCol < col) {
+                        // Move the rounded rock to the empty spot
+                        result(row)(nextEmptyCol) = 'O'
+                        result(row)(col) = '.'
+                        nextEmptyCol += 1
+                    } else {
+                        nextEmptyCol = col + 1
+                    }
+                case '#' => 
+                    // Cube-shaped rocks don't move, but block movement
+                    nextEmptyCol = col + 1
+                case '.' => 
+                    // Do nothing for empty spaces
+            }
+        }
+    }
+    
+    result
+}
+  
+// Tilt the platform east
+def tiltEast(platform: Array[Array[Char]]): Array[Array[Char]] = {
+    val rows = platform.length
+    val cols = platform(0).length
+    val result = platform.map(_.clone())
+    
+    for (row <- 0 until rows) {
+        var nextEmptyCol = cols - 1
+        for (col <- (cols - 1) to 0 by -1) {
+            result(row)(col) match {
+                case 'O' => 
+                    if (nextEmptyCol > col) {
+                        // Move the rounded rock to the empty spot
+                        result(row)(nextEmptyCol) = 'O'
+                        result(row)(col) = '.'
+                        nextEmptyCol -= 1
+                    } else {
+                        nextEmptyCol = col - 1
+                    }
+                case '#' => 
+                    // Cube-shaped rocks don't move, but block movement
+                    nextEmptyCol = col - 1
+                case '.' => 
+                    // Do nothing for empty spaces
+            }
+        }
+    }
+    
+    result
+}
+  
+// Calculate the load on the north support beams
+def calculateLoad(platform: Array[Array[Char]]): Int = {
+    val rows = platform.length
+    
+    return (0 until rows).map { row =>
+        platform(row).count(_ == 'O') * (rows - row)
+    }.sum
+}
+  
+// One complete cycle: North, West, South, East
+def cycle(platform: Array[Array[Char]]): Array[Array[Char]] = {
+    val afterNorth = tiltNorth(platform)
+    val afterWest = tiltWest(afterNorth)
+    val afterSouth = tiltSouth(afterWest)
+    tiltEast(afterSouth)
+}
+  
+// Run the specified number of cycles, detecting cycles to avoid unnecessary computation
+def runCycles(platform: Array[Array[Char]], numCycles: Int): Int = {
+    var current = platform
+    val seen = Map.empty[String, Int]
+    
+    boundary {
+        for (i <- 0 until numCycles) {
+            val platformKey = current.map(_.mkString).mkString("\n")
+        
+            if (seen.contains(platformKey)) {
+                // Found a cycle, calculate the final state
+                val cycleStart = seen(platformKey)
+                val cycleLength = i - cycleStart
+                val remainingCycles = (numCycles - i) % cycleLength
+            
+                // Fast-forward by running only the remaining cycles
+                for (_ <- 0 until remainingCycles) {
+                    current = cycle(current)
+                }
 
-def evaluatorOne(input: Grid): Int = measure(tilt(input))
-def evaluatorTwo(input: Grid): Int = measure(iterate(input, 1_000_000_000))
+                break(calculateLoad(current))
+            }
+        
+            seen(platformKey) = i
+            current = cycle(current)
+        }
+    
+        calculateLoad(current)
+    }
+}
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -95,9 +187,10 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day14.txt") match {
         case Success(lines) => {
-            val input = parseInput(lines)
-            println(s"Part One: ${evaluatorOne(input)}")
-            println(s"Part Two: ${evaluatorTwo(input)}")
+            val examplePlatform = parseInput(lines)
+            val tiltedPlatform = tiltNorth(examplePlatform)
+            println(s"Part One: ${calculateLoad(tiltedPlatform)}")
+            println(s"Part Two: ${runCycles(examplePlatform, 1000000000)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
