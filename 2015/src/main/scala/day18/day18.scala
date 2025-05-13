@@ -3,7 +3,7 @@ package day18
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Position(y: Int, x: Int)
+case class Point(y: Int, x: Int)
 
 val cornersDyDx = List(
     List((0, 1), (1, 0), (1, 1)),     // Top left corner
@@ -25,7 +25,7 @@ def parseInput(input: List[String]): Array[Array[Boolean]] = {
     return input.map(_.map(_ == '#').toArray).toArray
 }
 
-def lightCondition(grid: Array[Array[Boolean]], cell: Position, direction: List[(Int, Int)]): Boolean = {
+def lightCondition(grid: Array[Array[Boolean]], cell: Point, direction: List[(Int, Int)]): Boolean = {
     val valid = direction.count { case (dy, dx) => grid(cell.y + dy)(cell.x + dx) }
     if grid(cell.y)(cell.x) then return valid == 2 || valid == 3
     return valid == 3
@@ -42,24 +42,24 @@ def updateGrid(grid: Array[Array[Boolean]], stuck: Boolean): Array[Array[Boolean
         nextGrid(rowSize - 1)(colSize - 1) = true
         nextGrid(rowSize - 1)(0) = true
     } else {
-        nextGrid(0)(0) = lightCondition(grid, Position(0, 0), cornersDyDx(0))
-        nextGrid(0)(colSize - 1) = lightCondition(grid, Position(0, colSize - 1), cornersDyDx(1))
-        nextGrid(rowSize - 1)(colSize - 1) = lightCondition(grid, Position(rowSize - 1, colSize - 1), cornersDyDx(2))
-        nextGrid(rowSize - 1)(0) = lightCondition(grid, Position(rowSize - 1, 0), cornersDyDx(3))
+        nextGrid(0)(0) = lightCondition(grid, Point(0, 0), cornersDyDx(0))
+        nextGrid(0)(colSize - 1) = lightCondition(grid, Point(0, colSize - 1), cornersDyDx(1))
+        nextGrid(rowSize - 1)(colSize - 1) = lightCondition(grid, Point(rowSize - 1, colSize - 1), cornersDyDx(2))
+        nextGrid(rowSize - 1)(0) = lightCondition(grid, Point(rowSize - 1, 0), cornersDyDx(3))
     }
 
     for (i <- 1 to colSize - 2) {
-        nextGrid(0)(i) = lightCondition(grid, Position(0, i), bordersDyDx(0))
-        nextGrid(rowSize - 1)(i) = lightCondition(grid, Position(rowSize - 1, i), bordersDyDx(2))
+        nextGrid(0)(i) = lightCondition(grid, Point(0, i), bordersDyDx(0))
+        nextGrid(rowSize - 1)(i) = lightCondition(grid, Point(rowSize - 1, i), bordersDyDx(2))
     }
 
     for (i <- 1 to rowSize - 2) {
-        nextGrid(i)(colSize - 1) = lightCondition(grid, Position(i, colSize - 1), bordersDyDx(1))
-        nextGrid(i)(0) = lightCondition(grid, Position(i, 0), bordersDyDx(3))
+        nextGrid(i)(colSize - 1) = lightCondition(grid, Point(i, colSize - 1), bordersDyDx(1))
+        nextGrid(i)(0) = lightCondition(grid, Point(i, 0), bordersDyDx(3))
     }
 
     for (i <- 1 to rowSize - 2; j <- 1 to colSize - 2) {
-        nextGrid(i)(j) = lightCondition(grid, Position(i, j), insideBoxDyDx)
+        nextGrid(i)(j) = lightCondition(grid, Point(i, j), insideBoxDyDx)
     }
 
     return nextGrid
