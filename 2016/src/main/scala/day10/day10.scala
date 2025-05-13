@@ -8,10 +8,10 @@ sealed trait Destination
 case class Bot(id: Int) extends Destination
 case class Output(id: Int) extends Destination
 
-def parseInstructions(input: List[String]): (Map[Int, ListBuffer[Int]], Map[Int, (Destination, Destination)]) = {
-    val valuePattern = """value (\d+) goes to bot (\d+)""".r
-    val botPattern = """bot (\d+) gives low to (bot|output) (\d+) and high to (bot|output) (\d+)""".r
+val valuePattern = raw"value (\d+) goes to bot (\d+)".r
+val botPattern = raw"bot (\d+) gives low to (bot|output) (\d+) and high to (bot|output) (\d+)".r
 
+def parseInstructions(input: List[String]): (Map[Int, ListBuffer[Int]], Map[Int, (Destination, Destination)]) = {
     val initialValues = Map.empty[Int, ListBuffer[Int]]
     val rules = Map.empty[Int, (Destination, Destination)]
 
@@ -90,8 +90,8 @@ def hello(): Unit = {
     readLinesFromFile("day10.txt") match {
         case Success(lines) => {
             val (part1, part2) = solve(lines)
-            println(s"Part 1: $part1")
-            println(s"Part 2: $part2")
+            println(s"Part One: $part1")
+            println(s"Part Two: $part2")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

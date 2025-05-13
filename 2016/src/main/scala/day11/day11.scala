@@ -13,11 +13,11 @@ def parseInput(input: List[String]): Map[String, Pair] = {
     for ((line, idx) <- input.zipWithIndex) {
         val floor = idx + 1
         
-        val generators = "([a-z]+) generator".r.findAllMatchIn(line).map(_.group(1))
-        val microchips = "([a-z]+)-compatible microchip".r.findAllMatchIn(line).map(_.group(1))
+        val generators = raw"([a-z]+) generator".r.findAllMatchIn(line).map(_.group(1))
+        val microchips = raw"([a-z]+)-compatible microchip".r.findAllMatchIn(line).map(_.group(1))
         
-        generators.foreach { element => elementMap(element) = Pair(floor, elementMap(element).c) }
-        microchips.foreach { element => elementMap(element) = Pair(elementMap(element).g, floor) }
+        for (element <- generators) { elementMap(element) = Pair(floor, elementMap(element).c) }
+        for (element <- microchips) { elementMap(element) = Pair(elementMap(element).g, floor) }
     }
     
     return elementMap
@@ -71,7 +71,7 @@ def bfs(initial: State): Int = {
         
         if (isGoal(current)) return steps
         
-        nextStates(current).foreach { nextState =>
+        for (nextState <- nextStates(current)) {
             if (!visited.contains(nextState)) {
                 visited.add(nextState)
                 queue.enqueue((nextState, steps + 1))

@@ -3,9 +3,9 @@ package day20
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Range(val start: Long, val end: Long)
+case class Range(start: Long, end: Long)
 
-def parseInput(lines: List[String]): List[Range] = lines.map(line => {
+def parseInput(input: List[String]) = input.map(line => {
     val Array(start, end) = line.split("-")
     Range(start.toLong, end.toLong)
 })

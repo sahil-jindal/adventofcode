@@ -3,9 +3,9 @@ package day04
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Room(val encrypted: String, val id: Int, val checkSum: String)
+case class Room(encrypted: String, id: Int, checkSum: String)
 
-def parseInput(lines: List[String]): List[Room] = lines.map(line => { 
+def parseInput(input: List[String]): List[Room] = input.map(line => { 
     val List(first, second, third) = raw"([^\d]+)\-(\d+)\[(.*)\]".r.findFirstMatchIn(line).get.subgroups
     Room(first.replaceAll("-",""), second.toInt, third)
 })

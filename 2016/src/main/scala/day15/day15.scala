@@ -3,20 +3,20 @@ package day15
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-val pattern = """Disc #\d+ has (\d+) positions; at time=0, it is at position (\d+).""".r
+case class Disc(id: Int, pos: Int, mod: Int)
 
-case class Disc(val pos: Int, val mod: Int)
+val pattern = raw"Disc #(\d+) has (\d+) positions; at time=0, it is at position (\d+).".r
 
 def parseInput(input: List[String]): List[Disc] = input.collect {
-    case pattern(mod, pos) => Disc(pos.toInt, mod.toInt)
+    case pattern(id, mod, pos) => Disc(id.toInt, pos.toInt, mod.toInt)
 }
 
 def iterate(discs: List[Disc]): Int = Iterator.from(0).find(t => 
-    discs.zipWithIndex.forall { case (disc, i) => (disc.pos + t + i + 1) % disc.mod == 0 }
+    discs.forall { case Disc(id, pos, mod) => (pos + t + id) % mod == 0 }
 ).get
 
 def evaluatorOne(discs: List[Disc]): Int = iterate(discs)
-def evaluatorTwo(discs: List[Disc]): Int = iterate(discs :+ Disc(0, 11)) 
+def evaluatorTwo(discs: List[Disc]): Int = iterate(discs :+ Disc(discs.size + 1, 0, 11)) 
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

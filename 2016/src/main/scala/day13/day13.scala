@@ -4,8 +4,8 @@ import scala.collection.mutable.{Queue, Set}
 
 val Direction = List((-1, 0), (0, 1), (1, 0), (1, 0))
 
-case class Point(val y: Int, val x: Int)
-case class Group(val steps: Int, y: Int, x: Int)
+case class Point(y: Int, x: Int)
+case class Group(steps: Int, y: Int, x: Int)
 
 def steps(input: Int): Iterator[Group] = {
     val q = Queue(Group(0, 1, 1))

@@ -4,11 +4,8 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Map, Set, PriorityQueue}
 
-case class Point(x: Int, y: Int)
+case class Point(y: Int, x: Int)
 case class State(cost: Int, pos: Int, visited: Int)
-
-// Direction Lists for movement
-val directions = List(Point(0, 1), Point(1, 0), Point(0, -1), Point(-1, 0))
 
 def parseInput(grid: List[String]): (Map[Int, Point], Set[Point]) = {
     val locations = Map.empty[Int, Point]
@@ -16,14 +13,21 @@ def parseInput(grid: List[String]): (Map[Int, Point], Set[Point]) = {
     
     for (y <- grid.indices; x <- grid(y).indices) {
         grid(y)(x) match {
-            case '#' => walls.add(Point(x, y))
-            case d if d.isDigit => locations(d.asDigit) = Point(x, y)
+            case '#' => walls.add(Point(y, x))
+            case d if d.isDigit => locations(d.asDigit) = Point(y, x)
             case _ =>
         }
     }
     
     return (locations, walls)
 }
+
+def getNeighbours(pos: Point) = Seq(
+    pos.copy(x = pos.x + 1),
+    pos.copy(x = pos.x - 1),
+    pos.copy(y = pos.y + 1),
+    pos.copy(y = pos.y - 1)
+)
 
 // A* Search to compute shortest paths between POIs
 def aStar(start: Point, goal: Point, walls: Set[Point]): Int = {
@@ -40,8 +44,7 @@ def aStar(start: Point, goal: Point, walls: Set[Point]): Int = {
         if (current == goal) return costSoFar
         if (!visited.contains(current)) {
             visited += current
-            for (dir <- directions) {
-                val neighbor = Point(current.x + dir.x, current.y + dir.y)
+            for (neighbor <- getNeighbours(current)) {
                 if (!walls.contains(neighbor) && !visited.contains(neighbor)) {
                     pq.enqueue((costSoFar + 1, neighbor))
                 }

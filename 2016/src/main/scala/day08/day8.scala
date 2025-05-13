@@ -3,15 +3,17 @@ package day08
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-val rectPattern = "rect (\\d+)x(\\d+)".r
-val rotateRowPattern = "rotate row y=(\\d+) by (\\d+)".r
-val rotateColumnPattern = "rotate column x=(\\d+) by (\\d+)".r
+type Grid = Array[Array[Boolean]]
 
-def executeInstructions(instructions: List[String]): Array[Array[Boolean]] = {
+val rectPattern = raw"rect (\d+)x(\d+)".r
+val rotateRowPattern = raw"rotate row y=(\d+) by (\d+)".r
+val rotateColumnPattern = raw"rotate column x=(\d+) by (\d+)".r
+
+def executeInstructions(instructions: List[String]): Grid = {
     val (height, width) = (6, 50)
     val screen = Array.fill(height, width)(false)    
     
-    instructions.foreach { instruction =>
+    for (instruction <- instructions) {
         instruction match {
             case rectPattern(a, b) => {
                 val rectWidth = a.toInt
@@ -52,13 +54,8 @@ def executeInstructions(instructions: List[String]): Array[Array[Boolean]] = {
     return screen
 }
 
-def evaluatorOne(instructions: List[String]): Int = {
-    return executeInstructions(instructions).flatten.count(identity)
-}
-
-def evaluatorTwo(instructions: List[String]): String = {
-    return executeInstructions(instructions).map { row => row.map(if (_) '#' else ' ').mkString }.mkString("\n")
-}
+def evaluatorOne(input: Grid): Int = input.flatten.count(identity)
+def evaluatorTwo(input: Grid): String = input.map(_.map(if _ then '#' else ' ').mkString).mkString("\n")
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -66,8 +63,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day08.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two:\n${evaluatorTwo(lines)}")
+            val input = executeInstructions(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two:\n${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

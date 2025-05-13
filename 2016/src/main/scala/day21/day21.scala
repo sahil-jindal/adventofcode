@@ -3,13 +3,13 @@ package day21
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-val operation1 = "swap position (\\d+) with position (\\d+)".r
-val operation2 = "swap letter (\\w) with letter (\\w)".r
-val operation3 = "rotate left (\\d+) step[s]?".r
-val operation4 = "rotate right (\\d+) step[s]?".r
-val operation5 = "rotate based on position of letter (\\w)".r
-val operation6 = "reverse positions (\\d+) through (\\d+)".r
-val operation7 = "move position (\\d+) to position (\\d+)".r
+val operation1 = raw"swap position (\d+) with position (\d+)".r
+val operation2 = raw"swap letter (\w) with letter (\w)".r
+val operation3 = raw"rotate left (\d+) step[s]?".r
+val operation4 = raw"rotate right (\d+) step[s]?".r
+val operation5 = raw"rotate based on position of letter (\w)".r
+val operation6 = raw"reverse positions (\d+) through (\d+)".r
+val operation7 = raw"move position (\d+) to position (\d+)".r
 
 def swapPosition(input: Array[Char], pos1: Int, pos2: Int): Unit = {
     val temp = input(pos1)
@@ -38,7 +38,7 @@ def rotateRight(input: Array[Char], pos: Int): Unit = {
 def executeInstructions(input: String, instructions: List[String]): String = {
     val temp = input.toCharArray
 
-    instructions.foreach { instruction =>
+    for (instruction <- instructions) {
         instruction match {
             case operation1(a, b) => {
                 swapPosition(temp, a.toInt, b.toInt)

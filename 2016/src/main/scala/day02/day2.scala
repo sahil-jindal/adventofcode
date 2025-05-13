@@ -3,16 +3,19 @@ package day02
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Direction(val dy: Int, val dx: Int)
-case class Point(val y: Int, val x: Int)
+case class Direction(dy: Int, dx: Int)
 
-def firstKeyPad = List(
+case class Point(y: Int, x: Int) {
+    def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
+}
+
+val firstKeyPad = List(
     List('1', '2', '3'),
     List('4', '5', '6'),
     List('7', '8', '9')
 )
 
-def secondKeyPad = List(
+val secondKeyPad = List(
     List(' ', ' ', '1', ' ', ' '),
     List(' ', '2', '3', '4', ' '),
     List('5', '6', '7', '8', '9'),
@@ -41,15 +44,12 @@ def getCode(
     val code = new StringBuilder
     var temp = currPoint
 
-    for line <- directions do {
-        for dir <- line do {
-            val move = getDirections(dir)
+    for (line <- directions) {
+        for (dir <- line) {
+            val newP = temp + getDirections(dir)
 
-            val newY = temp.y + move.dy
-            val newX = temp.x + move.dx
-
-            if boundaryCondition(newY, newX) then {
-                temp = Point(newY, newX)
+            if boundaryCondition(newP.y, newP.x) then {
+                temp = newP
             } 
         }
 

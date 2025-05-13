@@ -2,17 +2,15 @@ package day09
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.util.matching.Regex
 
-private def expand(input: String, start: Int, lim: Int, recursive: Boolean): Long = {
+def expand(input: String, start: Int, lim: Int, recursive: Boolean): Long = {
     var res = 0L
     var i = start
 
     while (i < lim) {
         if input(i) == '(' then {
             val j = input.indexOf(')', i + 1)
-            val markerPattern = new Regex("(\\d+)x(\\d+)")
-            val m = markerPattern.findFirstMatchIn(input.substring(i + 1, j)).get
+            val m = raw"(\d+)x(\d+)".r.findFirstMatchIn(input.substring(i + 1, j)).get
             val length = m.group(1).toInt
             val mul = m.group(2).toInt
             val totalLength = 
@@ -29,8 +27,8 @@ private def expand(input: String, start: Int, lim: Int, recursive: Boolean): Lon
     return res
 }
 
-def evaluatorOne(line: String): Long = expand(line, 0, line.length, false)
-def evaluatorTwo(line: String): Long = expand(line, 0, line.length, true)
+def evaluatorOne(input: String): Long = expand(input, 0, input.length, false)
+def evaluatorTwo(input: String): Long = expand(input, 0, input.length, true)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

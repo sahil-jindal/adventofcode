@@ -3,7 +3,7 @@ package day03
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def parseInput(lines: List[String]) = lines.map(line => {
+def parseInput(input: List[String]) = input.map(line => {
     raw"(\d+)".r.findAllIn(line).map(_.toInt).toList
 })
 

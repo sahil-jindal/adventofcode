@@ -49,7 +49,7 @@ class Grid(nodes: Array[Array[Node]]) {
 
 def parseInput(input: List[String]): Array[Array[Node]] = {
     val nodes = input.drop(2).map(line => {
-        val Seq(y, x, size, used) = "(\\d+)".r.findAllIn(line).map(_.toInt).toSeq
+        val Seq(y, x, size, used) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toSeq
         Node(y, x, size, used)
     })
 
@@ -58,7 +58,7 @@ def parseInput(input: List[String]): Array[Array[Node]] = {
 
     val grid = Array.ofDim[Node](height, width)
 
-    nodes.foreach(n => grid(n.y)(n.x) = n)
+    for (n <- nodes) { grid(n.y)(n.x) = n }
     
     grid(0)(width - 1) = grid(0)(width - 1).copy(goal = true)
     

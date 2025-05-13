@@ -5,7 +5,7 @@ import scala.io.Source
 
 case class IPAddress(outside: Array[String], inside: Array[String])
 
-def parseInput(lines: List[String]) = lines.map(line => {
+def parseInput(input: List[String]) = input.map(line => {
     val temp = line.split("\\[|\\]").zipWithIndex.groupMap { case (_, index) => index % 2 != 0 }(_._1)
     IPAddress(temp(false), temp(true))
 })
