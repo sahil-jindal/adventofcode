@@ -2,12 +2,12 @@ package day25
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable
+import scala.collection.mutable.{Map => MutableMap}
 
-val currentValuePattern = """\s*If the current value is (\d+):""".r
-val writePattern = """\s*- Write the value (\d+)\.""".r
-val movePattern = """\s*- Move one slot to the (left|right)\.""".r
-val continuePattern = """\s*- Continue with state (\w+)\.""".r
+val currentValuePattern = raw"\s*If the current value is (\d+):".r
+val writePattern = raw"\s*- Write the value (\d+)\.".r
+val movePattern = raw"\s*- Move one slot to the (left|right)\.".r
+val continuePattern = raw"\s*- Continue with state (\w+)\.".r
 
 def evaluatorOne(input: List[String]): Int = {
     val lines = input.filter(_.trim.nonEmpty).toList
@@ -22,7 +22,7 @@ def evaluatorOne(input: List[String]): Int = {
     }
 
     // Parse transitions
-    val transitions = mutable.Map.empty[String, Map[Int, (Int, Int, String)]]
+    val transitions = MutableMap.empty[String, Map[Int, (Int, Int, String)]]
     val linesIterator = lines.drop(2).iterator
 
     while (linesIterator.hasNext) {
@@ -54,7 +54,7 @@ def evaluatorOne(input: List[String]): Int = {
     }
 
     // Simulation
-    val tape = mutable.Map.empty[Int, Int]
+    val tape = MutableMap.empty[Int, Int]
     var currentPos = 0
     var currentState = initialState
 

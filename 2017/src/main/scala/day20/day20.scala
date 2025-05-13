@@ -3,33 +3,34 @@ package day20
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-class Point(val x: Int, val y: Int, val z: Int) {
+case class Vec3D(x: Int, y: Int, z: Int) {
     def len: Int = x.abs + y.abs + z.abs
+    def +(that: Vec3D) = Vec3D(x + that.x, y + that.y, z + that.z)
 }
 
-case class Particle(val id: Int, val pos: Point, val vel: Point, val acc: Point) {
+case class Particle(id: Int, pos: Vec3D, vel: Vec3D, acc: Vec3D) {
     var destroyed: Boolean = false
 
     def step(): Particle = {
-        val newVel = Point(vel.x + acc.x, vel.y + acc.y, vel.z + acc.z)
-        val newPos = Point(pos.x + newVel.x, pos.y + newVel.y, pos.z + newVel.z)
+        val newVel = vel + acc
+        val newPos = pos + newVel
         return copy(pos = newPos, vel = newVel)
     }
 
-    def collisionTime(particle: Particle): Iterable[Int] = {
-        for {
+    def collisionTime(particle: Particle): Seq[Int] = {
+        return (for {
             tx <- collisionTimeOnAxis(particle.acc.x - acc.x, particle.vel.x - vel.x, particle.pos.x - pos.x)
             ty <- collisionTimeOnAxis(particle.acc.y - acc.y, particle.vel.y - vel.y, particle.pos.y - pos.y)
             tz <- collisionTimeOnAxis(particle.acc.z - acc.z, particle.vel.z - vel.z, particle.pos.z - pos.z)
             if tx == ty && ty == tz
-        } yield tx
+        } yield tx)
     }
 
-    def collisionTimeOnAxis(da: Int, dv: Int, dp: Int): Iterable[Int] = {
+    def collisionTimeOnAxis(da: Int, dv: Int, dp: Int): Seq[Int] = {
         return solveIntEq(da / 2, dv, dp)
     }
 
-    def solveIntEq(a: Int, b: Int, c: Int): Iterable[Int] = {
+    def solveIntEq(a: Int, b: Int, c: Int): Seq[Int] = {
         if (a == 0) {
             if (b != 0) return Seq(-c / b)
             if (c == 0) return Seq(0)
@@ -49,15 +50,15 @@ case class Particle(val id: Int, val pos: Point, val vel: Point, val acc: Point)
     }
 }
 
-def parseVector(s: String): Point = {
+def parseVector(s: String): Vec3D = {
     val Array(x, y, z) = s.split(",").map(_.trim.toInt)
-    return Point(x, y, z)
+    return Vec3D(x, y, z)
 }
 
-def parseInput(lines: List[String]): List[Particle] = {
-    val pattern = """p=<([^>]+)>, v=<([^>]+)>, a=<([^>]+)>""".r
+def parseInput(input: List[String]): List[Particle] = {
+    val pattern = raw"p=<([^>]+)>, v=<([^>]+)>, a=<([^>]+)>".r
 
-    return lines.zipWithIndex.map { case (line, id) =>
+    return input.zipWithIndex.map { case (line, id) =>
         val List(pVec, vVec, aVec) = pattern.findFirstMatchIn(line).get.subgroups.map(parseVector)
         Particle(id, pVec, vVec, aVec)
     }

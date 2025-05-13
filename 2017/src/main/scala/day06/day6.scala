@@ -4,7 +4,7 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
 def parseInput(lines: String): Vector[Int] = {
-    return "(\\d+)".r.findAllIn(lines).map(_.toInt).toVector
+    return raw"(\d+)".r.findAllIn(lines).map(_.toInt).toVector
 }
 
 def redistribute(banks: Vector[Int]): Vector[Int] = {

@@ -3,9 +3,9 @@ package day07
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-val pattern =  """(\w+) \((\d+)\)(?: -> ([\w, ]+))?""".r
-
 case class Node(id: String, children: Seq[String], weight: Int, var treeWeight: Int = -1)
+
+val pattern =  raw"(\w+) \((\d+)\)(?: -> ([\w, ]+))?".r
 
 type Tree = Map[String, Node]
 

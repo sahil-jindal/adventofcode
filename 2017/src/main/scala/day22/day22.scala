@@ -5,64 +5,71 @@ import scala.io.Source
 import scala.collection.mutable.Map
 
 enum State { case Clean, Weakened, Infected, Flagged }
-case class Point(val y: Int, val x: Int)
-case class Direction(val dy: Int, val dx: Int)
-case class Virus(val currDirection: Direction, val state: State)
 
-def iterate(lines: List[String], iterations: Int, update: Virus => Virus): Int = {
-    val height = lines.length
-    val width = lines.head.length
+case class Direction(dy: Int, dx: Int) {
+    def unary_- = Direction(-dy, -dx)
+    def rotateLeft = Direction(-dx, dy)
+    def rotateRight = Direction(dx, -dy)
+}
+
+case class Point(y: Int, x: Int) {
+    def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
+}
+
+case class Virus(currDirection: Direction, state: State)
+
+def iterate(input: List[String], iterations: Int, update: Virus => Virus): Int = {
+    val height = input.length
+    val width = input.head.length
     val cells = Map.empty[Point, State]
 
-    for (yT <- 0 until height; xT <- 0 until width; if lines(yT)(xT) == '#') do {
+    for (yT <- 0 until height; xT <- 0 until width; if input(yT)(xT) == '#') do {
         cells += Point(yT, xT) -> State.Infected
     }
 
-    var (y, x) = (height / 2, width / 2)
-    var (dy, dx) = (-1, 0)
+    var pos = Point(height / 2, width / 2)
+    var dir = Direction(-1, 0)
     var infections = 0
 
     for(_ <- 0 until iterations) {
-        var state = cells.getOrElse(Point(y, x), State.Clean)
-        val newVirus = update(Virus(Direction(dy, dx), state))
+        var state = cells.getOrElse(pos, State.Clean)
+        val newVirus = update(Virus(dir, state))
 
         state = newVirus.state
-        dy = newVirus.currDirection.dy
-        dx = newVirus.currDirection.dx
-
+        dir = newVirus.currDirection
+        
         if(state == State.Infected) infections += 1
 
         if(state == State.Clean) {
-            cells -= Point(y, x)
+            cells -= pos
         } else {
-            cells += Point(y, x) -> state
+            cells += pos -> state
         }
 
-        y += dy
-        x += dx
+        pos += dir
     } 
 
     return infections
 }
 
 def evaluatorOne(input: List[String]) = iterate(input, 10000, it => {
-    val Virus(Direction(dy, dx), state) = it
+    val Virus(dir, state) = it
 
     state match {
-        case State.Clean => Virus(Direction(-dx, dy), State.Infected)
-        case State.Infected => Virus(Direction(dx, -dy), State.Clean)
+        case State.Clean => Virus(dir.rotateLeft, State.Infected)
+        case State.Infected => Virus(dir.rotateRight, State.Clean)
         case _ => ??? // Purposely left as this returns "Nothing"
     }
 })
 
 def evaluatorTwo(input: List[String]) = iterate(input, 10000000, it => {
-    val Virus(Direction(dy, dx), state) = it
+    val Virus(dir, state) = it
 
     state match {
-        case State.Clean => Virus(Direction(-dx, dy), State.Weakened)
-        case State.Weakened => Virus(Direction(dy, dx), State.Infected)
-        case State.Infected => Virus(Direction(dx, -dy), State.Flagged)       
-        case State.Flagged => Virus(Direction(-dy, -dx), State.Clean)
+        case State.Flagged => Virus(-dir, State.Clean)
+        case State.Weakened => Virus(dir, State.Infected)
+        case State.Clean => Virus(dir.rotateLeft, State.Weakened)
+        case State.Infected => Virus(dir.rotateRight, State.Flagged)       
     }
 })
 

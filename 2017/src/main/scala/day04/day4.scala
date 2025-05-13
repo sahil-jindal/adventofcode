@@ -3,9 +3,7 @@ package day04
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def parseInput(lines: List[String]): List[List[String]] = {
-    return lines.map(_.split(" ").toList)
-}
+def parseInput(input: List[String]) = input.map(_.split(" ").toList)
 
 def isValidLineCount(input: List[List[String]], normalizer: String => String): Int = {
     return input.count(it => {

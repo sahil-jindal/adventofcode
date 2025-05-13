@@ -3,7 +3,7 @@ package day01
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def parseInput(line: String): List[Int] = line.map(_.asDigit).toList
+def parseInput(input: String): List[Int] = input.map(_.asDigit).toList
 
 def solve(line: List[Int], rotated: Int): Int = {
     val d = rotated % line.length

@@ -4,7 +4,7 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Queue, Map}
 
-def parseInput(lines: List[String]): List[Vector[String]] = lines.map(_.split(" ").toVector)
+def parseInput(input: List[String]) = input.map(_.split(" ").toVector)
 
 abstract class Machine[TState] {
     private val regs = Map.empty[String, Long].withDefaultValue(0L)

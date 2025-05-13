@@ -5,15 +5,15 @@ import scala.io.Source
 import scala.collection.mutable.{Map, ListBuffer}
 
 class Mtx(val size: Int) {
-    private val flags = Array.ofDim[Boolean](size * size)
+    private val flags = Array.ofDim[Boolean](size, size)
 
     def codeNumber: Int = {
         if (size != 2 && size != 3) throw new IllegalArgumentException()
-        return flags.zipWithIndex.collect { case (true, i) => 1 << i }.fold(0)(_ | _)
+        return flags.flatten.zipWithIndex.collect { case (true, i) => 1 << i }.sum
     }
 
-    def apply(y: Int, x: Int): Boolean = flags(size * y + x)
-    def update(y: Int, x: Int, value: Boolean): Unit = flags(size * y + x) = value
+    def apply(y: Int, x: Int): Boolean = flags(y)(x)
+    def update(y: Int, x: Int, value: Boolean): Unit = flags(y)(x) = value
 
     def flip(): Mtx = {
         val res = new Mtx(size)
@@ -57,7 +57,7 @@ class Mtx(val size: Int) {
         })
     }
 
-    def count(): Int = flags.count(identity)
+    def count(): Int = flags.flatten.count(identity)
 }
 
 object Mtx {
@@ -93,21 +93,18 @@ class RuleSet(input: List[String]) {
     private val rules2 = Map.empty[Int, Mtx]
     private val rules3 = Map.empty[Int, Mtx]
 
-    private val ruleRegex = "(.*?) => (.*?)".r
-
-    input foreach {
-        case ruleRegex(left, right) => {
-            val rules = left.length match {
-                case 5  => rules2
-                case 11 => rules3
-                case _  => throw new Exception()
-            }
-            
-            for (mtx <- variations(Mtx.fromString(left))) {
-                rules(mtx.codeNumber) = Mtx.fromString(right)
-            }
+    for (line <- input) {
+        val Array(left, right) = line.split(" => ")
+        
+        val rules = left.length match {
+            case 5  => rules2
+            case 11 => rules3
+            case _  => throw new Exception()
         }
-        case _ =>
+        
+        for (mtx <- variations(Mtx.fromString(left))) {
+            rules(mtx.codeNumber) = Mtx.fromString(right)
+        }
     }
     
 

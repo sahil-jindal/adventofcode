@@ -2,7 +2,9 @@ package day14
 
 import scala.collection.mutable.Queue
 
-def knotHash(input: String): List[Int] = {
+case class Point(y: Int, x: Int)
+
+def knotHash(input: String): Seq[Int] = {
     val suffix = Seq(17, 31, 73, 47, 23)
     val chars = input.map(_.toInt) ++ suffix
     val output = (0 until 256).toArray
@@ -24,10 +26,10 @@ def knotHash(input: String): List[Int] = {
         }
     }
   
-    return output.grouped(16).map(_.reduce(_ ^ _)).toList
+    return output.grouped(16).map(_.reduce(_ ^ _)).toSeq
 }
 
-def extract(input: String): Seq[List[Char]] = {
+def extract(input: String): Seq[Seq[Char]] = {
     return (0 until 128).map { y =>
         knotHash(s"$input-$y").flatMap { n =>
             (7 to 0 by -1).map { bit => if ((n & (1 << bit)) != 0) '#' else '.' }
@@ -35,38 +37,42 @@ def extract(input: String): Seq[List[Char]] = {
     }
 }
 
-def fill(mtx: Array[Array[Char]], startCell: (Int, Int)): Unit = {
+def getNeighbours(pos: Point) = Seq(
+    pos.copy(x = pos.x - 1),
+    pos.copy(x = pos.x + 1),
+    pos.copy(y = pos.y - 1),
+    pos.copy(y = pos.y + 1)
+)
+
+def fill(mtx: Array[Array[Char]], startCell: Point): Unit = {
     val q = Queue(startCell)
     val (rows, cols) = (mtx.length, mtx(0).length)
 
-    while (q.nonEmpty) do {
-        val (i, j) = q.dequeue()
-        mtx(i)(j) = ' '
+    while (q.nonEmpty) {
+        val pos = q.dequeue()
+        mtx(pos.y)(pos.x) = ' '
 
-        val neighbors = for {
-            (di, dj) <- Seq((-1, 0), (1, 0), (0, -1), (0, 1))
-            ni = i + di
-            nj = j + dj
-            if (ni >= 0 && ni < rows && nj >= 0 && nj < cols && mtx(ni)(nj) == '#')
-        } yield (ni, nj)
+        val neighbors = getNeighbours(pos).filter { n =>
+            n.y >= 0 && n.y < rows && n.x >= 0 && n.x < cols && mtx(n.y)(n.x) == '#'
+        }
 
         q.enqueueAll(neighbors)
     }
 }
 
-def evaluatorOne(input: String): Int = extract(input).flatten.count(_ == '#')
+def evaluatorOne(input: Seq[Seq[Char]]): Int = input.flatten.count(_ == '#')
 
-def evaluatorTwo(input: String): Int = {
-    val mtx = extract(input).map(_.toArray).toArray
+def evaluatorTwo(input: Seq[Seq[Char]]): Int = {
+    val mtx = input.map(_.toArray).toArray
     var regions = 0
 
     for {
-        i <- mtx.indices
-        j <- mtx(0).indices
-        if mtx(i)(j) == '#'
+        y <- mtx.indices
+        x <- mtx(0).indices
+        if mtx(y)(x) == '#'
     } do {
         regions += 1
-        fill(mtx, (i, j))
+        fill(mtx, Point(y, x))
     }
 
     return regions
@@ -74,6 +80,7 @@ def evaluatorTwo(input: String): Int = {
 
 def hello(): Unit = {
     val inputLine = "jxqlasbh"
-    println(s"Part One: ${evaluatorOne(inputLine)}")
-    println(s"Part Two: ${evaluatorTwo(inputLine)}")
+    val hashed = extract(inputLine)
+    println(s"Part One: ${evaluatorOne(hashed)}")
+    println(s"Part Two: ${evaluatorTwo(hashed)}")
 }

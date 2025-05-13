@@ -3,8 +3,8 @@ package day05
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def getStepCount(lines: List[String], update: Int => Int): Int = {
-    var input = lines.map(_.toInt).toArray
+def getStepCount(inputInit: List[String], update: Int => Int): Int = {
+    var input = inputInit.map(_.toInt).toArray
     var i = 0
     var stepCount = 0
 

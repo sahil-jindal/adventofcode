@@ -3,11 +3,11 @@ package day02
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def parseInput(lines: List[String]): List[List[Int]] = {
-    return lines.map("(\\d+)".r.findAllIn(_).map(_.toInt).toList)
-}
+def parseInput(input: List[String]) = input.map(line => {
+    raw"(\d+)".r.findAllIn(line).map(_.toInt).toList
+})
 
-def evaluatorOne(input: List[List[Int]]): Int = input.map { it => it.max - it.min }.sum
+def evaluatorOne(input: List[List[Int]]): Int = input.map(it => it.max - it.min).sum
 
 def evaluatorTwo(input: List[List[Int]]): Int = input.flatMap { numbers =>
     for { a <- numbers; b <- numbers; if a > b && a % b == 0 } yield a / b

@@ -4,8 +4,8 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Set, Stack}
 
-def parseInput(lines: List[String]): Map[String, List[String]] = {
-    return lines.map(line => {
+def parseInput(input: List[String]): Map[String, List[String]] = {
+    return input.map(line => {
         val Array(first, second) = line.split(" <-> ")
         first -> second.split(", ").toList
     }).toMap
@@ -19,7 +19,7 @@ def dfs(graph: Map[String, List[String]], start: String): Set[String] = {
         val node = stack.pop()
         if (!visited.contains(node)) {
             visited.add(node)
-            graph.getOrElse(node, List()).foreach { neighbor =>
+            for (neighbor <- graph.getOrElse(node, List.empty)) {
                 if (!visited.contains(neighbor)) {
                     stack.push(neighbor)
                 }
