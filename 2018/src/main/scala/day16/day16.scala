@@ -2,38 +2,33 @@ package day16
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable
-import scala.util.matching.Regex
-import scala.util.boundary, boundary.break;
+import scala.collection.mutable.{Map => MutableMap}
+import scala.util.boundary, boundary.break
 
 case class TestCase(regsBefore: List[Int], regsAfter: List[Int], stm: Array[Int])
 
-def ints(pattern: String, lines: List[String], index: Int): Option[List[Int]] = {
-    if (index >= lines.length) return None
-    return new Regex(pattern).findFirstMatchIn(lines(index)).map(_.subgroups.map(_.toInt))
+def groupLines(input: List[String]): List[List[String]] = {
+    return input.foldLeft(List(List.empty[String])) {
+        case (acc, "") => acc :+ List.empty[String]
+        case (acc, elem) => acc.init :+ (acc.last :+ elem)
+    }.filter(_.nonEmpty)
 }
 
-def parseInput(lines: List[String]): (List[TestCase], List[Array[Int]]) = {
-    var iline = 0
-    var testCases = mutable.ListBuffer.empty[TestCase]
-    
-    while (ints("Before: \\[(\\d+), (\\d+), (\\d+), (\\d+)\\]", lines, iline).isDefined) {
-        val regsBefore = ints("Before: \\[(\\d+), (\\d+), (\\d+), (\\d+)\\]", lines, iline).get
-        val stm = ints("(\\d+) (\\d+) (\\d+) (\\d+)", lines, iline + 1).get.toArray
-        val regsAfter = ints("After:  \\[(\\d+), (\\d+), (\\d+), (\\d+)\\]", lines, iline + 2).get
-        iline += 4
-        testCases += TestCase(regsBefore, regsAfter, stm)
-    }
+def ints(input: String) = raw"(\d+)".r.findAllIn(input).map(_.toInt).toList
 
-    iline += 2
-    var prg = mutable.ListBuffer.empty[Array[Int]]
-    
-    while (iline < lines.length && ints("(\\d+) (\\d+) (\\d+) (\\d+)", lines, iline).isDefined) {
-        prg += ints("(\\d+) (\\d+) (\\d+) (\\d+)", lines, iline).get.toArray
-        iline += 1
-    }
+def parseInput(input: List[String]): (List[TestCase], List[Array[Int]]) = {
+    val blocks = groupLines(input)
 
-    return (testCases.toList, prg.toList)
+    val testCases = blocks.init.map(group => {
+        val regsBefore = ints(group(0))
+        val stm = ints(group(1)).toArray
+        val regsAfter = ints(group(2))
+        TestCase(regsBefore, regsAfter, stm)
+    })
+
+    val prg = blocks.last.map(line => ints(line).toArray)
+
+    return (testCases, prg)
 }
 
 def step(regs: List[Int], stm: Array[Int]): List[Int] = {
@@ -62,7 +57,7 @@ def step(regs: List[Int], stm: Array[Int]): List[Int] = {
 
 def workOutMapping(mapping: Map[Int, List[Int]]): Map[Int, Int] = {
     val used = Array.fill(16)(false)
-    val res = mutable.Map.empty[Int, Int]
+    val res = MutableMap.empty[Int, Int]
 
     def helper(constraints: Map[Int, List[Int]]): Map[Int, Int] = {
         if (res.size == 16) return res.toMap

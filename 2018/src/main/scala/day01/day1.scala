@@ -4,7 +4,7 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Set
 
-def parseInput(lines: List[String]): List[Int] = lines.map(_.toInt)
+def parseInput(input: List[String]) = input.map(_.toInt)
 
 def evaluatorOne(numbers: List[Int]): Int = numbers.sum
 

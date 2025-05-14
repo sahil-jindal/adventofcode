@@ -2,7 +2,6 @@ package day17
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.StringBuilder
 import scala.util.boundary, boundary.break
 
 def isStill(mtx: Array[Array[Char]], x: Int, y: Int): Boolean = {
@@ -49,18 +48,18 @@ def fillRecursive(mtx: Array[Array[Char]], x: Int, y: Int): Unit = {
     }
 }
 
-def fill(lines: List[String]): Seq[Char] = {
+def fill(input: List[String]): Seq[Char] = {
     val (width, height) = (2000, 2000)
     val mtx = Array.fill(height, width)('.')
 
-    lines.foreach(line => {
-        val nums = """\d+""".r.findAllIn(line).map(_.toInt).toArray
+    for (line <- input) {
+        val nums = raw"(\d+)".r.findAllIn(line).map(_.toInt).toArray
         
         for (i <- nums(1) to nums(2)) {
             if (line.startsWith("x")) mtx(i)(nums(0)) = '#' 
             else mtx(nums(0))(i) = '#'
         }
-    })
+    }
     
     fillRecursive(mtx, 500, 0)
 

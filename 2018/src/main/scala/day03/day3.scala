@@ -4,12 +4,10 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Set
 
-val rx = raw"""(\d+) @ (\d+),(\d+): (\d+)x(\d+)""".r
+case class Rectangle(claimId: Int, startX: Int, startY: Int, w: Int, h: Int)
 
-case class Rectangle(val claimId: Int, val startX: Int, val startY: Int, val w: Int, val h: Int)
-
-def parseInput(lines: List[String]): List[Rectangle] = lines.map(line => {
-    val List(a, b, c, d, e) = rx.findFirstMatchIn(line).get.subgroups.map(_.toInt)
+def parseInput(input: List[String]): List[Rectangle] = input.map(line => {
+    val Seq(a, b, c, d, e) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toSeq
     Rectangle(a, b, c, d, e)
 })
 

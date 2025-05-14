@@ -4,25 +4,25 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Queue, Stack, Set}
 
-case class Point(x: Int, y: Int) {
-    def move(dx: Int, dy: Int): Point = Point(x + dx, y + dy)
+case class Point(y: Int, x: Int) {
+    def move(dy: Int, dx: Int) = Point(y + dy, x + dx)
 }
 
 case class Pair(posFrom: Point, posTo: Point)
 
-def doors(input: String): List[Pair] = {
+def doors(input: String): Seq[Pair] = {
     val s = Stack.empty[Point]
     var pos = Point(0, 0)
     
     return input.collect {
-        case 'N' => val prev = pos; pos = pos.move(0, -1); Seq(Pair(prev, pos), Pair(pos, prev))
-        case 'S' => val prev = pos; pos = pos.move(0, 1); Seq(Pair(prev, pos), Pair(pos, prev))
-        case 'E' => val prev = pos; pos = pos.move(1, 0); Seq(Pair(prev, pos), Pair(pos, prev))
-        case 'W' => val prev = pos; pos = pos.move(-1, 0); Seq(Pair(prev, pos), Pair(pos, prev))
+        case 'N' => val prev = pos; pos = pos.move(-1, 0); Seq(Pair(prev, pos), Pair(pos, prev))
+        case 'S' => val prev = pos; pos = pos.move(1, 0); Seq(Pair(prev, pos), Pair(pos, prev))
+        case 'E' => val prev = pos; pos = pos.move(0, 1); Seq(Pair(prev, pos), Pair(pos, prev))
+        case 'W' => val prev = pos; pos = pos.move(0, -1); Seq(Pair(prev, pos), Pair(pos, prev))
         case '(' => s.push(pos); Seq.empty
         case '|' => pos = s.top; Seq.empty
         case ')' => pos = s.pop(); Seq.empty
-    }.flatten.toList
+    }.flatten
 }
 
 def solver(input: String): (Int, Int) = {
@@ -38,10 +38,14 @@ def solver(input: String): (Int, Int) = {
         
         if (!seen.contains(pos)) {
             dMax = math.max(dMax, d)
+            
             if (d >= 1000) distantRooms += 1
 
             seen.add(pos)
-            grid.getOrElse(pos, List()).foreach(nextPos => queue.enqueue((nextPos, d + 1)))
+
+            for (nextPos <- grid.getOrElse(pos, Seq.empty)) {
+                queue.enqueue((nextPos, d + 1))
+            }
         }
     }
 

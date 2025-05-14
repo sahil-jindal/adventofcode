@@ -4,18 +4,18 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Map, Set}
 
-case class Point(x: Int, y: Int) {
+case class Point(y: Int, x: Int) {
     def manhattanDistance(other: Point): Int = (x - other.x).abs + (y - other.y).abs
 }
 
-case class Plane(val minX: Int, val maxX: Int, val minY: Int, val maxY: Int) {
-    def grid = for {y <- minY to maxY; x <- minX to maxX} yield Point(x, y)
+case class Plane(minX: Int, maxX: Int, minY: Int, maxY: Int) {
+    def grid = for {y <- minY to maxY; x <- minX to maxX} yield Point(y, x)
 }
 
-def parseInput(lines: List[String]): (Plane, List[Point]) = {
-    val points = lines.map(line => {
+def parseInput(input: List[String]): (Plane, List[Point]) = {
+    val points = input.map(line => {
         val Array(x, y) = line.split(", ").map(_.toInt)
-        Point(x, y)
+        Point(y, x)
     })
 
     val xs = points.map(_.x)
@@ -40,12 +40,12 @@ def evaluatorOne(plane: Plane, points: List[Point]): Int = {
     val closestPointCounts = Map.empty[Int, Int].withDefaultValue(0)
     val infinitePoints = Set.empty[Int]
 
-    plane.grid.foreach { point =>
+    for (point <- plane.grid) {
         val found = findClosest(point, points)
 
         if(found.isDefined) {
             val index = found.get
-            closestPointCounts.update(index, closestPointCounts(index) + 1)
+            closestPointCounts(index) += 1
             if (point.x == plane.minX || point.x == plane.maxX || 
                 point.y == plane.minY || point.y == plane.maxY) {
                 infinitePoints.add(index)

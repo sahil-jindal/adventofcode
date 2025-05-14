@@ -3,11 +3,11 @@ package day08
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Node(children: List[Node], metadata: List[Int])
+case class Node(children: Seq[Node], metadata: Seq[Int])
 
-def parseInput(line: String): List[Int] = line.split(" ").map(_.toInt).toList
+def parseInput(input: String) = input.split(" ").map(_.toInt).toSeq
  
-def parseNode(input: List[Int]): (Node, List[Int]) = {
+def parseNode(input: Seq[Int]): (Node, Seq[Int]) = {
     val numChildren = input.head
     val numMetadata = input(1)
     var remaining = input.drop(2)
@@ -20,7 +20,7 @@ def parseNode(input: List[Int]): (Node, List[Int]) = {
     
     val (metadata, next) = remaining.splitAt(numMetadata)
     
-    return (Node(children.toList, metadata), next)
+    return (Node(children, metadata), next)
 }
  
 def sumMetadata(node: Node): Int = {

@@ -9,8 +9,8 @@ case class Day(guard: Int, sleep: Array[Int]) {
     def totalSleep: Int = sleep.sum
 }
 
-def extractMinute(line: String): Int = {
-    val timestamp = "\\[(.*)\\]".r.findFirstMatchIn(line).get.group(1)
+def extractMinute(input: String): Int = {
+    val timestamp = raw"\[(.*)\]".r.findFirstMatchIn(input).get.group(1)
     return DateTimeFormat.forPattern("yyyy-MM-dd HH:mm").parseDateTime(timestamp).minuteOfHour.get
 }
 
@@ -21,7 +21,7 @@ def parseInput(input: List[String]): Seq[Day] = {
     var iline = 0
     
     while (iline < lines.length) {
-        val guard = "Guard #(\\d+) begins shift".r.findFirstMatchIn(lines(iline)).get.group(1).toInt
+        val guard = raw"Guard #(\d+) begins shift".r.findFirstMatchIn(lines(iline)).get.group(1).toInt
         iline += 1
 
         val sleep = Array.fill(60)(0)

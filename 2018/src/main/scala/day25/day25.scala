@@ -3,9 +3,9 @@ package day25
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Point(x: Int, y: Int, z: Int, w: Int) {
-    def manhattanDistance(other: Point): Int = {
-        Math.abs(x - other.x) + Math.abs(y - other.y) + Math.abs(z - other.z) + Math.abs(w - other.w)
+case class Vec4D(x: Int, y: Int, z: Int, w: Int) {
+    def manhattanDistance(other: Vec4D): Int = {
+        (x - other.x).abs + (y - other.y).abs + (z - other.z).abs + (w - other.w).abs
     }
 }
 
@@ -38,12 +38,12 @@ class DisjointUnionSets(size: Int) {
     }
 }
 
-def parseInput(lines: List[String]): List[Point] = lines.map(line => {
+def parseInput(input: List[String]) = input.map(line => {
     val Array(x, y, z, w) = line.split(",").map(_.toInt)
-    Point(x, y, z, w)
+    Vec4D(x, y, z, w)
 })
 
-def formConstellations(points: List[Point]): Int = {
+def formConstellations(points: List[Vec4D]): Int = {
     val uf = DisjointUnionSets(points.length)
     
     for {

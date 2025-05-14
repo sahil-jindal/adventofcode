@@ -2,114 +2,91 @@ package day13
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable
+import scala.collection.mutable.{ListBuffer, Map => MutableMap}
 
-sealed trait Direction
-case object Up extends Direction
-case object Down extends Direction
-case object Left extends Direction
-case object Right extends Direction
+enum Turn { case LeftTurn, Straight, RightTurn }
 
-sealed trait Turn
-case object LeftTurn extends Turn
-case object Straight extends Turn
-case object RightTurn extends Turn
+case class Direction(dy: Int, dx: Int) {
+    def rotateLeft = Direction(-dx, dy)
+    def rotateRight = Direction(dx, -dy)
+    def reflectNW = Direction(dx, dy)
+    def reflectNE = Direction(-dx, -dy)
+}
 
-case class Cart(var x: Int, var y: Int, var dir: Direction, var nextTurn: Turn, var crashed: Boolean)
+case class Point(y: Int, x: Int) {
+    def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
+}
 
-def parseInput(lines: List[String]): (Map[(Int, Int), Char], List[Cart]) = {
-    var trackMap = mutable.Map.empty[(Int, Int), Char]
-    var carts = mutable.ListBuffer.empty[Cart]
+case class Cart(var pos: Point, var dir: Direction, var nextTurn: Turn, var crashed: Boolean)
 
-    for ((row, y) <- lines.zipWithIndex; (c, x) <- row.zipWithIndex) {
+def parseInput(input: List[String]): (Map[Point, Char], List[Cart]) = {
+    var trackMap = MutableMap.empty[Point, Char]
+    var carts = ListBuffer.empty[Cart]
+
+    for ((row, y) <- input.zipWithIndex; (c, x) <- row.zipWithIndex) {
+        val pos = Point(y, x)
+
         c match {
             case '^' =>
-                trackMap((y, x)) = '|'
-                carts += Cart(x, y, Up, LeftTurn, crashed = false)
+                trackMap(pos) = '|'
+                carts += Cart(pos, Direction(-1, 0), Turn.LeftTurn, crashed = false)
             case 'v' =>
-                trackMap((y, x)) = '|'
-                carts += Cart(x, y, Down, LeftTurn, crashed = false)
+                trackMap(pos) = '|'
+                carts += Cart(pos, Direction(1, 0), Turn.LeftTurn, crashed = false)
             case '<' =>
-                trackMap((y, x)) = '-'
-                carts += Cart(x, y, Left, LeftTurn, crashed = false)
+                trackMap(pos) = '-'
+                carts += Cart(pos, Direction(0, -1), Turn.LeftTurn, crashed = false)
             case '>' =>
-                trackMap((y, x)) = '-'
-                carts += Cart(x, y, Right, LeftTurn, crashed = false)
+                trackMap(pos) = '-'
+                carts += Cart(pos, Direction(0, 1), Turn.LeftTurn, crashed = false)
             case _ =>
-                trackMap((y, x)) = c
+                trackMap(pos) = c
         }
     }
 
     return (trackMap.toMap, carts.toList)
 }
 
-def solver(lines: List[String]): Unit = {
-    var (trackMap, carts) = parseInput(lines)
+def solver(input: List[String]): Unit = {
+    var (trackMap, carts) = parseInput(input)
 
-    var firstCollision: Option[(Int, Int)] = None
+    var firstCollision: Option[Point] = None
     var partOneSolved = false
 
     while (carts.size > 1) {
-        val sortedCarts = carts.toList.sortBy(c => (c.y, c.x))
-        for (cart <- sortedCarts) {
-            if (!cart.crashed) {
-                val (newX, newY) = cart.dir match {
-                    case Up => (cart.x, cart.y - 1)
-                    case Down => (cart.x, cart.y + 1)
-                    case Left => (cart.x - 1, cart.y)
-                    case Right => (cart.x + 1, cart.y)
-                }
+        val sortedCarts = carts.sortBy(cart => (cart.pos.y, cart.pos.x))
 
-                val collidedCarts = carts.filter(c => !c.crashed && c != cart && c.x == newX && c.y == newY)
+        for (cart <- sortedCarts; if !cart.crashed) {
+            val newPos = cart.pos + cart.dir
+
+            val collidedCarts = carts.filter(c => !c.crashed && c != cart && c.pos == newPos)
+            
+            if (collidedCarts.nonEmpty) {
+                cart.crashed = true
+                collidedCarts.foreach(_.crashed = true)
                 
-                if (collidedCarts.nonEmpty) {
-                    cart.crashed = true
-                    collidedCarts.foreach(_.crashed = true)
-                    
-                    if (firstCollision.isEmpty) {
-                        firstCollision = Some((newX, newY))
-                    }
-                } else {
-                    cart.x = newX
-                    cart.y = newY
+                if (firstCollision.isEmpty) {
+                    firstCollision = Some(newPos)
+                }
+            } else {
+                cart.pos = newPos
 
-                    trackMap((newY, newX)) match {
-                        case '/' =>
-                            cart.dir = cart.dir match {
-                                case Up => Right
-                                case Down => Left
-                                case Left => Down
-                                case Right => Up
-                            }
-                        case '\\' =>
-                            cart.dir = cart.dir match {
-                                case Up => Left
-                                case Down => Right
-                                case Left => Up
-                                case Right => Down
-                            }
-                        case '+' =>
-                            cart.dir = (cart.dir, cart.nextTurn) match {
-                                case (Up, LeftTurn) => Left
-                                case (Up, Straight) => Up
-                                case (Up, RightTurn) => Right
-                                case (Down, LeftTurn) => Right
-                                case (Down, Straight) => Down
-                                case (Down, RightTurn) => Left
-                                case (Left, LeftTurn) => Down
-                                case (Left, Straight) => Left
-                                case (Left, RightTurn) => Up
-                                case (Right, LeftTurn) => Up
-                                case (Right, Straight) => Right
-                                case (Right, RightTurn) => Down
-                            }
-                            cart.nextTurn = cart.nextTurn match {
-                                case LeftTurn => Straight
-                                case Straight => RightTurn
-                                case RightTurn => LeftTurn
-                            }
-                        case _ => ()
+                trackMap(newPos) match {
+                    case '/' => cart.dir = cart.dir.reflectNE
+                    case '\\' => cart.dir = cart.dir.reflectNW
+                    case '+' => {
+                        cart.dir = cart.nextTurn match {
+                            case Turn.LeftTurn => cart.dir.rotateLeft
+                            case Turn.Straight => cart.dir
+                            case Turn.RightTurn => cart.dir.rotateRight
+                        }
+                        cart.nextTurn = cart.nextTurn match {
+                            case Turn.LeftTurn => Turn.Straight
+                            case Turn.Straight => Turn.RightTurn
+                            case Turn.RightTurn => Turn.LeftTurn
+                        }
                     }
+                    case _ => ()
                 }
             }
         }
@@ -117,15 +94,15 @@ def solver(lines: List[String]): Unit = {
         carts = carts.filter(!_.crashed)
 
         if (firstCollision.isDefined && !partOneSolved) {
-            val (x, y) = firstCollision.get
-            println(s"Part One: $x,$y")
+            val pos = firstCollision.get
+            println(s"Part One: ${pos.x},${pos.y}")
             partOneSolved = true
         }
     }
 
     if (carts.size == 1) {
-        val lastCart = carts.head
-        println(s"Part Two: ${lastCart.x},${lastCart.y}")
+        val pos = carts.head.pos
+        println(s"Part Two: ${pos.x},${pos.y}")
     }
 }
 

@@ -5,11 +5,11 @@ import scala.io.Source
 import scala.collection.mutable.PriorityQueue
 import scala.math.BigInt
 
-case class Point(x: Int, y: Int, z: Int) {
-    def manhattanDistance(other: Point): Int = (x - other.x).abs + (y - other.y).abs + (z - other.z).abs
+case class Vec3D(x: Int, y: Int, z: Int) {
+    def manhattanDistance(other: Vec3D): Int = (x - other.x).abs + (y - other.y).abs + (z - other.z).abs
 }
 
-case class Drone(pos: Point, r: Int) {
+case class Drone(pos: Vec3D, r: Int) {
     def intersects(box: Box): Boolean = {
         val dx = math.max(0, math.max(box.min.x - pos.x, pos.x - box.max.x))
         val dy = math.max(0, math.max(box.min.y - pos.y, pos.y - box.max.y))
@@ -18,15 +18,15 @@ case class Drone(pos: Point, r: Int) {
     }
 }
 
-case class Box(min: Point, size: Point) {
-    val max: Point = Point(min.x + size.x - 1, min.y + size.y - 1, min.z + size.z - 1)
+case class Box(min: Vec3D, size: Vec3D) {
+    val max = Vec3D(min.x + size.x - 1, min.y + size.y - 1, min.z + size.z - 1)
 
-    def corners: Seq[Point] = Seq(
-        min, Point(max.x, min.y, min.z), Point(min.x, max.y, min.z), Point(max.x, max.y, min.z),
-        Point(min.x, min.y, max.z), Point(max.x, min.y, max.z), Point(min.x, max.y, max.z), max
+    def corners = Seq(
+        min, Vec3D(max.x, min.y, min.z), Vec3D(min.x, max.y, min.z), Vec3D(max.x, max.y, min.z),
+        Vec3D(min.x, min.y, max.z), Vec3D(max.x, min.y, max.z), Vec3D(min.x, max.y, max.z), max
     )
 
-    def sizeValue: BigInt = BigInt(size.x) * BigInt(size.y) * BigInt(size.z)
+    def sizeValue = BigInt(size.x) * BigInt(size.y) * BigInt(size.z)
 
     def dist: Int = corners.map(pt => pt.x.abs + pt.y.abs + pt.z.abs).min
 
@@ -35,21 +35,21 @@ case class Box(min: Point, size: Point) {
         val (tx, ty, tz) = (size.x - sx, size.y - sy, size.z - sz)
         
         return Seq(
-            Box(min, Point(sx, sy, sz)), 
-            Box(Point(min.x + sx, min.y, min.z), Point(tx, sy, sz)),
-            Box(Point(min.x, min.y + sy, min.z), Point(sx, ty, sz)), 
-            Box(Point(min.x, min.y, min.z + sz), Point(sx, sy, tz)), 
-            Box(Point(min.x + sx, min.y + sy, min.z), Point(tx, ty, sz)),
-            Box(Point(min.x + sx, min.y, min.z + sz), Point(tx, sy, tz)),
-            Box(Point(min.x, min.y + sy, min.z + sz), Point(sx, ty, tz)), 
-            Box(Point(min.x + sx, min.y + sy, min.z + sz), Point(tx, ty, tz))
+            Box(min, Vec3D(sx, sy, sz)), 
+            Box(Vec3D(min.x + sx, min.y, min.z), Vec3D(tx, sy, sz)),
+            Box(Vec3D(min.x, min.y + sy, min.z), Vec3D(sx, ty, sz)), 
+            Box(Vec3D(min.x, min.y, min.z + sz), Vec3D(sx, sy, tz)), 
+            Box(Vec3D(min.x + sx, min.y + sy, min.z), Vec3D(tx, ty, sz)),
+            Box(Vec3D(min.x + sx, min.y, min.z + sz), Vec3D(tx, sy, tz)),
+            Box(Vec3D(min.x, min.y + sy, min.z + sz), Vec3D(sx, ty, tz)), 
+            Box(Vec3D(min.x + sx, min.y + sy, min.z + sz), Vec3D(tx, ty, tz))
         ).filter(box => box.size.x > 0 && box.size.y > 0 && box.size.z > 0)
     }
 }
 
 def parseInput(input: List[String]): List[Drone] = input.map(line => {
-    val nums = "([-]?\\d+)".r.findAllIn(line).map(_.toInt).toList
-    Drone(Point(nums(0), nums(1), nums(2)), nums(3))
+    val nums = raw"(-?\d+)".r.findAllIn(line).map(_.toInt).toList
+    Drone(Vec3D(nums(0), nums(1), nums(2)), nums(3))
 })
 
 def evaluatorOne(drones: List[Drone]): Int = {
@@ -62,7 +62,7 @@ def evaluatorTwo(drones: List[Drone]): Int = {
     val (minX, minY, minZ) = (xs.min, ys.min, zs.min)
     val (maxX, maxY, maxZ) = (xs.max, ys.max, zs.max)
 
-    val box = Box(Point(minX, minY, minZ), Point(maxX - minX + 1, maxY - minY + 1, maxZ - minZ + 1))
+    val box = Box(Vec3D(minX, minY, minZ), Vec3D(maxX - minX + 1, maxY - minY + 1, maxZ - minZ + 1))
 
     val pq = PriorityQueue.empty(using Ordering.by[(Box, List[Drone]), (Int, Int)] { 
         case (box, drones) => (drones.size, -box.dist) 

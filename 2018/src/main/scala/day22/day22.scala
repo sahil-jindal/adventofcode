@@ -4,33 +4,40 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Map, PriorityQueue, Set}
 
-case class Point(x: Int, y: Int)
+case class Point(y: Int, x: Int)
 
 enum RegionType { case Rocky, Wet, Narrow }
 
 enum Tool { case Nothing, Torch, ClimbingGear }
 
-def parseInput(lines: List[String]): (Point, Point => RegionType) = {
-    val depth = "\\d+".r.findAllIn(lines(0)).mkString.toInt
-    val Array(targetX, targetY) = "\\d+".r.findAllIn(lines(1)).map(_.toInt).toArray
+def parseInput(input: List[String]): (Point, Point => RegionType) = {
+    val depth = raw"(\d+)".r.findAllIn(input(0)).mkString.toInt
+    val Array(targetX, targetY) = raw"(\d+)".r.findAllIn(input(1)).map(_.toInt).toArray
     val erosionLevelCache = Map.empty[Point, Int]
     val modulo = 20183
 
     def erosionLevel(p: Point): Int = erosionLevelCache.getOrElseUpdate(p, {
-        if (p == Point(0, 0) || p == Point(targetX, targetY)) depth % modulo
+        if (p == Point(0, 0) || p == Point(targetY, targetX)) depth % modulo
         else if (p.x == 0) ((p.y * 48271) + depth) % modulo
         else if (p.y == 0) ((p.x * 16807) + depth) % modulo
-        else ((erosionLevel(Point(p.x - 1, p.y)) * erosionLevel(Point(p.x, p.y - 1))) + depth) % modulo
+        else ((erosionLevel(Point(p.y, p.x - 1)) * erosionLevel(Point(p.y - 1, p.x))) + depth) % modulo
     })
     
-    def regionType(p: Point): RegionType = RegionType.fromOrdinal(erosionLevel(p) % 3)
+    def regionType(p: Point) = RegionType.fromOrdinal(erosionLevel(p) % 3)
     
-    return (Point(targetX, targetY), regionType)
+    return (Point(targetY, targetX), regionType)
 }
+
+def getNeighbours(pos: Point) = Seq(
+    pos.copy(x = pos.x - 1),
+    pos.copy(x = pos.x + 1),
+    pos.copy(y = pos.y - 1),
+    pos.copy(y = pos.y + 1)
+)
 
 def evaluatorOne(input: List[String]): Int = {
     val (target, regionType) = parseInput(input)
-    val result = for { y <- 0 to target.y; x <- 0 to target.x } yield regionType(Point(x, y)).ordinal
+    val result = for { y <- 0 to target.y; x <- 0 to target.x } yield regionType(Point(y, x)).ordinal
     return result.sum
 }
 
@@ -43,11 +50,9 @@ def evaluatorTwo(input: List[String]): Int = {
             case RegionType.Narrow => if tool == Tool.Torch then Tool.Torch else Tool.Nothing
             case RegionType.Wet    => if tool == Tool.ClimbingGear then Tool.Nothing else Tool.ClimbingGear
         }
-    
-        val moveDirs = Seq(Point(-1, 0), Point(1, 0), Point(0, -1), Point(0, 1))
 
-        val moves = moveDirs.map(d => Point(pos.x + d.x, pos.y + d.y))
-            .filter(p => p.x >= 0 && p.y >= 0).filter{p =>
+        val moves = getNeighbours(pos).filter(p => p.x >= 0 && p.y >= 0)
+            .filter{p =>
                 val rt = regionType(p)
                 (rt == RegionType.Rocky && (tool == Tool.ClimbingGear || tool == Tool.Torch)) ||
                 (rt == RegionType.Narrow && (tool == Tool.Torch || tool == Tool.Nothing)) ||

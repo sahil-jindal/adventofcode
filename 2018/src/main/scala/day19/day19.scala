@@ -45,10 +45,10 @@ def executeProgram(state: State, instructions: List[(String, Int, Int, Int)]): S
     return currentState
 }
 
-def evaluatorOne(lines: List[String]): Int = {
-    var ipReg = lines.head.substring("#ip ".length).toInt
+def evaluatorOne(input: List[String]): Int = {
+    var ipReg = input.head.substring("#ip ".length).toInt
     
-    var instructions = lines.tail.map(it => {
+    var instructions = input.tail.map(it => {
         val parts = it.split(" ")
         (parts(0), parts(1).toInt, parts(2).toInt, parts(3).toInt)
     })

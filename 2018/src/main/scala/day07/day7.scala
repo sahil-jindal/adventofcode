@@ -5,14 +5,14 @@ import scala.io.Source
 import scala.collection.mutable.{Map, Set}
 
 def parseInput(input: List[String]): Map[Char, Set[Char]] = {
-    val dict = Map.empty[Char, Set[Char]].withDefaultValue(Set())
+    val dict = Map.empty[Char, Set[Char]].withDefaultValue(Set.empty)
 
-    input.foreach { line =>
+    for (line <- input) {
         val parts = line.split(" ")
         val part = parts(7).head
         val partDependsOn = parts(1).head
-        dict.getOrElseUpdate(part, Set()) += partDependsOn
-        dict.getOrElseUpdate(partDependsOn, Set())
+        dict.getOrElseUpdate(part, Set.empty) += partDependsOn
+        dict.getOrElseUpdate(partDependsOn, Set.empty)
     }
 
     return dict
