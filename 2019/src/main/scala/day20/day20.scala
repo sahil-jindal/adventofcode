@@ -2,15 +2,15 @@ package day20
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable
+import scala.collection.mutable.{Queue, Set, Map => MutableMap}
 
 case class Pos2(y: Int, x: Int)
 case class Pos3(y: Int, x: Int, level: Int)
 case class PosD(y: Int, x: Int, dlevel: Int)
 
 def explore(mx: List[Array[Char]]): (Map[Pos2, PosD], Pos3, Pos3) = {
-    val portals = mutable.Map.empty[Pos2, PosD]
-    val temp = mutable.Map.empty[String, Pos2]
+    val portals = MutableMap.empty[Pos2, PosD]
+    val temp = MutableMap.empty[String, Pos2]
 
     val height = mx.length
     val width = mx(0).length
@@ -43,6 +43,13 @@ def explore(mx: List[Array[Char]]): (Map[Pos2, PosD], Pos3, Pos3) = {
     return (portals.toMap, Pos3(temp("AA").y, temp("AA").x, 0), Pos3(temp("ZZ").y, temp("ZZ").x, 0))
 }
 
+def getNeighbours(pos: Pos3) = Seq(
+    pos.copy(x = pos.x - 1),
+    pos.copy(x = pos.x + 1),
+    pos.copy(y = pos.y - 1),
+    pos.copy(y = pos.y + 1)
+)
+
 def solve(input: List[String], partTwo: Boolean): Int = {
     val maxWidth = input.map(_.length).max
     val mx = input.map(_.padTo(maxWidth, ' ').toArray)
@@ -50,11 +57,7 @@ def solve(input: List[String], partTwo: Boolean): Int = {
     val (portals, start, end) = explore(mx)
 
     def neighbours(pos: Pos3): Seq[Pos3] = {
-        val result = mutable.ListBuffer.empty[Pos3]
-
-        for ((dy, dx) <- Seq((0, -1), (0, 1), (-1, 0), (1, 0))) {
-            result += Pos3(pos.y + dy, pos.x + dx, pos.level)
-        }
+        var result = getNeighbours(pos)
 
         val portalPos = Pos2(pos.y, pos.x)
         
@@ -64,15 +67,15 @@ def solve(input: List[String], partTwo: Boolean): Int = {
             if (!partTwo) dlevel = 0
 
             if (pos.level + dlevel >= 0) {
-                result += Pos3(yT, xT, pos.level + dlevel)
+                result :+= Pos3(yT, xT, pos.level + dlevel)
             }
         }
 
-        return result.toSeq
+        return result
     }
 
-    val q = mutable.Queue((start, 0))
-    val seen = mutable.Set(start)
+    val q = Queue((start, 0))
+    val seen = Set(start)
 
     while (q.nonEmpty) {
         val (pos, dist) = q.dequeue()

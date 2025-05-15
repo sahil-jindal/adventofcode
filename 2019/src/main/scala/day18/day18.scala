@@ -2,33 +2,40 @@ package day18
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable
+import scala.collection.mutable.{PriorityQueue, Queue, Map => MutableMap, Set => MutableSet}
 
-case class Point(y: Int, x: Int)
+case class Point(y: Int, x: Int) {
+    def getNeighbours() = Seq(
+        copy(x = x - 1),
+        copy(x = x + 1),
+        copy(y = y - 1),
+        copy(y = y + 1)
+    )
+}
 
-class Maze(private val maze: Seq[String]) extends Seq[String] {
+case class Maze(private val maze: Seq[String]) extends Seq[String] {
     private val height = maze.size
     private val width = maze.head.length
 
     def getStartPositions: Seq[Point] = {
         return for {
             (row, y) <- maze.zipWithIndex
-            (c, x) <- row.zipWithIndex if c == '@'
+            (c, x) <- row.zipWithIndex 
+            if c == '@'
         } yield Point(y, x)
     }
 
     def getKeyPositions: Map[Char, Point] = {
         return (for {
             (row, y) <- maze.zipWithIndex
-            (c, x) <- row.zipWithIndex if c.isLower
+            (c, x) <- row.zipWithIndex 
+            if c.isLower
         } yield c -> Point(y, x)).toMap
     }
 
-    def getAdjacent(pos: Point): List[Point] = {
-        return List((-1, 0), (1, 0), (0, -1), (0, 1))
-            .map { case (dy, dx) => Point(pos.y + dy, pos.x + dx) }
-            .filter(p => p.y >= 0 && p.y < height && p.x >= 0 && p.x < width && maze(p.y)(p.x) != '#')
-    }
+    def getAdjacent(pos: Point) = pos.getNeighbours().filter(p => 
+        p.y >= 0 && p.y < height && p.x >= 0 && p.x < width && maze(p.y)(p.x) != '#'
+    )
 
     override def apply(idx: Int): String = maze(idx)
     override def length: Int = maze.length
@@ -38,8 +45,8 @@ class Maze(private val maze: Seq[String]) extends Seq[String] {
 def solveSingle(start: Point, maze: Maze, allKeys: Set[Char]): Int = {
     val keyMask = allKeys.zipWithIndex.map { case (c, idx) => c -> (1 << idx) }.toMap
     val targetMask = (1 << allKeys.size) - 1
-    val visited = mutable.Set.empty[(Point, Int)]
-    val pq = mutable.PriorityQueue.empty(Ordering.by[(Int, (Point, Int)), Int](_._1).reverse)
+    val visited = MutableSet.empty[(Point, Int)]
+    val pq = PriorityQueue.empty(using Ordering.by[(Int, (Point, Int)), Int](_._1).reverse)
 
     pq.enqueue((0, (start, 0)))
 
@@ -71,9 +78,9 @@ def solveMultiOptimized(starts: Seq[Point], maze: Maze, allKeys: Set[Char]): Int
     val keyMask = allKeys.zipWithIndex.map { case (c, idx) => c -> (1 << idx) }.toMap
 
     def bfsFrom(start: Point): Map[Char, (Int, Int)] = {
-        val q = mutable.Queue((start, 0, 0))
-        val seen = mutable.Set.empty[Point]    
-        val result = mutable.Map.empty[Char, (Int, Int)]
+        val q = Queue((start, 0, 0))
+        val seen = MutableSet.empty[Point]    
+        val result = MutableMap.empty[Char, (Int, Int)]
 
         while (q.nonEmpty) {
             val (p, dist, req) = q.dequeue()
@@ -97,7 +104,7 @@ def solveMultiOptimized(starts: Seq[Point], maze: Maze, allKeys: Set[Char]): Int
     val graph = sources.view.mapValues(it => bfsFrom(it).map { case (k, (d, r)) => (k, d, r) }.toList).toMap
 
     val targetMask = (1 << allKeys.size) - 1
-    val memo = mutable.Map.empty[(Seq[String], Int), Int]
+    val memo = MutableMap.empty[(Seq[String], Int), Int]
 
     def dfs(positions: Seq[String], collected: Int): Int = {
         if (collected == targetMask) return 0

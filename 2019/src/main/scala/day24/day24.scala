@@ -12,7 +12,7 @@ def parseInput(input: List[String]): List[Int] = {
     return List(biodiversity)
 }
 
-def positions(): Seq[Point] = for (y <- 0 to 4; x <- 0 to 4) yield Point(y, x)
+def positions() = for (y <- 0 to 4; x <- 0 to 4) yield Point(y, x)
 
 def hasBug(biodiversity: Int, y: Int, x: Int): Boolean = ((biodiversity >> (y*5 + x)) & 1) == 1
 
@@ -51,10 +51,15 @@ def step(oldLevelsT: List[Int], neighbours: Position => Seq[Position]): List[Int
     return newLevels.toList
 }
 
+def getNeighbours(pos: Position) = Seq(
+    pos.copy(x = pos.x - 1),
+    pos.copy(x = pos.x + 1),
+    pos.copy(y = pos.y - 1),
+    pos.copy(y = pos.y + 1)
+)
+
 def flatNeighbours(pos: Position): Seq[Position] = {
-    return Seq((0, 1), (0, -1), (-1, 0), (1, 0))
-        .map { case (dy, dx) => (pos.y + dy, pos.x + dx) }
-        .collect { case (yT, xT) if (0 to 4).contains(xT) && (0 to 4).contains(yT) => Position(pos.ilevel, yT, xT) }
+    return getNeighbours(pos).filter(p => (0 to 4).contains(p.x) && (0 to 4).contains(p.y))
 }
 
 def recursiveNeighbours(pos: Position): Seq[Position] = {
@@ -93,7 +98,10 @@ def recursiveNeighbours(pos: Position): Seq[Position] = {
             }
         }
 
-        result :++ (for (yT <- posMin.y to posMax.y; xT <- posMin.x to posMax.x) yield Position(ilevelT, yT, xT))
+        result :++ (for {
+            yT <- posMin.y to posMax.y 
+            xT <- posMin.x to posMax.x
+        } yield Position(ilevelT, yT, xT))
     }
 
     return result.toSeq

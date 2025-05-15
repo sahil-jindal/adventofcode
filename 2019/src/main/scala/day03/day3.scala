@@ -2,31 +2,36 @@ package day03
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable
+import scala.collection.mutable.{Map => MutableMap}
 
-case class Point(y: Int, x: Int)
+case class Direction(dy: Int, dx: Int)
+
+case class Point(y: Int, x: Int) {
+    def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
+}
+
 case class Group(y: Int, x: Int, distance1: Int, distance2: Int)
 
-def parseInput(lines: List[String]) = lines.map(line => {
+def parseInput(input: List[String]) = input.map(line => {
     line.split(",").map(it => (it.head, it.tail.toInt)).toList
 })
 
 def trace(path: List[(Char, Int)]): Map[Point, Int] = {
-    val res = mutable.Map.empty[Point, Int]
+    val res = MutableMap.empty[Point, Int]
     var current = Point(0, 0)
     var distance = 0
 
-    for ((dir, amount) <- path) {
-        val (dy, dx) = dir match {
-            case 'U' => (-1, 0)
-            case 'D' => (1, 0)
-            case 'R' => (0, -1)
-            case 'L' => (0, 1)
+    for ((ch, amount) <- path) {
+        val dir = ch match {
+            case 'U' => Direction(-1, 0)
+            case 'D' => Direction(1, 0)
+            case 'L' => Direction(0, -1)
+            case 'R' => Direction(0, 1)
             case _ => throw Exception() 
         }
 
         for (_ <- 0 until amount) {
-            current = Point(current.y + dy, current.x + dx)
+            current += dir
             distance += 1
 
             if (!res.contains(current)) {
