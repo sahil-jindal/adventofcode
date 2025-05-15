@@ -7,17 +7,12 @@ sealed trait Rule
 case class Literal(char: Char) extends Rule
 case class Alternative(options: Seq[Seq[Int]]) extends Rule
 
-def groupLines(input: List[String]): List[List[String]] = {
-    return input.foldLeft(List(List.empty[String])) {
-        case (acc, "") => acc :+ List.empty[String]
-        case (acc, elem) => acc.init :+ (acc.last :+ elem)
-    }.filter(_.nonEmpty)
-}
-
 def parseInput(input: List[String]): (Map[Int, Rule], List[String]) = {
-    val parts = groupLines(input)
+    val idx = input.indexWhere(_.trim.isEmpty)
+    val grammar = input.take(idx)
+    val lines = input.drop(idx + 1)
 
-    val rules = parts(0).map(line => {
+    val rules = grammar.map(line => {
         val Array(idStr, ruleStr) = line.split(": ")
         val id = idStr.toInt
       
@@ -30,7 +25,7 @@ def parseInput(input: List[String]): (Map[Int, Rule], List[String]) = {
         (id, rule)
     }).toMap
     
-    return (rules, parts(1))
+    return (rules, lines)
 }
 
 def buildRegex(rules: Map[Int, Rule], id: Int, partTwo: Boolean): String = {
@@ -58,7 +53,7 @@ def buildRegex(rules: Map[Int, Rule], id: Int, partTwo: Boolean): String = {
 
 def countValidMessages(input: List[String], partTwo: Boolean): Int = {
     val (rules, messages) = parseInput(input)
-    val regex = s"^${buildRegex(rules, 0, partTwo)}$$".r
+    val regex = raw"^${buildRegex(rules, 0, partTwo)}$$".r
     return messages.count(msg => regex.pattern.matcher(msg).matches())
 }
 

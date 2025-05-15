@@ -7,7 +7,7 @@ case class PasswordEntry(a: Int, b: Int, ch: Char, password: String)
 
 val regex = raw"(\d+)-(\d+) (\w): (\w+)".r
 
-def parseInput(input: List[String]): List[PasswordEntry] = input.map(line => {
+def parseInput(input: List[String]) = input.map(line => {
     val List(a, b, ch, password) = regex.findFirstMatchIn(line).get.subgroups
     PasswordEntry(a.toInt, b.toInt, ch.head, password)
 })

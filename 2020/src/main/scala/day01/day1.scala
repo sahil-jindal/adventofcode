@@ -3,7 +3,7 @@ package day01
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def parseInput(input: List[String]): Set[Int] = input.map(_.toInt).toSet
+def parseInput(input: List[String]) = input.map(_.toInt).toSet
 
 def evaluatorOne(numbers: Set[Int]): Int = {
     return (for {

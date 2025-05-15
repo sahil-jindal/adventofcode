@@ -34,7 +34,7 @@ def evaluatorOne(input: List[Map[String, String]]): Int = {
 
 def evaluatorTwo(input: List[Map[String, String]]): Int = {
     return input.count(cred => rxs.forall { case (key, pattern) => 
-        cred.get(key).exists(value => pattern.r.matches(value))
+        cred.get(key).exists(pattern.r.matches)
     })
 }
 

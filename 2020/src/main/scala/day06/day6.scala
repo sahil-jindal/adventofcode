@@ -10,7 +10,7 @@ def groupLines(input: List[String]): List[List[String]] = {
     }.filter(_.nonEmpty)
 }
 
-def parseInput(input: List[String]): List[List[Set[Char]]] = groupLines(input).map(_.map(_.toSet))
+def parseInput(input: List[String]) = groupLines(input).map(_.map(_.toSet))
 
 def evaluatorOne(input: List[List[Set[Char]]]): Int = input.map(_.reduce(_ ++ _).size).sum
 def evaluatorTwo(input: List[List[Set[Char]]]): Int = input.map(_.reduce(_ & _).size).sum

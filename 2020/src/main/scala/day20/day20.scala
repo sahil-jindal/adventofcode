@@ -2,7 +2,7 @@ package day20
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable
+import scala.collection.mutable.{Map, Set}
 import scala.util.boundary, boundary.break
 
 case class Tile(id: Long, grid: List[Array[Char]]) {
@@ -86,7 +86,7 @@ def parseTiles(input: List[String]): List[Tile] = {
 }
 
 def findCornerTiles(tiles: List[Tile]): List[Long] = {
-    val borderCount = mutable.Map.empty[String, Int].withDefaultValue(0)
+    val borderCount = Map.empty[String, Int].withDefaultValue(0)
     
     // Count each border's occurrences
     for (tile <- tiles; border <- tile.borders) {
@@ -98,20 +98,20 @@ def findCornerTiles(tiles: List[Tile]): List[Long] = {
 }
 
 def findBorderMatches(tiles: List[Tile]): Map[Long, Set[String]] = {
-    val borderMatches = mutable.Map.empty[Long, Set[String]]
+    val borderMatches = Map.empty[Long, Set[String]]
     
     // For each tile, store all borders that match with another tile
     for (tile <- tiles) {
-        val matches = mutable.Set.empty[String]
+        val matches = Set.empty[String]
         for (otherTile <- tiles if tile.id != otherTile.id) {
             val sharedBorders = tile.borders.intersect(otherTile.borders)
             matches ++= sharedBorders
         }
         
-        borderMatches(tile.id) = matches.toSet
+        borderMatches(tile.id) = matches
     }
     
-    return borderMatches.toMap
+    return borderMatches
 }
 
 def orientCornerTile(tile: Tile, borderMatches: Map[Long, Set[String]]): Tile = {

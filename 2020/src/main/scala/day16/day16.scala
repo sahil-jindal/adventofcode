@@ -14,7 +14,7 @@ def groupLines(input: List[String]): List[List[String]] = {
     }.filter(_.nonEmpty)
 }
 
-def parseNumbers(line: String): List[Int] = raw"(\d+)".r.findAllIn(line).map(_.toInt).toList
+def parseNumbers(line: String) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toList
 
 def parseInput(input: List[String]): Problem = {
     val blocks = groupLines(input)

@@ -7,7 +7,7 @@ import scala.collection.mutable.Set
 case class Stm(op: String, arg: Int)
 case class Pair(acc: Int, terminated: Boolean)
 
-def parseInput(input: List[String]): List[Stm] = input.map(line => {
+def parseInput(input: List[String]) = input.map(line => {
     val Array(first, second) = line.split(" ")
     Stm(first, second.toInt)
 })
@@ -25,6 +25,7 @@ def run(program: List[Stm]): Pair = {
             case Stm("nop", _)  => ip += 1
             case Stm("acc", arg) => acc += arg; ip += 1
             case Stm("jmp", arg) => ip += arg
+            case _ => ()
         }
     }
 

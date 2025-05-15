@@ -28,7 +28,7 @@ def evaluatorOne(input: List[String]): Long = {
             andMask = Long.parseLong(mask.replace("X", "1"), 2)
             orMask = Long.parseLong(mask.replace("X", "0"), 2)
         } else {
-            val num = "\\d+".r.findAllIn(line).map(_.toLong).toArray
+            val num = raw"(\d+)".r.findAllIn(line).map(_.toLong).toArray
             mem(num(0)) = (num(1) & andMask) | orMask
         }
     }
@@ -44,7 +44,7 @@ def evaluatorTwo(input: List[String]): Long = {
         if (line.startsWith("mask")) {
             mask = line.split(" = ")(1)
         } else {
-            val num = "\\d+".r.findAllIn(line).map(_.toLong).toArray
+            val num = raw"(\d+)".r.findAllIn(line).map(_.toLong).toArray
             val (baseAddr, value) = (num(0), num(1))
             for (addr <- addresses(baseAddr, mask, 35)) {
                 mem(addr) = value

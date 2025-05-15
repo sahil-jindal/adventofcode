@@ -4,29 +4,32 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Map
 
-case class Tile(x: Int, y: Int)
+case class Direction(dy: Int, dx: Int)
+
+case class Tile(y: Int, x: Int) {
+    def +(dir: Direction) = Tile(y + dir.dy, x + dir.dx)
+}
 
 val HexDirections = Map(
-    "e"  -> (2, 0),  "w"  -> (-2, 0),
-    "ne" -> (1, 1),  "nw" -> (-1, 1),
-    "se" -> (1, -1), "sw" -> (-1, -1)
+    "e"  -> Direction(0, 2),  "w"  -> Direction(0, -2),
+    "ne" -> Direction(1, 1),  "nw" -> Direction(1, -1),
+    "se" -> Direction(-1, 1), "sw" -> Direction(-1, -1)
 )
 
 def walk(line: String): Tile = {
-    var (x, y) = (0, 0)
+    var pos = Tile(0, 0)
     var remaining = line
     
     while (remaining.nonEmpty) {
-        HexDirections.foreach { case (dir, (dx, dy)) =>
-            if (remaining.startsWith(dir)) {
-                remaining = remaining.drop(dir.length)
-                x += dx
-                y += dy
+        for ((ch, dir) <- HexDirections) {
+            if (remaining.startsWith(ch)) {
+                remaining = remaining.drop(ch.length)
+                pos += dir
             }
         }
     }
 
-    return Tile(x, y)
+    return pos
 }
 
 def parseBlackTiles(input: List[String]): Set[Tile] = {
@@ -40,9 +43,7 @@ def parseBlackTiles(input: List[String]): Set[Tile] = {
     return tiles.collect { case (tile, true) => tile }.toSet
 }
 
-def neighbourhood(tile: Tile): Set[Tile] = HexDirections.values.map { 
-    case (dx, dy) => Tile(tile.x + dx, tile.y + dy) 
-}.toSet
+def neighbourhood(tile: Tile) = HexDirections.values.map(tile + _).toSet
 
 def flip(blackTiles: Set[Tile]): Set[Tile] = {
     val tiles = blackTiles.flatMap(neighbourhood)

@@ -10,9 +10,13 @@ case class Pair(bag: String, children: List[Bags])
 val bagPattern = raw"^[a-z]+ [a-z]+ bag".r
 val childrenPattern = raw"(\d+) ([a-z]+ [a-z]+ bag)".r
 
-def parseInput(input: List[String]): List[Pair] = input.map(line => {
+def parseInput(input: List[String]) = input.map(line => {
     val bag = bagPattern.findFirstIn(line).get
-    val children = childrenPattern.findAllMatchIn(line).map(m => Bags(m.group(1).toInt, m.group(2))).toList
+    
+    val children = childrenPattern.findAllMatchIn(line).map(m => 
+        Bags(m.group(1).toInt, m.group(2))
+    ).toList
+    
     Pair(bag, children)
 })
 
@@ -34,7 +38,9 @@ def evaluatorTwo(input: List[Pair]): Long = {
     val childrenOf = input.map { case Pair(bag, children) => bag -> children }.toMap
 
     def countWithChildren(bag: String): Long = {
-        return 1 + childrenOf.getOrElse(bag, List.empty).map { case Bags(count, bag) => count * countWithChildren(bag) }.sum
+        return 1 + childrenOf.getOrElse(bag, List.empty).map { 
+            case Bags(count, bag) => count * countWithChildren(bag) 
+        }.sum
     }
 
     return countWithChildren("shiny gold bag") - 1

@@ -4,16 +4,11 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Set, Queue}
 
-def groupLines(input: List[String]): List[List[String]] = {
-    return input.foldLeft(List(List.empty[String])) {
-        case (acc, "") => acc :+ List.empty[String]
-        case (acc, elem) => acc.init :+ (acc.last :+ elem)
-    }.filter(_.nonEmpty)
-}
-
 def parseInput(input: List[String]): (Queue[Int], Queue[Int]) = {
-    val decks = groupLines(input)
-    return (Queue(decks(0).tail.map(_.toInt)*), Queue(decks(1).tail.map(_.toInt)*))
+    val idx = input.indexWhere(_.trim.isEmpty)
+    val playerOne = input.take(idx)
+    val playerTwo = input.drop(idx + 1)
+    return (Queue(playerOne.tail.map(_.toInt)*), Queue(playerTwo.tail.map(_.toInt)*))
 }
 
 def answer(deckOne: Queue[Int], deckTwo: Queue[Int]): Int = {

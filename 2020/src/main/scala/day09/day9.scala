@@ -3,7 +3,7 @@ package day09
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def parseInput(input: List[String]): List[Long] = input.map(_.toLong)
+def parseInput(input: List[String]) = input.map(_.toLong)
 
 def findFirstInvalidNumber(numbers: List[Long], preambleSize: Int): Option[Long] = {
     numbers.sliding(preambleSize + 1).find { window =>
@@ -11,7 +11,7 @@ def findFirstInvalidNumber(numbers: List[Long], preambleSize: Int): Option[Long]
         val target = window.last
         
         // Check if target can be formed by sum of any two distinct numbers in preamble
-        !preamble.combinations(2).exists(combo => combo.sum == target)
+        !preamble.combinations(2).exists(_.sum == target)
     }
     .map(_.last)
 }

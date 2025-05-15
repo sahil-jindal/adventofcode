@@ -2,22 +2,26 @@ package day17
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
+import scala.collection.mutable.{Map, Set => MutableSet}
 
-case class Point3D(x: Int, y: Int, z: Int)
-case class Point4D(x: Int, y: Int, z: Int, w: Int)
+case class Vec3D(x: Int, y: Int, z: Int) {
+    def +(that: Vec3D) = Vec3D(x + that.x, y + that.y, z + that.z)
+}
 
-def solve[T](lines: List[String], create: (Int, Int) => T, neighbours: T => Seq[T]): Int = {
-    val (height, width) = (lines.length, lines.head.length)
+case class Vec4D(x: Int, y: Int, z: Int, w: Int) {
+    def +(that: Vec4D) = Vec4D(x + that.x, y + that.y, z + that.z, w + that.w)
+}
 
+def solve[T](input: List[String], create: (Int, Int) => T, neighbours: T => Seq[T]): Int = {
     var activePoints = (for {
-        x <- 0 until width
-        y <- 0 until height
-        if lines(y)(x) == '#'
+        (line, y) <- input.zipWithIndex
+        (ch, x) <- line.zipWithIndex
+        if ch == '#'
     } yield create(x, y)).toSet
 
     for (_ <- 0 until 6) {
-        var newActivePoints = Set.empty[T]
-        var inactivePoints = Map.empty[T, Int].withDefaultValue(0)
+        val newActivePoints = MutableSet.empty[T]
+        val inactivePoints = Map.empty[T, Int].withDefaultValue(0)
 
         for (point <- activePoints) {
             val activeNeighbours = neighbours(point).count(activePoints.contains)
@@ -27,7 +31,7 @@ def solve[T](lines: List[String], create: (Int, Int) => T, neighbours: T => Seq[
             }
 
             for (neighbour <- neighbours(point) if !activePoints.contains(neighbour)) {
-                inactivePoints += neighbour -> (inactivePoints(neighbour) + 1)
+                inactivePoints(neighbour) += 1
             }
         }
 
@@ -35,37 +39,33 @@ def solve[T](lines: List[String], create: (Int, Int) => T, neighbours: T => Seq[
             newActivePoints += point
         }
 
-        activePoints = newActivePoints
+        activePoints = newActivePoints.toSet
     }
 
     return activePoints.size
 }
 
 def evaluatorOne(input: List[String]): Int = {
-    val ds = for {
+    val ds = (for {
         dx <- Seq(-1, 0, 1)
         dy <- Seq(-1, 0, 1)
         dz <- Seq(-1, 0, 1)
         if dx != 0 || dy != 0 || dz != 0
-    } yield (dx, dy, dz)
+    } yield Vec3D(dx, dy, dz))
 
-    return solve(input, (x, y) => Point3D(x, y, 0), p => ds.map { 
-        case (dx, dy, dz) => Point3D(p.x + dx, p.y + dy, p.z + dz) 
-    })
+    return solve(input, (x, y) => Vec3D(x, y, 0), p => ds.map(_ + p))
 }
 
 def evaluatorTwo(input: List[String]): Int = {
-    val ds = for {
+    val ds = (for {
         dx <- Seq(-1, 0, 1)
         dy <- Seq(-1, 0, 1)
         dz <- Seq(-1, 0, 1)
         dw <- Seq(-1, 0, 1)
         if dx != 0 || dy != 0 || dz != 0 || dw != 0
-    } yield (dx, dy, dz, dw)
+    } yield Vec4D(dx, dy, dz, dw))
 
-    return solve(input, (x, y) => Point4D(x, y, 0, 0), p => ds.map { 
-        case (dx, dy, dz, dw) => Point4D(p.x + dx, p.y + dy, p.z + dz, p.w + dw) 
-    })
+    return solve(input, (x, y) => Vec4D(x, y, 0, 0), p => ds.map(_ + p))
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

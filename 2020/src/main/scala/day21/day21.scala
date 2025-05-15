@@ -2,7 +2,7 @@ package day21
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable
+import scala.collection.mutable.{Set => MutableSet}
 
 case class Pair(ingredients: Set[String], allergens: Set[String])
 case class Problem(allergens: Set[String], ingredients: Set[String], mapping: List[Pair])
@@ -21,7 +21,7 @@ def parseInput(input: List[String]): Problem = {
 def getIngredientsByAllergen(problem: Problem): Map[String, Set[String]] = {
     return problem.allergens.map(allergen => {
         allergen -> problem.mapping.collect { 
-            case Pair(ingredients, allergens) if allergens.contains(allergen) => ingredients 
+            case it if it.allergens.contains(allergen) => it.ingredients 
         }.reduce(_ & _)
     }).toMap
 }
@@ -32,7 +32,7 @@ def evaluatorOne(problem: Problem): Int = {
 }
 
 def evaluatorTwo(problem: Problem): String = {
-    val ingredientsByAllergen = getIngredientsByAllergen(problem).view.mapValues(_.to(mutable.Set)).to(mutable.Map)
+    val ingredientsByAllergen = getIngredientsByAllergen(problem).view.mapValues(_.to(MutableSet)).toMap
     
     while (ingredientsByAllergen.values.exists(_.size > 1)) {
         for (allergen <- problem.allergens) {
