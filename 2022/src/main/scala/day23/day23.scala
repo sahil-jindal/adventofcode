@@ -2,32 +2,36 @@ package day23
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable
+import scala.collection.mutable.{ListBuffer, Map, Set => MutableSet}
 
-case class Complex(real: Int, imaginary: Int) {
-    def +(that: Complex) = Complex(real + that.real, imaginary + that.imaginary)
+case class Direction(dy: Int, dx: Int) {
+    def +(that: Direction) = Direction(dy + that.dy, dx + that.dx)
 }
 
-val N = Complex(0, -1)
-val E = Complex(1, 0)
-val S = Complex(0, 1)
-val W = Complex(-1, 0)
+case class Point(y: Int, x: Int) {
+    def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
+}
+
+val N = Direction(-1, 0)
+val E = Direction(0, 1)
+val S = Direction(1, 0)
+val W = Direction(0, -1)
 val NW = N + W
 val NE = N + E
 val SE = S + E
 val SW = S + W
 
-val directions = List(NW, N, NE, E, SE, S, SW, W)
+val directions = Seq(NW, N, NE, E, SE, S, SW, W)
 
-def parseInput(input: List[String]): Set[Complex] = {
+def parseInput(input: List[String]): Set[Point] = {
     return (for {
         (line, y) <- input.zipWithIndex
         (ch, x) <- line.zipWithIndex
         if ch == '#'
-    } yield Complex(x, y)).toSet
+    } yield Point(y, x)).toSet
 }
 
-def extendDir(dir: Complex): Seq[Complex] = {
+def extendDir(dir: Direction): Seq[Direction] = {
     if dir == N then return Seq(NW, N, NE)
     if dir == E then return Seq(NE, E, SE)
     if dir == S then return Seq(SW, S, SE)
@@ -35,18 +39,18 @@ def extendDir(dir: Complex): Seq[Complex] = {
     throw Exception()
 }
 
-def simulate(elvesInit: Set[Complex]): List[Set[Complex]] = {
-    val elves = mutable.Set(elvesInit.toSeq*)
-    val result = mutable.ListBuffer.empty[Set[Complex]]
+def simulate(elvesInit: Set[Point]): List[Set[Point]] = {
+    val elves = MutableSet(elvesInit.toSeq*)
+    val result = ListBuffer.empty[Set[Point]]
 
-    val lookAround = Iterator.continually(List(
-        List(N, S, W, E), List(S, W, E, N), List(W, E, N, S), List(E, N, S, W)
+    val lookAround = Iterator.continually(Seq(
+        Seq(N, S, W, E), Seq(S, W, E, N), Seq(W, E, N, S), Seq(E, N, S, W)
     )).flatten
 
     var fixpoint = false
 
     while (!fixpoint) {
-        val proposals = mutable.Map.empty[Complex, mutable.ListBuffer[Complex]]
+        val proposals = Map.empty[Point, ListBuffer[Point]]
         val orderofDirections = lookAround.next()
 
         for (elf <- elves; if directions.exists(dir => elves.contains(elf + dir))) {
@@ -54,7 +58,7 @@ def simulate(elvesInit: Set[Complex]): List[Set[Complex]] = {
 
             if (proposes.isDefined) {
                 val pos = elf + proposes.get
-                proposals.getOrElseUpdate(pos, mutable.ListBuffer.empty) += elf
+                proposals.getOrElseUpdate(pos, ListBuffer.empty) += elf
             }
         }
 
@@ -74,10 +78,10 @@ def simulate(elvesInit: Set[Complex]): List[Set[Complex]] = {
     return result.toList
 }
 
-def area(elves: Set[Complex]): Int = {
+def area(elves: Set[Point]): Int = {
     // smallest enclosing rectangle
-    val xs = elves.map(_.real)
-    val ys = elves.map(_.imaginary)
+    val xs = elves.map(_.x)
+    val ys = elves.map(_.y)
 
     val width = xs.max - xs.min + 1
     val height = ys.max - ys.min + 1
@@ -85,8 +89,8 @@ def area(elves: Set[Complex]): Int = {
     return width * height - elves.size
 }
 
-def evaluatorOne(input: List[Set[Complex]]): Int = area(input(9))
-def evaluatorTwo(input: List[Set[Complex]]): Int = input.size
+def evaluatorOne(input: List[Set[Point]]): Int = area(input(9))
+def evaluatorTwo(input: List[Set[Point]]): Int = input.size
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

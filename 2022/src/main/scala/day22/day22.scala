@@ -9,29 +9,19 @@ case class Forward(n: Int) extends Cmd
 case class Left() extends Cmd
 case class Right() extends Cmd
 
-case class Coord(y: Int, x: Int) {
-    def +(b: Coord) = Coord(y + b.y, x + b.x)
-    def -(b: Coord) = Coord(y - b.y, x - b.x)
+case class Point(y: Int, x: Int) {
+    def +(that: Point) = Point(y + that.y, x + that.x)
 }
 
-case class State(block: Char, coord: Coord, dir: Int)
+case class State(block: Char, coord: Point, dir: Int)
 case class Pair(block: Char, noOfRotations: Int)
 
 val blockSize = 50
 
-def groupLines(input: List[String]): List[List[String]] = {
-    return input.foldLeft(List(List.empty[String])) {
-        case (acc, "") => acc :+ List.empty[String]
-        case (acc, elem) => acc.init :+ (acc.last :+ elem)
-    }.filter(_.nonEmpty)
-}
-
 def parseInput(input: List[String]) = {
-    val blocks = groupLines(input)
+    val map = input.dropRight(2)
 
-    val map = blocks(0)
-
-    val commands = raw"(\d+)|L|R".r.findAllIn(blocks(1)(0)).map {
+    val commands = raw"(\d+)|L|R".r.findAllIn(input.last).map {
         case "L" => Left()
         case "R" => Right()
         case num => Forward(num.toInt)
@@ -41,7 +31,7 @@ def parseInput(input: List[String]) = {
 }
 
 def step(topology: Map[Char, List[Pair]], state: State): State = {
-    def wrapsAround(coord: Coord): Boolean = {
+    def wrapsAround(coord: Point): Boolean = {
         coord.x < 0 || coord.x >= blockSize || 
         coord.y < 0 || coord.y >= blockSize
     }
@@ -74,13 +64,13 @@ def step(topology: Map[Char, List[Pair]], state: State): State = {
         // rotate: 3
 
         // go back to the 0..49 range first, then rotate as much as needed
-        coord = Coord(
+        coord = Point(
             y = (coord.y + blockSize) % blockSize,
             x = (coord.x + blockSize) % blockSize
         )
 
         for (i <- 0 until rotate) {
-            coord = Coord( 
+            coord = Point( 
                 y = coord.x, 
                 x = blockSize - coord.y - 1 
             )
@@ -94,19 +84,19 @@ def step(topology: Map[Char, List[Pair]], state: State): State = {
 
 def toGlobal(state: State) = { 
     state.block match {
-        case 'A' => state.coord + Coord(0, blockSize)
-        case 'B' => state.coord + Coord(0, 2 * blockSize)
-        case 'C' => state.coord + Coord(blockSize, blockSize)
-        case 'D' => state.coord + Coord(2 * blockSize, 0)
-        case 'E' => state.coord + Coord(2 * blockSize, blockSize)
-        case 'F' => state.coord + Coord(3 * blockSize, 0)
+        case 'A' => state.coord + Point(0, blockSize)
+        case 'B' => state.coord + Point(0, 2 * blockSize)
+        case 'C' => state.coord + Point(blockSize, blockSize)
+        case 'D' => state.coord + Point(2 * blockSize, 0)
+        case 'E' => state.coord + Point(2 * blockSize, blockSize)
+        case 'F' => state.coord + Point(3 * blockSize, 0)
         case _ => throw new Exception()
     }
 }
 
 def solve(input: List[String], topology: Map[Char, List[Pair]]): Int = {
     var (map, cmds) = parseInput(input)
-    var state = new State('A', new Coord(0, 0), 0)
+    var state = new State('A', new Point(0, 0), 0)
 
     for (cmd <- cmds) {
         cmd match {

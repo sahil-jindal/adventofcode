@@ -6,17 +6,10 @@ import scala.collection.mutable.Stack
 
 case class Move(count: Int, source: Stack[Char], target: Stack[Char])
 
-val moveRegex = raw"move (\d+) from (\d+) to (\d+)".r
-
-def groupLines(input: List[String]): List[List[String]] = {
-    return input.foldLeft(List(List.empty[String])) {
-        case (acc, "") => acc :+ List.empty[String]
-        case (acc, elem) => acc.init :+ (acc.last :+ elem)
-    }.filter(_.nonEmpty)
-}
-
 def moveCrates(input: List[String], crateMover: Move => Unit): String = {
-    val List(stackDefs, moveDefs) = groupLines(input)
+    val idx = input.indexWhere(_.trim.isEmpty)
+    val stackDefs = input.take(idx)
+    val moveDefs = input.drop(idx + 1)
 
     val numStacks = stackDefs.last.split("\\s+").filter(_.nonEmpty).length
     val stacks = List.fill(numStacks)(Stack.empty[Char])
@@ -28,10 +21,9 @@ def moveCrates(input: List[String], crateMover: Move => Unit): String = {
     } stack.push(item(1))
             
     for (line <- moveDefs) {
-        val nums = moveRegex.findFirstMatchIn(line).get.subgroups.map(_.toInt)
-        val count = nums(0)
-        val from = nums(1) - 1
-        val to = nums(2) - 1
+        val Seq(count, start, end) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toSeq
+        val from = start - 1
+        val to = end - 1
         crateMover(Move(count, stacks(from), stacks(to)))
     }   
     

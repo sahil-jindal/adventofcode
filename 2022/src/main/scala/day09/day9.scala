@@ -2,14 +2,14 @@ package day09
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.Set
 
 case class Motion(dir: Char, dist: Int)
 case class Knot(y: Int, x: Int)
 
 def parseInput(input: List[String]) = input.map(line => {
-    val m = raw"(\w) (\d+)".r.findFirstMatchIn(line).get
-    Motion(m.group(1).head, m.group(2).toInt) 
+    val parts = line.split(" ")
+    Motion(parts(0).head, parts(1).toInt) 
 })
 
 def moveHead(rope: Array[Knot], dir: Char): Unit = {
@@ -34,23 +34,21 @@ def moveHead(rope: Array[Knot], dir: Char): Unit = {
     }
 }
 
-def tails(motions: List[Motion], ropelength: Int): List[Knot] = {
+def tails(motions: List[Motion], ropelength: Int): Int = {
     val rope = Array.fill(ropelength)(Knot(0, 0))
 
-    val res = ListBuffer(rope.last)
+    val res = Set(rope.last)
 
-    motions.foreach { case Motion(dir, dist) => 
-        for (i <- 0 until dist) {
-            moveHead(rope, dir)
-            res += rope.last
-        }
+    for (mtn <- motions; i <- 0 until mtn.dist) { 
+        moveHead(rope, mtn.dir)
+        res += rope.last
     }
 
-    res.toList
+    return res.size
 }
 
-def evaluatorOne(motions: List[Motion]) = tails(motions, 2).toSet.size
-def evaluatorTwo(motions: List[Motion]) = tails(motions, 10).toSet.size
+def evaluatorOne(motions: List[Motion]): Int = tails(motions, 2)
+def evaluatorTwo(motions: List[Motion]): Int = tails(motions, 10)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

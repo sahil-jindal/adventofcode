@@ -2,7 +2,7 @@ package day12
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable
+import scala.collection.mutable.{Queue, Map => MutableMap}
 
 case class Coord(lat: Int, lon: Int)
 case class Symbol(value: Char)
@@ -23,16 +23,14 @@ def parseInput(input: List[String]): Map[Coord, Symbol] = {
     } yield Coord(x, y) -> Symbol(ch)).toMap
 }
 
-def neighbours(coord: Coord): Seq[Coord] = {
-    return Seq(
-        coord.copy(lat = coord.lat + 1),
-        coord.copy(lat = coord.lat - 1),
-        coord.copy(lon = coord.lon + 1),
-        coord.copy(lon = coord.lon - 1)
-    )
-}
+def neighbours(coord: Coord) = Seq(
+    coord.copy(lat = coord.lat + 1),
+    coord.copy(lat = coord.lat - 1),
+    coord.copy(lon = coord.lon + 1),
+    coord.copy(lon = coord.lon - 1)
+)
 
-def getElevation(symbol: Symbol): Elevation = symbol.value match {
+def getElevation(symbol: Symbol) = symbol.value match {
     case 'S' => lowestElevation
     case 'E' => highestElevation
     case _ => Elevation(symbol.value) 
@@ -42,9 +40,9 @@ def getPois(input: List[String]): List[Poi] = {
     val map = parseInput(input)
     val goal = map.keys.find(point => map(point) == goalSymbol).get
 
-    val poiByCoord = mutable.Map(goal -> Poi(goalSymbol, getElevation(goalSymbol), 0))
+    val poiByCoord = MutableMap(goal -> Poi(goalSymbol, getElevation(goalSymbol), 0))
 
-    val pq = mutable.Queue(goal)
+    val pq = Queue(goal)
 
     while (pq.nonEmpty) {
         val thisCoord = pq.dequeue()
@@ -66,7 +64,7 @@ def getPois(input: List[String]): List[Poi] = {
 }
 
 def evaluatorOne(pois: List[Poi]): Int = pois.find(_.symbol == startSymbol).get.distanceFromGoal
-def evaluatorTwo(pois: List[Poi]): Int = pois.collect { case Poi(_, elevation, distanceFromGoal) if elevation == lowestElevation => distanceFromGoal }.min
+def evaluatorTwo(pois: List[Poi]): Int = pois.collect { case pos if pos.elevation == lowestElevation => pos.distanceFromGoal }.min
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

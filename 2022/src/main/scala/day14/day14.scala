@@ -2,21 +2,23 @@ package day14
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable
+import scala.collection.mutable.Map
 import scala.util.control.Breaks._
 
-case class Complex(re: Int, im: Int) {
-    def +(other: Complex): Complex = Complex(re + other.re, im + other.im)
+case class Direction(dy: Int, dx: Int)
+
+case class Point(y: Int, x: Int) {
+    def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
 }
 
 class Cave(input: List[String], hasFloor: Boolean) {
-    private val map = mutable.Map.empty[Complex, Char]
+    private val map = Map.empty[Point, Char]
 
-    private val maxImaginary: Int = {
+    private val maxFoor: Int = {
         for(line <- input) {
             val steps = line.split(" -> ").map(step => {
                 val Array(x, y) = step.split(",").map(_.toInt)
-                Complex(x, y)
+                Point(y, x)
             })
 
             for (i <- 1 until steps.length) {
@@ -24,11 +26,11 @@ class Cave(input: List[String], hasFloor: Boolean) {
             }
         }
         
-        map.keys.map(_.im).max
+        map.keys.map(_.y).max
     }
 
-    def fillWithRocks(from: Complex, to: Complex): Int = {
-        val dir = Complex((to.re - from.re).sign, (to.im - from.im).sign)
+    def fillWithRocks(from: Point, to: Point): Int = {
+        val dir = Direction((to.y - from.y).sign, (to.x - from.x).sign)
         var pos = from
         var steps = 0
 
@@ -41,7 +43,7 @@ class Cave(input: List[String], hasFloor: Boolean) {
         steps
     }
 
-    def fillWithSand(sandSource: Complex): Int = {
+    def fillWithSand(sandSource: Point): Int = {
         breakable {
             while (true) {
                 val location = simulateFallingSand(sandSource)
@@ -52,7 +54,7 @@ class Cave(input: List[String], hasFloor: Boolean) {
                 }
 
                 // flows into the void
-                if (!hasFloor && location.im == maxImaginary + 1) {
+                if (!hasFloor && location.y == maxFoor + 1) {
                     break()
                 }
 
@@ -63,15 +65,15 @@ class Cave(input: List[String], hasFloor: Boolean) {
         return map.values.count(_ == 'o')
     }
 
-    def simulateFallingSand(sand: Complex): Complex = {
-        val down = Complex(0, 1)
-        val left = Complex(-1, 1)
-        val right = Complex(1, 1)
+    def simulateFallingSand(sand: Point): Point = {
+        val down = Direction(1, 0)
+        val left = Direction(1, -1)
+        val right = Direction(1, 1)
 
         var current = sand
 
         breakable {
-            while (current.im < maxImaginary + 1) {
+            while (current.y < maxFoor + 1) {
                 if (!map.contains(current + down)) {
                     current += down
                 } else if (!map.contains(current + left)) {
@@ -88,8 +90,8 @@ class Cave(input: List[String], hasFloor: Boolean) {
     }
 }
 
-def evaluatorOne(input: List[String]): Int = new Cave(input, false).fillWithSand(Complex(500, 0))
-def evaluatorTwo(input: List[String]): Int = new Cave(input, true).fillWithSand(Complex(500, 0))
+def evaluatorOne(input: List[String]): Int = new Cave(input, false).fillWithSand(Point(0, 500))
+def evaluatorTwo(input: List[String]): Int = new Cave(input, true).fillWithSand(Point(0, 500))
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

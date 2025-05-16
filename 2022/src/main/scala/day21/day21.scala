@@ -2,7 +2,7 @@ package day21
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable
+import scala.collection.mutable.Map
 
 sealed trait Expr { def simplify(): Expr }
 
@@ -36,7 +36,7 @@ case class Op(left: Expr, op: String, right: Expr) extends Expr {
 }
 
 def parseInput(input: List[String], part2: Boolean): Expr = {
-    val context = mutable.Map.empty[String, Array[String]]
+    val context = Map.empty[String, Array[String]]
     
     for (line <- input) {
         val parts = line.split(" ")

@@ -45,7 +45,7 @@ def parseMonkey(input: List[String]): Monkey = {
     return Monkey(items, operation, mod, passToMonkeyIfDivides, passToMonkeyOtherwise)
 }
 
-def parseMonkeys(input: List[String]): Array[Monkey] = groupLines(input).map(parseMonkey).toArray
+def parseMonkeys(input: List[String]) = groupLines(input).map(parseMonkey).toArray
 
 def run(rounds: Int, monkeys: Array[Monkey], updateWorryLevel: Long => Long): Unit = {
     for (_ <- 1 to rounds) {

@@ -41,9 +41,9 @@ case class Pair(sensor: Pos, beacon: Pos) {
     def toRect = Rect(sensor.x - radius, sensor.y - radius, 2 * radius + 1, 2 * radius + 1)
 }
 
-def parseInput(input: List[String]): List[Pair] = input.map(line => {
-    val nums = raw"-?\d+".r.findAllIn(line).map(_.toInt).toList
-    Pair(Pos(nums(0), nums(1)), Pos(nums(2), nums(3)))
+def parseInput(input: List[String]) = input.map(line => {
+    val Seq(sx, sy, bx, by) = raw"(-?\d+)".r.findAllIn(line).map(_.toInt).toSeq
+    Pair(Pos(sx, sy), Pos(bx, by))
 })
 
 def getUncoveredAreas(pairing: List[Pair], rect: Rect): Seq[Rect] = {

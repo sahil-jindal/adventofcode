@@ -2,11 +2,11 @@ package day16
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable
+import scala.collection.mutable.{Map => MutableMap}
 
 case class Valve(name: String, flowRate: Int, tunnels: List[String])
 
-val pattern = raw"Valve (\w+) has flow rate=(\d+); tunnels? leads? to valves? (.+)".r
+val pattern = raw"Valve (\w+) has flow rate=(\d+); tunnel[s]? lead[s]? to valve[s]? (.+)".r
 
 def parseInput(input: List[String]): Map[String, Valve] = input.map(line => {
     val List(name, rate, tunnels) = pattern.findFirstMatchIn(line).get.subgroups 
@@ -16,7 +16,7 @@ def parseInput(input: List[String]): Map[String, Valve] = input.map(line => {
 
 // Floyd-Warshall algorithm to calculate shortest paths between all valves
 def calculateDistances(valves: Map[String, Valve]): Map[(String, String), Int] = {
-    val distances = mutable.Map.empty[(String, String), Int].withDefaultValue(Int.MaxValue / 2)
+    val distances = MutableMap.empty[(String, String), Int].withDefaultValue(Int.MaxValue / 2)
     
     // Initialize distances
     for (valve <- valves.values) {
@@ -51,7 +51,7 @@ def findMaxPressureBitmask(
     timeLeft: Int,
     allowedMask: Int
 ): Int = {
-    val cache = mutable.Map.empty[(String, Int, Int), Int]
+    val cache = MutableMap.empty[(String, Int, Int), Int]
     
     def dfs(current: String, remainingMask: Int, time: Int): Int = {
         val cacheKey = (current, remainingMask, time)

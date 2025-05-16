@@ -30,8 +30,8 @@ val Geode = Material(0, 0, 0, 1)
 val Nothing = Material(0, 0, 0, 0)
 val Obsidian = Material(0, 0, 1, 0)
 
-def parseInput(input: List[String]): List[Blueprint] = input.map(line => {
-    val nums = raw"\d+".r.findAllIn(line).map(_.toInt).toArray
+def parseInput(input: List[String]) = input.map(line => {
+    val nums = raw"(\d+)".r.findAllIn(line).map(_.toInt).toArray
     
     Blueprint(nums(0), Seq(
         Robot(1, Ore * nums(1), Ore),

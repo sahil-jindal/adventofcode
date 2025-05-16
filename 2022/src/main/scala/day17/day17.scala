@@ -2,19 +2,19 @@ package day17
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable
+import scala.collection.mutable.Map
 import scala.util.control.Breaks._
 
 case class Pos(y: Int, x: Int) {
     def left = Pos(y, x - 1)
     def right = Pos(y, x + 1)
     def below = Pos(y + 1, x)
-    def +(posB: Pos): Pos = Pos(y + posB.y, x + posB.x)
+    def +(posB: Pos) = Pos(y + posB.y, x + posB.x)
 }
 
 class Tunnel(jets: String, linesToStore: Int) {
     private var lines = List.empty[Array[Char]]
-    private var linesNotStored: Long = 0
+    private var linesNotStored = 0L
 
     def height: Long = lines.size + linesNotStored
 
@@ -100,7 +100,7 @@ class Tunnel(jets: String, linesToStore: Int) {
     
     def addRocks(rocksToAddInit: Long): Tunnel = {
         var rocksToAdd = rocksToAddInit
-        val seen = mutable.Map.empty[String, (Long, Long)]
+        val seen = Map.empty[String, (Long, Long)]
 
         breakable {
             while (rocksToAdd > 0) {

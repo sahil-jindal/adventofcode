@@ -2,12 +2,12 @@ package day18
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable
+import scala.collection.mutable.{Queue, Set => MutableSet}
 
 case class Point(x: Int, y: Int, z: Int)
 case class Bounds(min: Point, max: Point)
 
-def getLavaLocations(input: List[String]): List[Point] = input.map(line => {
+def getLavaLocations(input: List[String]) = input.map(line => {
     val coords = line.split(",").map(_.toInt)
     Point(coords(0), coords(1), coords(2))
 })
@@ -39,8 +39,8 @@ def within(bounds: Bounds, point: Point): Boolean = {
 }
 
 def fillWithWater(from: Point, bounds: Bounds, lavaLocations: List[Point]): Set[Point] = {
-    val result = mutable.Set(from)
-    val pq = mutable.Queue(from)
+    val pq = Queue(from)
+    val result = MutableSet(from)
 
     while (pq.nonEmpty) {
         val water = pq.dequeue()
