@@ -2,17 +2,22 @@ package day19
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{ListBuffer, Set, Queue}
-import scala.util.boundary, boundary.break;
+import scala.collection.mutable.{Queue, Set}
+import scala.util.boundary, boundary.break
 
-case class Coord(x: Int, y: Int, z: Int)
+case class Vec3D(x: Int, y: Int, z: Int) {
+    def unary_- = Vec3D(-x, -y, -z)
+    def +(that: Vec3D) = Vec3D(x + that.x, y + that.y, z + that.z)
+    def -(that: Vec3D) = Vec3D(x - that.x, y - that.y, z - that.z)
+    def manhattanDistance(that: Vec3D) = (x - that.x).abs + (y - that.y).abs + (z - that.z).abs
+}
 
-case class Scanner(center: Coord, rotation: Int, beaconsInLocal: List[Coord]) {
+case class Scanner(center: Vec3D, rotation: Int, beaconsInLocal: List[Vec3D]) {
     def rotate(): Scanner = copy(rotation = rotation + 1)
-    def translate(t: Coord): Scanner = copy(center = Coord(center.x + t.x, center.y + t.y, center.z + t.z))
+    def translate(t: Vec3D): Scanner = copy(center = center + t)
 
-    def transform(coord: Coord): Coord = {
-        var Coord(x, y, z) = coord
+    def transform(coord: Vec3D): Vec3D = {
+        var Vec3D(x, y, z) = coord
         
         (rotation % 6) match {
             case 0 => // (x, y, z)
@@ -31,10 +36,10 @@ case class Scanner(center: Coord, rotation: Int, beaconsInLocal: List[Coord]) {
             case 3 => val temp = y; y = z; z = -temp
         }
 
-        Coord(center.x + x, center.y + y, center.z + z)
+        Vec3D(center.x + x, center.y + y, center.z + z)
     }
 
-    def getbeaconsInWorld(): List[Coord] = beaconsInLocal.map(transform)
+    def getbeaconsInWorld() = beaconsInLocal.map(transform)
 }
 
 def groupLines(input: List[String]): List[List[String]] = {
@@ -48,33 +53,25 @@ def parseInput(input: List[String]): List[Scanner] = {
     return groupLines(input).map(block => {
         val beacons = block.tail.map(line => {
             val parts = line.split(",").map(_.toInt)
-            Coord(parts(0), parts(1), parts(2))
+            Vec3D(parts(0), parts(1), parts(2))
         })
 
-        Scanner(Coord(0, 0, 0), 0, beacons)
+        Scanner(Vec3D(0, 0, 0), 0, beacons)
     })
 }
 
-def potentialMatchingBeacons(scannerA: Scanner, scannerB: Scanner): List[(Coord, Coord)] = {
+def potentialMatchingBeacons(scannerA: Scanner, scannerB: Scanner): List[(Vec3D, Vec3D)] = {
     def absCoordinates(scanner: Scanner): List[Int] = {
         scanner.getbeaconsInWorld().flatMap(coord => Seq(coord.x, coord.y, coord.z)).map(_.abs)
     }
 
-    val res = ListBuffer.empty[(Coord, Coord)]
-
-    for (beaconInA <- scannerA.getbeaconsInWorld().dropRight(11)) {
-        val absA = absCoordinates(scannerA.translate(Coord(-beaconInA.x, -beaconInA.y, -beaconInA.z))).toSet
-
-        for (beaconInB <- scannerB.getbeaconsInWorld().dropRight(11)) {
-            val absB = absCoordinates(scannerB.translate(Coord(-beaconInB.x, -beaconInB.y, -beaconInB.z)))
-
-            if (absB.count(absA.contains) >= 3 * 12) {
-                res += ((beaconInA, beaconInB))
-            }
-        }
-    }
-
-    return res.toList
+    return (for {
+        beaconInA <- scannerA.getbeaconsInWorld()
+        absA = absCoordinates(scannerA.translate(-beaconInA)).toSet
+        beaconInB <- scannerB.getbeaconsInWorld()
+        absB = absCoordinates(scannerB.translate(-beaconInB))
+        if absB.count(absA.contains) >= 3 * 12
+    } yield (beaconInA, beaconInB)).toList
 }
 
 def tryToLocate(scannerA: Scanner, scannerB: Scanner): Option[Scanner] = {
@@ -87,11 +84,7 @@ def tryToLocate(scannerA: Scanner, scannerB: Scanner): Option[Scanner] = {
             for (rotation <- 0 until 24) {    
                 val beaconInRotatedB = rotatedB.transform(beaconInB)
 
-                val locatedB = rotatedB.translate(Coord(
-                    beaconInA.x - beaconInRotatedB.x,
-                    beaconInA.y - beaconInRotatedB.y,
-                    beaconInA.z - beaconInRotatedB.z
-                ))
+                val locatedB = rotatedB.translate(beaconInA - beaconInRotatedB)
 
                 if (locatedB.getbeaconsInWorld().intersect(beaconInAWorld).size >= 12) {
                     break(Some(locatedB))
@@ -109,8 +102,8 @@ def locateScanners(input: List[Scanner]): Set[Scanner] = {
     val scanners = Set(input*)
     val firstScanner = scanners.head
     
-    val locatedScanners = Set(firstScanner)
     val pq = Queue(firstScanner)
+    val locatedScanners = Set(firstScanner)
 
     scanners.remove(firstScanner)
 
@@ -131,15 +124,13 @@ def locateScanners(input: List[Scanner]): Set[Scanner] = {
     return locatedScanners
 }
 
-def evaluatorOne(input: List[Scanner]): Int = {
-    return locateScanners(input).flatMap(_.getbeaconsInWorld()).size       
+def evaluatorOne(scanners: Set[Scanner]): Int = {
+    return scanners.flatMap(_.getbeaconsInWorld()).size       
 }
 
-def evaluatorTwo(input: List[Scanner]): Int = {
-    val scanners = locateScanners(input)
-
+def evaluatorTwo(scanners: Set[Scanner]): Int = {
     return (for {sA <- scanners; sB <- scanners; if sA != sB} 
-        yield (sA.center.x - sB.center.x).abs + (sA.center.y - sB.center.y).abs + (sA.center.z - sB.center.z).abs
+        yield sA.center.manhattanDistance(sB.center)
     ).max
 }
 
@@ -149,7 +140,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day19.txt") match {
         case Success(lines) => {
-            val input = parseInput(lines)
+            val input = locateScanners(parseInput(lines))
             println(s"Part One: ${evaluatorOne(input)}")
             println(s"Part Two: ${evaluatorTwo(input)}")
         }

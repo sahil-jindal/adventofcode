@@ -3,16 +3,16 @@ package day22
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Segment(from: Int, to: Int) {
-    def isEmpty: Boolean = from > to
-    def length: Long = if isEmpty then 0 else to - from + 1
+case class Range(start: Int, end: Int) {
+    def isEmpty: Boolean = start > end
+    def length: Long = if isEmpty then 0 else end - start + 1
 
-    def intersect(that: Segment): Segment = {
-        return Segment(math.max(from, that.from), math.min(to, that.to))
+    def intersect(that: Range): Range = {
+        return Range(math.max(start, that.start), math.min(end, that.end))
     } 
 }
 
-case class Region(x: Segment, y: Segment, z: Segment) {
+case class Region(x: Range, y: Range, z: Range) {
     def isEmpty: Boolean = x.isEmpty || y.isEmpty || z.isEmpty
     def volume: Long = x.length * y.length * z.length
 
@@ -25,8 +25,8 @@ case class Cmd(turnOff: Boolean, region: Region)
 
 def parseInput(input: List[String]): List[Cmd] = input.map(line => {
     val turnOff = line.startsWith("off")
-    val m = raw"-?\d+".r.findAllIn(line).map(_.toInt).toList
-    Cmd(turnOff, Region(Segment(m(0), m(1)), new Segment(m(2), m(3)), new Segment(m(4), m(5))))
+    val Seq(sx, ex, sy, ey, sz, ez) = raw"(-?\d+)".r.findAllIn(line).map(_.toInt).toSeq
+    Cmd(turnOff, Region(Range(sx, ex), Range(sy, ey), Range(sz, ez)))
 })
 
 def activeCubesInRange(cmds: List[Cmd], range: Int): Long = {
@@ -45,7 +45,7 @@ def activeCubesInRange(cmds: List[Cmd], range: Int): Long = {
         return activeOutsideIntersection + (if cmds(icmd).turnOff then 0 else intersection.volume)
     }
 
-    val side = Segment(-range, range)
+    val side = Range(-range, range)
 
     return activeCubesAfterIcmd(cmds.length - 1, Region(side, side, side))
 }

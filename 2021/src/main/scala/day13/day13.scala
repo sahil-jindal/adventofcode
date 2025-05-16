@@ -3,24 +3,19 @@ package day13
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Point(x: Int, y: Int)
+case class Point(y: Int, x: Int)
 
-def groupLines(input: List[String]): List[List[String]] = {
-    return input.foldLeft(List(List.empty[String])) {
-        case (acc, "") => acc :+ List.empty[String]
-        case (acc, elem) => acc.init :+ (acc.last :+ elem)
-    }.filter(_.nonEmpty)
-}
-
-def foldX(d: Set[Point], x: Int): Set[Point] = d.map(p => if p.x > x then p.copy(x = 2*x - p.x) else p)
-def foldY(d: Set[Point], y: Int): Set[Point] = d.map(p => if p.y > y then p.copy(y = 2*y - p.y) else p)
+def foldX(d: Set[Point], x: Int) = d.map(p => if p.x > x then p.copy(x = 2*x - p.x) else p)
+def foldY(d: Set[Point], y: Int) = d.map(p => if p.y > y then p.copy(y = 2*y - p.y) else p)
 
 def getHolds(input: List[String]): List[Set[Point]] = {
-    val List(first, second) = groupLines(input)
+    val idx = input.indexWhere(_.trim.isEmpty)
+    val first = input.take(idx)
+    val second = input.drop(idx + 1)
 
     val points = first.map(line => {
         val Array(x, y) = line.split(",")
-        Point(x.toInt, y.toInt)
+        Point(y.toInt, x.toInt)
     }).toSet
 
     val res = second.scanLeft(points) { case (points, line) => 
@@ -40,13 +35,13 @@ def toString(d: Set[Point]): String = {
     val height = d.map(_.y).max
     val width = d.map(_.x).max
 
-    val grid = Array.ofDim[Char](height + 1, width + 1)
+    val grid = Array.fill(height + 1, width + 1)(' ')
 
-    for(y <- grid.indices; x <- grid(y).indices) {
-        grid(y)(x) = if d.contains(Point(x, y)) then '#' else ' '
-    }
-
-    return grid.map(_.mkString("")).mkString("\n")
+    for (y <- grid.indices; x <- grid(y).indices) {
+        if d.contains(Point(y, x)) then grid(y)(x) = '#'
+    } 
+    
+    return grid.map(_.mkString).mkString("\n")
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

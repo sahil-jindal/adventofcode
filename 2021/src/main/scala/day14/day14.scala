@@ -2,21 +2,12 @@ package day14
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable
-
-def groupLines(input: List[String]): List[List[String]] = {
-    return input.foldLeft(List(List.empty[String])) {
-        case (acc, "") => acc :+ List.empty[String]
-        case (acc, elem) => acc.init :+ (acc.last :+ elem)
-    }.filter(_.nonEmpty)
-}
+import scala.collection.mutable.Map
 
 def solve(input: List[String], steps: Int): Long = {
-    val List(first, second) = groupLines(input)
+    val polymer = input.head
 
-    val polymer = first(0)
-
-    val generatedElement = second.map(line => {
+    val template = input.drop(2).map(line => {
         val parts = line.split(" -> ")
         parts(0) -> parts(1)(0)
     }).toMap
@@ -24,15 +15,18 @@ def solve(input: List[String], steps: Int): Long = {
     var moleculeCount = polymer.sliding(2).toSeq.groupMapReduce(identity)(_ => 1L)(_ + _)
 
     for (_ <- 1 to steps) {
-        val emptyMap = Map.empty[String, Long].withDefaultValue(0L)
+        val updatedMap = Map.empty[String, Long].withDefaultValue(0L)
 
-        moleculeCount = moleculeCount.foldLeft(emptyMap) { case (updatedMap, (molecule, count)) => 
-            val (a, n, b) = (molecule(0), generatedElement(molecule), molecule(1))
-            updatedMap.updated(s"$a$n", updatedMap(s"$a$n") + count).updated(s"$n$b", updatedMap(s"$n$b") + count)
+        for ((molecule, count) <- moleculeCount) { 
+            val (a, n, b) = (molecule(0), template(molecule), molecule(1))
+            updatedMap(s"$a$n") += count
+            updatedMap(s"$n$b") += count
         }
+
+        moleculeCount = updatedMap.toMap
     }
 
-    val elementCounts = mutable.Map.empty[Char, Long].withDefaultValue(0L)
+    val elementCounts = Map.empty[Char, Long].withDefaultValue(0L)
 
     for ((molecule, count) <- moleculeCount) {
         elementCounts(molecule(0)) += count

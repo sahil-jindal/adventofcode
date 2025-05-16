@@ -2,7 +2,8 @@ package day18
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.util.boundary, boundary.break;
+import scala.collection.mutable.ListBuffer
+import scala.util.boundary, boundary.break
 
 sealed trait TokenKind
 case object Open extends TokenKind
@@ -11,23 +12,15 @@ case object Digit extends TokenKind
 
 case class Token(kind: TokenKind, value: Int = 0)
 
-class Number(private var inner: List[Token]) {
-    def length: Int = inner.length
-    def toList: List[Token] = inner
-    def apply(i: Int): Token = inner(i)
-    def isEmpty: Boolean = inner.isEmpty
-    def add(token: Token): Unit = inner :+= token
-    def addAll(tokens: List[Token]): Unit = inner ++= tokens
-    def update(i: Int, token: Token): Unit = inner = inner.updated(i, token)
-    def removeRange(i: Int, n: Int): Unit = inner = inner.take(i) ++ inner.drop(i + n)
-    def insert(i: Int, token: Token): Unit = inner = inner.take(i) ++ List(token) ++ inner.drop(i)
-    def insertAll(i: Int, number: Number): Unit = inner = inner.take(i) ++ number.toList ++ inner.drop(i)
+class Number(private val input: ListBuffer[Token]) extends ListBuffer[Token] {
+    this ++= input  // copy the input into this buffer
+    def insertAll(i: Int, number: Number): Unit = this.insertAll(i, number.toList)
 }
-
+  
 object Number {
-    def apply(tokens: List[Token] = Nil): Number = new Number(tokens)
-    def digit(value: Int): Number = Number(List(Token(Digit, value)))
-    def pair(a: Number, b: Number): Number = Number(Token(Open) :: ((a.toList ++ b.toList) :+ Token(Close)))
+    def apply(tokens: List[Token] = Nil) = new Number(ListBuffer.from(tokens))
+    def digit(value: Int) = Number(List(Token(Digit, value)))
+    def pair(a: Number, b: Number) = Number(Token(Open) +: (a.toList ++ b.toList) :+ Token(Close))
 }
 
  def parseNumber(input: String): Number = {
@@ -76,7 +69,7 @@ def explode(number: Number): Boolean = {
                         number(j) = number(j).copy(value = number(j).value + rightValue)
                     }
 
-                    number.removeRange(i, 4)
+                    number.remove(i, 4)
                     number.insert(i, Token(Digit, 0))
                     break(true)
                 }
@@ -94,7 +87,7 @@ def explode(number: Number): Boolean = {
                 val v = number(i).value
                 val left = Number.digit(v / 2)
                 val right = Number.digit((v + 1) / 2)
-                number.removeRange(i, 1)
+                number.remove(i, 1)
                 number.insertAll(i, Number.pair(left, right))
                 break(true)
             }

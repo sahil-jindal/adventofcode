@@ -6,7 +6,7 @@ import scala.collection.mutable.ListBuffer
 import scala.util.control.Breaks._
 
 def solve(input: String): List[Int] = {
-    val List(xMin, xMax, yMin, yMax) = raw"-?\d+".r.findAllIn(input).map(_.toInt).toList
+    val Seq(xMin, xMax, yMin, yMax) = raw"(-?\d+)".r.findAllIn(input).map(_.toInt).toSeq
     
     // Bounds for the initial horizontal and vertical speeds:
     val vx0Min = 0      // Because vx is non negative

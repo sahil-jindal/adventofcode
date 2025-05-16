@@ -2,30 +2,32 @@ package day15
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable
+import scala.collection.mutable.{PriorityQueue, Map => MutableMap}
 
-case class Point(x: Int, y: Int)
+case class Point(y: Int, x: Int)
 
 def parseInput(input: List[String]): Map[Point, Int] = {
     return (for {
         (line, y) <- input.zipWithIndex
         (ch, x) <- line.zipWithIndex
-    } yield Point(x, y) -> ch.asDigit).toMap
+    } yield Point(y, x) -> ch.asDigit).toMap
 }
 
-def neighbours(point: Point): Seq[Point] = Seq(
-    point.copy(y = point.y + 1),
-    point.copy(y = point.y - 1),
-    point.copy(x = point.x + 1),
-    point.copy(x = point.x - 1)
+def getNeighbours(pos: Point) = Seq(
+    pos.copy(x = pos.x - 1),
+    pos.copy(x = pos.x + 1),
+    pos.copy(y = pos.y + 1),
+    pos.copy(y = pos.y - 1)
 )
 
 def solve(riskMap: Map[Point, Int]): Int = {
     val topLeft = Point(0, 0)
-    val bottomRight = Point(riskMap.keys.map(_.x).max, riskMap.keys.map(_.y).max)
+    val maxY = riskMap.keys.map(_.y).max
+    val maxX = riskMap.keys.map(_.x).max
+    val bottomRight = Point(maxY, maxX)
 
-    val pq = mutable.PriorityQueue.empty(using Ordering.by[(Point, Int), Int](_._2).reverse)
-    val totalRiskMap = mutable.Map.empty[Point, Int]
+    val pq = PriorityQueue.empty(using Ordering.by[(Point, Int), Int](_._2).reverse)
+    val totalRiskMap = MutableMap.empty[Point, Int]
 
     totalRiskMap(topLeft) = 0
     pq.enqueue((topLeft, 0))
@@ -37,7 +39,7 @@ def solve(riskMap: Map[Point, Int]): Int = {
             return totalRiskMap(p)
         }
 
-        for (n <- neighbours(p) if riskMap.contains(n)) {
+        for (n <- getNeighbours(p) if riskMap.contains(n)) {
             val totalRiskThroughP = totalRiskMap(p) + riskMap(n)
             if (totalRiskThroughP < totalRiskMap.getOrElse(n, Int.MaxValue)) {
                 totalRiskMap(n) = totalRiskThroughP
@@ -58,10 +60,10 @@ def scaleUp(map: Map[Point, Int]): Map[Point, Int] = {
         x <- 0 until 5*width
         tileY = y % height
         tileX = x % width
-        tileRiskLevel = map(Point(tileX, tileY))
+        tileRiskLevel = map(Point(tileY, tileX))
         tileDistance = (y / height) + (x / width)
         riskLevel = (tileRiskLevel + tileDistance - 1) % 9 + 1
-    } yield Point(x, y) -> riskLevel).toMap
+    } yield Point(y, x) -> riskLevel).toMap
 }
 
 def evaluatorOne(map: Map[Point, Int]): Int = solve(map)

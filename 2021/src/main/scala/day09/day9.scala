@@ -4,26 +4,24 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Set, Queue}
 
-case class Point(x: Int, y: Int)
+case class Point(y: Int, x: Int)
 
 def parseInput(map: List[String]): Map[Point, Int] = {
     return (for { 
         (line, y) <- map.zipWithIndex 
         (ch, x) <- line.zipWithIndex 
-    } yield Point(x, y) -> ch.asDigit ).toMap
+    } yield Point(y, x) -> ch.asDigit).toMap
 }
 
-def neighbours(point: Point): Seq[Point] = {
-    return Seq(
-        point.copy(y = point.y + 1),
-        point.copy(y = point.y - 1),
-        point.copy(x = point.x + 1),
-        point.copy(x = point.x - 1)
-    )
-}
+def getNeighbours(pos: Point) = Seq(
+    pos.copy(x = pos.x - 1),
+    pos.copy(x = pos.x + 1),
+    pos.copy(y = pos.y - 1),
+    pos.copy(y = pos.y + 1)
+)
 
 def getLowPoints(map: Map[Point, Int]): Seq[Point] = map.keys.filter(point =>
-    neighbours(point).forall { neighbor => map.getOrElse(neighbor, 9) > map(point) }
+    getNeighbours(point).forall { neighbor => map.getOrElse(neighbor, 9) > map(point) }
 ).toSeq
 
 
@@ -35,7 +33,7 @@ def basicInSize(map: Map[Point, Int], point: Point): Int = {
         val current = queue.dequeue()
         
         for {
-            neighbor <- neighbours(current)
+            neighbor <- getNeighbours(current)
             if !filled.contains(neighbor)
             if map.getOrElse(neighbor, 9) != 9
         } {

@@ -5,13 +5,6 @@ import scala.io.Source
 
 case class Point(y: Int, x: Int)
 
-def groupLines(input: List[String]): List[List[String]] = {
-    return input.foldLeft(List(List.empty[String])) {
-        case (acc, "") => acc :+ List.empty[String]
-        case (acc, elem) => acc.init :+ (acc.last :+ elem)
-    }.filter(_.nonEmpty)
-}
-
 def getImage(map: List[String]): Map[Point, Int] = {
     return (for {
         (line, y) <- map.zipWithIndex
@@ -27,10 +20,8 @@ def neighbours(pos: Point): Seq[Point] = {
 }
 
 def enhanced(input: List[String], n: Int): List[Int] = {
-    val blocks = groupLines(input)
-
-    val algo = blocks(0)(0)
-    var image = getImage(blocks(1))
+    val algo = input.head
+    var image = getImage(input.drop(2))
 
     var (minY, maxY) = (0, image.keys.map(_.y).max)
     var (minX, maxX) = (0, image.keys.map(_.x).max)
