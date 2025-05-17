@@ -4,13 +4,13 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Set, Queue}
 
-case class Range(begin: Int, end: Int) {
-    def intersects(that: Range) = begin <= that.end && that.begin <= end
+case class Range(start: Int, end: Int) {
+    def intersects(that: Range) = start <= that.end && that.start <= end
 }
 
 case class Block(x: Range, y: Range, z: Range) {
     val top = z.end
-    val bottom = z.begin
+    val bottom = z.start
     def intersectsXY(that: Block) = x.intersects(that.x) && y.intersects(that.y)
 }
 
@@ -20,12 +20,8 @@ case class Supports(
 )
 
 def parseInput(input: List[String]) = input.map(line => {
-    val numbers = line.split(Array(',','~')).map(_.toInt)
-    new Block(
-        x = Range(numbers(0), numbers(3)), 
-        y = Range(numbers(1), numbers(4)), 
-        z = Range(numbers(2), numbers(5))
-    )
+    val Seq(sx, ex, sy, ey, sz, ez) = line.split(Array(',','~')).map(_.toInt).toSeq
+    Block(Range(sx, ex), Range(sy, ey), Range(sz, ez))
 })
 
 def fall(blocksInit: List[Block]): List[Block] = {

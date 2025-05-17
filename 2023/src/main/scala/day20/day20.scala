@@ -39,7 +39,7 @@ def parseGates(inputInit: List[String]): Map[String, Gate] = {
     val input = inputInit :+ "rx ->" // an extra rule for rx with no output
 
     val descriptions = input.map(line => {
-        val words = raw"\w+".r.findAllIn(line).toList
+        val words = raw"(\w+)".r.findAllIn(line).toList
         Group(line.head, words.head, words.tail)
     })
 

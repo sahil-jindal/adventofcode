@@ -8,10 +8,10 @@ case class Part(text: String, y: Int, x: Int) {
     def toInt = text.toInt
 }
 
-def parse(rows: List[String], rx: Regex): List[Part] = {
+def parse(input: List[String], rx: Regex): List[Part] = {
     return (for {
-        (row, y) <- rows.zipWithIndex
-        matchData <- rx.findAllMatchIn(row)
+        (line, y) <- input.zipWithIndex
+        matchData <- rx.findAllMatchIn(line)
     } yield Part(matchData.matched, y, matchData.start))
 }
 
@@ -23,16 +23,16 @@ def adjacent(p1: Part, p2: Part): Boolean = {
     p2.x <= p1.x + p1.text.length
 }
 
-def evaluatorOne(rows: List[String]): Int = {
-    val symbols = parse(rows, raw"[^.0-9]".r)
-    val numbers = parse(rows, raw"\d+".r)
+def evaluatorOne(input: List[String]): Int = {
+    val symbols = parse(input, raw"([^.0-9])".r)
+    val numbers = parse(input, raw"(\d+)".r)
 
     return numbers.collect { case n if symbols.exists(s => adjacent(s, n)) => n.toInt }.sum
 }
 
-def evaluatorTwo(rows: List[String]): Int = {
-    val gears = parse(rows, raw"\*".r)
-    val numbers = parse(rows, raw"\d+".r)
+def evaluatorTwo(input: List[String]): Int = {
+    val gears = parse(input, raw"(\*)".r)
+    val numbers = parse(input, raw"(\d+)".r)
 
     return (for {
         g <- gears

@@ -2,7 +2,7 @@ package day24
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.util.boundary, boundary.break;
+import scala.util.boundary, boundary.break
 
 case class Vec2(x0: BigDecimal, x1: BigDecimal)
 case class Vec3(x0: BigDecimal, x1: BigDecimal, x2: BigDecimal)
@@ -11,7 +11,7 @@ case class Particle3(pos: Vec3, vel: Vec3)
 case class Pair(item1: BigDecimal, item2: BigDecimal)
 
 def parseNum(line: String): List[BigDecimal] = {
-    return raw"-?\d+".r.findAllIn(line).map(BigDecimal(_)).toList
+    return raw"(-?\d+)".r.findAllIn(line).map(BigDecimal(_)).toList
 }
 
 def parseInput(input: List[String]) = input.map(line => {

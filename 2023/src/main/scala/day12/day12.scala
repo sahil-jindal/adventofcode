@@ -2,10 +2,10 @@ package day12
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable
+import scala.collection.mutable.Map
 import scala.util.chaining._
 
-type Cache = mutable.Map[(String, List[Int]), Long]
+type Cache = Map[(String, List[Int]), Long]
 
 // After unfolding the input we process it line by line computing the possible 
 // combinations for each. We use memoized recursion to speed up PartTwo.
@@ -70,7 +70,7 @@ def solve(input: List[String], repeat: Int): Long = {
         val pattern = unfold(parts(0), '?', repeat)
         val numString = unfold(parts(1), ',', repeat)
         val nums = numString.split(',').map(_.toInt).toList
-        compute(pattern, nums, mutable.Map.empty)
+        compute(pattern, nums, Map.empty)
     }).sum
 }
 

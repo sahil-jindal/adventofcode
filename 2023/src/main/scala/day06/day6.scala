@@ -4,7 +4,7 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
 def parse(input: String): List[Long] = {
-    return raw"\d+".r.findAllIn(input).map(_.toLong).toList
+    return raw"(\d+)".r.findAllIn(input).map(_.toLong).toList
 }
 
 // solves ax^2 + bx + c = 0 (supposing two different roots)
@@ -31,9 +31,9 @@ def winningMoves(time: Long, record: Long): Long = {
     return maxX - minX + 1
 }
 
-def solve(rows: List[String], converter: String => String): Long = {
-    val times = parse(converter(rows(0)))
-    val records = parse(converter(rows(1)))
+def solve(input: List[String], converter: String => String): Long = {
+    val times = parse(converter(input(0)))
+    val records = parse(converter(input(1)))
 
     return (times zip records).map(winningMoves).product
 }

@@ -2,12 +2,12 @@ package day25
 
 import scala.util.{Try, Success, Failure, Using, Random}
 import scala.io.Source
-import scala.collection.mutable
+import scala.collection.mutable.{Map, Set}
 
 case class Group(size: Int, c1: Int, c2: Int)
 
 def parseEdges(input: List[String]): List[(String, String)] = {
-    val edgeSet = mutable.Set.empty[(String, String)]
+    val edgeSet = Set.empty[(String, String)]
 
     for (line <- input) {
         val parts = line.split(": ")
@@ -24,8 +24,8 @@ def parseEdges(input: List[String]): List[(String, String)] = {
 }
 
 class UnionFind(nodes: Set[String]) {
-    private val parent = mutable.Map.empty[String, String]
-    private val size = mutable.Map.empty[String, Int]
+    private val parent = Map.empty[String, String]
+    private val size = Map.empty[String, Int]
     private var componentCount = nodes.size
 
     for (node <- nodes) {
@@ -64,7 +64,7 @@ class UnionFind(nodes: Set[String]) {
 }
 
 def findCut(edges: List[(String, String)], r: Random): Group = {
-    val allNodes = edges.flatMap { case (u, v) => List(u, v) }.toSet
+    val allNodes = Set(edges.flatMap { case (u, v) => List(u, v) }.toSeq*)
     val shuffledEdges = r.shuffle(edges)
     val uf = new UnionFind(allNodes)
 

@@ -5,17 +5,20 @@ import scala.io.Source
 import scala.collection.mutable.Set
 import scala.util.control.Breaks._
 
-case class Complex(real: Int, imag: Int) {
-    def unary_- = Complex(-real, -imag)
-    def +(that: Complex) = Complex(real + that.real, imag + that.imag)
+case class Direction(dy: Int, dx: Int) {
+    def unary_- = Direction(-dy, -dx)
 }
 
-type Grid = Map[Complex, Char]
+case class Point(y: Int, x: Int) {
+    def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
+}
 
-val Up = Complex(0, -1)
-val Down = Complex(0, 1)
-val Left = Complex(-1, 0)
-val Right = Complex(1, 0)
+type Grid = Map[Point, Char]
+
+val Up = Direction(-1, 0)
+val Down = Direction(1, 0)
+val Left = Direction(0, -1)
+val Right = Direction(0, 1)
 val Dirs = List(Up, Right, Down, Left)
 
 val Exits = Map(
@@ -29,16 +32,16 @@ val Exits = Map(
     '.' -> Set.empty,
 )
 
-def parseMap(input: List[String]): Map[Complex, Char] = {
+def parseMap(input: List[String]): Grid = {
     return (for {
         (line, y) <- input.zipWithIndex
         (ch, x) <- line.zipWithIndex
-    } yield Complex(x, y) -> ch).toMap
+    } yield Point(y, x) -> ch).toMap
 }
 
-def loopPositions(map: Grid): (Set[Complex], Char) = {
+def loopPositions(map: Grid): (Set[Point], Char) = {
     var position = map.keys.find(k => map(k) == 'S').get
-    var positions = Set.empty[Complex]
+    var positions = Set.empty[Point]
 
     val initialDir = Dirs.find(dir => {
         val nextPos = position + dir
@@ -77,7 +80,7 @@ def loopPositions(map: Grid): (Set[Complex], Char) = {
 }
 
 // Check if position is inside the loop using ray casting algorithm
-def inside(positionInit: Complex, map: Grid, loop: Set[Complex]): Boolean = {
+def inside(positionInit: Point, map: Grid, loop: Set[Point]): Boolean = {
     // Imagine a small elf starting from the top half of a cell and moving 
     // to the left jumping over the pipes it encounters. It needs to jump 
     // over only 'vertically' oriented pipes leading upwards, since it runs 
@@ -102,11 +105,12 @@ def inside(positionInit: Complex, map: Grid, loop: Set[Complex]): Boolean = {
 def solver(input: List[String]) = {
     val originalMap = parseMap(input)
     val (loop, sReplacement) = loopPositions(originalMap)
-    val updatedMap = originalMap.updated(originalMap.keys.find(k => originalMap(k) == 'S').get, sReplacement)
+    val startPos = originalMap.keys.find(k => originalMap(k) == 'S').get
+    val updatedMap = originalMap.updated(startPos, sReplacement)
 
     println(s"Part One: ${loop.size / 2}")
 
-    val partTwo = updatedMap.keys.count(position => inside(position, updatedMap, loop))
+    val partTwo = updatedMap.keys.count(inside(_, updatedMap, loop))
     println(s"Part Two: $partTwo")
 }
 

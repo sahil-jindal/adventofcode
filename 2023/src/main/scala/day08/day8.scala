@@ -9,7 +9,7 @@ type Edges = Map[String, Pair]
 
 def parseMap(input: List[String]): Edges = {
     return input.map(line => {
-        val parts = raw"\w+".r.findAllIn(line).toList
+        val parts = raw"(\w+)".r.findAllIn(line).toList
         parts(0) -> Pair(parts(1), parts(2))
     }).toMap
 }

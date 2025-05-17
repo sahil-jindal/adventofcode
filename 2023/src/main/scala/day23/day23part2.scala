@@ -2,7 +2,9 @@ package day23
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable
+import scala.collection.mutable.{Queue, ListBuffer, Map, Set => MutableSet}
+
+case class Position(y: Int, x: Int)
 
 val dirs = Vector((0, 1), (1, 0), (0, -1), (-1, 0))
   
@@ -14,52 +16,52 @@ val slopes = Map(
     '^' -> 3  // up
 )
 
-def getValidNeighbors(grid: List[String], row: Int, col: Int, respectSlopes: Boolean): List[(Int, Int)] = {
+def getValidNeighbors(grid: List[String], pos: Position, respectSlopes: Boolean): List[Position] = {
     val height = grid.length
     val width = grid(0).length
     
-    if (grid(row)(col) == '#') return List()
+    if (grid(pos.y)(pos.x) == '#') return List.empty
     
-    val currentCell = grid(row)(col)
+    val currentCell = grid(pos.y)(pos.x)
     
     if (respectSlopes && slopes.contains(currentCell)) {
         // If we're respecting slopes, only move in the direction of the slope
         val dir = dirs(slopes(currentCell))
-        val newRow = row + dir._1
-        val newCol = col + dir._2
+        val newPosY = pos.y + dir._1
+        val newPosX = pos.x + dir._2
       
-        if (newRow >= 0 && newRow < height && newCol >= 0 && newCol < width && grid(newRow)(newCol) != '#') {
-            return List((newRow, newCol))
+        if (newPosY >= 0 && newPosY < height && newPosX >= 0 && newPosX < width && grid(newPosY)(newPosX) != '#') {
+            return List(Position(newPosY, newPosX))
         }
         
-        return List()
+        return List.empty
     } else {
         // Otherwise, try all four directions
         val neighbors = for {
             (dr, dc) <- dirs
-            newRow = row + dr
-            newCol = col + dc
-            if newRow >= 0 && newRow < height && newCol >= 0 && newCol < width && grid(newRow)(newCol) != '#'
-            if !respectSlopes || !slopes.contains(grid(newRow)(newCol)) || slopes(grid(newRow)(newCol)) != (dirs.indexOf((dr, dc)) + 2) % 4
-        } yield (newRow, newCol)
+            newPosY = pos.y + dr
+            newPosX = pos.x + dc
+            if newPosY >= 0 && newPosY < height && newPosX >= 0 && newPosX < width && grid(newPosY)(newPosX) != '#'
+            if !respectSlopes || !slopes.contains(grid(newPosY)(newPosX)) || slopes(grid(newPosY)(newPosX)) != (dirs.indexOf((dr, dc)) + 2) % 4
+        } yield Position(newPosY, newPosX)
       
         neighbors.toList
     }
 }
 
-def findJunctions(grid: List[String], start: (Int, Int), end: (Int, Int), respectSlopes: Boolean): Set[(Int, Int)] = {
+def findJunctions(grid: List[String], start: Position, end: Position, respectSlopes: Boolean): Set[Position] = {
     val height = grid.length
     val width = grid(0).length
     
-    val junctions = mutable.Set[((Int, Int))]()
+    val junctions = MutableSet.empty[(Position)]
     junctions += start
     junctions += end
     
     for (r <- 0 until height; c <- 0 until width) {
         if (grid(r)(c) != '#') {
-            val neighbors = getValidNeighbors(grid, r, c, respectSlopes)
+            val neighbors = getValidNeighbors(grid, Position(r, c), respectSlopes)
             if (neighbors.size > 2) {
-                junctions += ((r, c))
+                junctions += Position(r, c)
             }
         }
     }
@@ -67,19 +69,19 @@ def findJunctions(grid: List[String], start: (Int, Int), end: (Int, Int), respec
     junctions.toSet
 }
 
-def findEdges(grid: List[String], start: (Int, Int), junctions: Set[(Int, Int)], respectSlopes: Boolean): List[((Int, Int), Int)] = {
-    val queue = mutable.Queue(((start, 0)))
-    val visited = mutable.Set(start)
-    val edges = mutable.ListBuffer[((Int, Int), Int)]()
+def findEdges(grid: List[String], start: Position, junctions: Set[Position], respectSlopes: Boolean): List[(Position, Int)] = {
+    val queue = Queue(((start, 0)))
+    val visited = MutableSet(start)
+    val edges = ListBuffer.empty[(Position, Int)]
     
     while (queue.nonEmpty) {
-        val ((row, col), distance) = queue.dequeue()
+        val (pos, distance) = queue.dequeue()
       
-        if (distance > 0 && junctions.contains((row, col))) {
-            edges += (((row, col), distance))
+        if (distance > 0 && junctions.contains(pos)) {
+            edges += ((pos, distance))
         } else {
             for {
-                neighbor @ (nr, nc) <- getValidNeighbors(grid, row, col, respectSlopes)
+                neighbor @ newPos <- getValidNeighbors(grid, pos, respectSlopes)
                 if !visited.contains(neighbor)
             } {
                 visited += neighbor
@@ -91,19 +93,19 @@ def findEdges(grid: List[String], start: (Int, Int), junctions: Set[(Int, Int)],
     edges.toList
 }
 
-def buildGraph(grid: List[String], junctions: Set[(Int, Int)], respectSlopes: Boolean): Map[(Int, Int), List[((Int, Int), Int)]] = {
-    val graph = mutable.Map[(Int, Int), List[((Int, Int), Int)]]()
+def buildGraph(grid: List[String], junctions: Set[Position], respectSlopes: Boolean): Map[Position, List[(Position, Int)]] = {
+    val graph = Map.empty[Position, List[(Position, Int)]]
     
     for (junction <- junctions) {
         val edges = findEdges(grid, junction, junctions, respectSlopes)
         graph(junction) = edges
     }
     
-    graph.toMap
+    graph
 }
 
-def findLongestPathInGraph(graph: Map[(Int, Int), List[((Int, Int), Int)]], start: (Int, Int), end: (Int, Int)): Int = {
-    def dfs(current: (Int, Int), visited: Set[(Int, Int)]): Int = {
+def findLongestPathInGraph(graph: Map[Position, List[(Position, Int)]], start: Position, end: Position): Int = {
+    def dfs(current: Position, visited: Set[Position]): Int = {
         if (current == end) return 0
       
         var maxLength = Int.MinValue
@@ -121,15 +123,15 @@ def findLongestPathInGraph(graph: Map[(Int, Int), List[((Int, Int), Int)]], star
         maxLength
     }
     
-    dfs(start, Set())
+    dfs(start, Set.empty)
 }
 
 def findLongestPath(grid: List[String], respectSlopes: Boolean): Int = {
     val height = grid.length
     val width = grid(0).length
     
-    val start = (0, grid(0).indexOf('.'))
-    val end = (height - 1, grid(height - 1).indexOf('.'))
+    val start = Position(0, grid(0).indexOf('.'))
+    val end = Position(height - 1, grid(height - 1).indexOf('.'))
     
     // Find all junctions (positions with more than 2 neighbors)
     val junctions = findJunctions(grid, start, end, respectSlopes)

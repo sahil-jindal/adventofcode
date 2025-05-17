@@ -4,21 +4,25 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{ListBuffer, PriorityQueue, Set}
 
-case class Complex(real: Int, imag: Int) {
-    def unary_- = Complex(-real, -imag)
-    def +(that: Complex) = Complex(real + that.real, imag + that.imag)
-    def -(that: Complex) = Complex(real - that.real, imag - that.imag)
+case class Direction(dy: Int, dx: Int) {
+    def unary_- = Direction(-dy, -dx)
+    def rotateLeft = Direction(dx, -dy)
+    def rotateRight = Direction(-dx, dy)
 }
 
-case class Crucible(pos: Complex, dir: Complex, straight: Int)
+case class Point(y: Int, x: Int) {
+    def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
+}
 
-type Grid = Map[Complex, Int]
+case class Crucible(pos: Point, dir: Direction, straight: Int)
+
+type Grid = Map[Point, Int]
 
 def parseInput(input: List[String]): Grid = {
     return (for {
         (line, y) <- input.zipWithIndex
         (ch, x) <- line.zipWithIndex
-    } yield Complex(x, y) -> ch.asDigit).toMap
+    } yield Point(y, x) -> ch.asDigit).toMap
 }
 
 def moves(c: Crucible, minStraight: Int, maxStraight: Int): Seq[Crucible] = {
@@ -32,11 +36,11 @@ def moves(c: Crucible, minStraight: Int, maxStraight: Int): Seq[Crucible] = {
     // Turn left or right if we've gone at least minStraight
     if (c.straight >= minStraight) {
         // Turn left (90 degrees counterclockwise)
-        val leftDir = Complex(-c.dir.imag, c.dir.real)  // Multiply by i
+        val leftDir = c.dir.rotateLeft  // Multiply by i
         result += Crucible(c.pos + leftDir, leftDir, 1)
       
         // Turn right (90 degrees clockwise)
-        val rightDir = Complex(c.dir.imag, -c.dir.real)  // Multiply by -i
+        val rightDir = c.dir.rotateRight  // Multiply by -i
         result += Crucible(c.pos + rightDir, rightDir, 1)
     }
     
@@ -44,13 +48,13 @@ def moves(c: Crucible, minStraight: Int, maxStraight: Int): Seq[Crucible] = {
 }
 
 def heatloss(map: Grid, minStraight: Int, maxStraight: Int): Int = {
-    val goal = map.keys.maxBy(pos => pos.imag + pos.real)
+    val goal = map.keys.maxBy(pos => pos.y + pos.x)
     
     val pq = PriorityQueue.empty(using Ordering.by[(Crucible, Int), Int](_._2).reverse)
     val seen = Set.empty[Crucible]
 
-    pq.enqueue((Crucible(pos = Complex(0, 0), dir = Complex(1, 0), straight = 0), 0))
-    pq.enqueue((Crucible(pos = Complex(0, 0), dir = Complex(0, 1), straight = 0), 0))
+    pq.enqueue((Crucible(pos = Point(0, 0), dir = Direction(1, 0), straight = 0), 0))
+    pq.enqueue((Crucible(pos = Point(0, 0), dir = Direction(0, 1), straight = 0), 0))
 
     while (pq.nonEmpty) {
         val (crucible, heatloss) = pq.dequeue()

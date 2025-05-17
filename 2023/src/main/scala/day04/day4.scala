@@ -7,8 +7,8 @@ case class Card(matches: Int)
 
 def parseInput(input: List[String]) = input.map(line => {
     val parts = line.split(Array(':', '|'))
-    val l = raw"\d+".r.findAllIn(parts(1)).toSet
-    val r = raw"\d+".r.findAllIn(parts(2)).toSet
+    val l = raw"(\d+)".r.findAllIn(parts(1)).toSet
+    val r = raw"(\d+)".r.findAllIn(parts(2)).toSet
     Card((l & r).size)
 })
 

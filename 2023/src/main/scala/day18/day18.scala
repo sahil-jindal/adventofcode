@@ -5,10 +5,13 @@ import scala.io.Source
 
 case class Group(dir: Char, amount: Int, color: String)
 
-case class Complex(real: Long, imag: Long) {
-    def *(num: Int) = Complex(real * num, imag * num)
-    def +(that: Complex) = Complex(real + that.real, imag + that.imag)
-    def magnitude = Math.sqrt(real.toDouble * real.toDouble + imag.toDouble * imag.toDouble)
+case class Direction(dy: Long, dx: Long) {
+    def *(num: Int) = Direction(dy * num, dx * num)
+    def magnitude = Math.sqrt(dy.toDouble * dy.toDouble + dx.toDouble * dx.toDouble)
+}
+
+case class Point(y: Long, x: Long) {
+    def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
 }
 
 def parseInput(input: List[String]) = input.map(line => {
@@ -18,10 +21,10 @@ def parseInput(input: List[String]) = input.map(line => {
 
 def stepsOne(input: List[Group]) = input.map(group => {
     val dir = group.dir match {
-        case 'R' => Complex(1, 0)
-        case 'U' => Complex(0, -1)
-        case 'L' => Complex(-1, 0)
-        case 'D' => Complex(0, 1)
+        case 'R' => Direction(0, 1)
+        case 'U' => Direction(-1, 0)
+        case 'L' => Direction(0, -1)
+        case 'D' => Direction(1, 0)
     }
 
     dir * group.amount
@@ -29,28 +32,28 @@ def stepsOne(input: List[Group]) = input.map(group => {
 
 def stepsTwo(input: List[Group]) = input.map(group => {
     val dir = group.color.last match {
-        case '0' => Complex(1, 0)
-        case '1' => Complex(0, 1)
-        case '2' => Complex(-1, 0)
-        case '3' => Complex(0, -1)
+        case '0' => Direction(0, 1)
+        case '1' => Direction(1, 0)
+        case '2' => Direction(0, -1)
+        case '3' => Direction(-1, 0)
     }
 
     dir * Integer.parseInt(group.color.init, 16) 
 })
 
-def getVertices(steps: List[Complex]): List[Complex] = {
-    return steps.scanLeft(Complex(0, 0))(_ + _).tail
+def getVertices(steps: List[Direction]): List[Point] = {
+    return steps.scanLeft(Point(0, 0))(_ + _).tail
 }
 
 // We are using a combination of the shoelace formula with Pick's theorem
-def area(steps: List[Complex]): Long = {
+def area(steps: List[Direction]): Long = {
     val vertices = getVertices(steps)
 
     // Shoelace formula https://en.wikipedia.org/wiki/Shoelace_formula
     val shiftedVertices = vertices.tail :+ vertices.head
 
     val shoelaces = (vertices zip shiftedVertices).map { 
-        case (p1, p2) => p1.real * p2.imag - p1.imag * p2.real
+        case (p1, p2) => p1.x * p2.y - p1.y * p2.x
     }
 
     val area = shoelaces.sum.abs / 2

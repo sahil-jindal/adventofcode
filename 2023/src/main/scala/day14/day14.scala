@@ -11,26 +11,26 @@ def parseInput(input: List[String]) = input.map(_.toCharArray).toArray
 
 // Tilt the platform north
 def tiltNorth(platform: Array[Array[Char]]): Array[Array[Char]] = {
-    val rows = platform.length
-    val cols = platform(0).length
+    val height = platform.length
+    val width = platform(0).length
     val result = platform.map(_.clone())
     
-    for (col <- 0 until cols) {
+    for (x <- 0 until width) {
         var nextEmptyRow = 0
-        for (row <- 0 until rows) {
-            result(row)(col) match {
+        for (y <- 0 until height) {
+            result(y)(x) match {
                 case 'O' => 
-                    if (nextEmptyRow < row) {
+                    if (nextEmptyRow < y) {
                         // Move the rounded rock to the empty spot
-                        result(nextEmptyRow)(col) = 'O'
-                        result(row)(col) = '.'
+                        result(nextEmptyRow)(x) = 'O'
+                        result(y)(x) = '.'
                         nextEmptyRow += 1
                     } else {
-                        nextEmptyRow = row + 1
+                        nextEmptyRow = y + 1
                     }
                 case '#' => 
                     // Cube-shaped rocks don't move, but block movement
-                    nextEmptyRow = row + 1
+                    nextEmptyRow = y + 1
                 case '.' => 
                     // Do nothing for empty spaces
             }
@@ -42,26 +42,26 @@ def tiltNorth(platform: Array[Array[Char]]): Array[Array[Char]] = {
   
 // Tilt the platform south
 def tiltSouth(platform: Array[Array[Char]]): Array[Array[Char]] = {
-    val rows = platform.length
-    val cols = platform(0).length
+    val height = platform.length
+    val width = platform(0).length
     val result = platform.map(_.clone())
     
-    for (col <- 0 until cols) {
-        var nextEmptyRow = rows - 1
-        for (row <- (rows - 1) to 0 by -1) {
-            result(row)(col) match {
+    for (x <- 0 until width) {
+        var nextEmptyRow = height - 1
+        for (y <- (height - 1) to 0 by -1) {
+            result(y)(x) match {
                 case 'O' => 
-                    if (nextEmptyRow > row) {
+                    if (nextEmptyRow > y) {
                         // Move the rounded rock to the empty spot
-                        result(nextEmptyRow)(col) = 'O'
-                        result(row)(col) = '.'
+                        result(nextEmptyRow)(x) = 'O'
+                        result(y)(x) = '.'
                         nextEmptyRow -= 1
                     } else {
-                        nextEmptyRow = row - 1
+                        nextEmptyRow = y - 1
                     }
                 case '#' => 
                     // Cube-shaped rocks don't move, but block movement
-                    nextEmptyRow = row - 1
+                    nextEmptyRow = y - 1
                 case '.' => 
                     // Do nothing for empty spaces
             }
@@ -73,26 +73,26 @@ def tiltSouth(platform: Array[Array[Char]]): Array[Array[Char]] = {
   
 // Tilt the platform west
 def tiltWest(platform: Array[Array[Char]]): Array[Array[Char]] = {
-    val rows = platform.length
-    val cols = platform(0).length
+    val height = platform.length
+    val width = platform(0).length
     val result = platform.map(_.clone())
     
-    for (row <- 0 until rows) {
+    for (y <- 0 until height) {
         var nextEmptyCol = 0
-        for (col <- 0 until cols) {
-            result(row)(col) match {
+        for (x <- 0 until width) {
+            result(y)(x) match {
                 case 'O' => 
-                    if (nextEmptyCol < col) {
+                    if (nextEmptyCol < x) {
                         // Move the rounded rock to the empty spot
-                        result(row)(nextEmptyCol) = 'O'
-                        result(row)(col) = '.'
+                        result(y)(nextEmptyCol) = 'O'
+                        result(y)(x) = '.'
                         nextEmptyCol += 1
                     } else {
-                        nextEmptyCol = col + 1
+                        nextEmptyCol = x + 1
                     }
                 case '#' => 
                     // Cube-shaped rocks don't move, but block movement
-                    nextEmptyCol = col + 1
+                    nextEmptyCol = x + 1
                 case '.' => 
                     // Do nothing for empty spaces
             }
@@ -104,26 +104,26 @@ def tiltWest(platform: Array[Array[Char]]): Array[Array[Char]] = {
   
 // Tilt the platform east
 def tiltEast(platform: Array[Array[Char]]): Array[Array[Char]] = {
-    val rows = platform.length
-    val cols = platform(0).length
+    val height = platform.length
+    val width = platform(0).length
     val result = platform.map(_.clone())
     
-    for (row <- 0 until rows) {
-        var nextEmptyCol = cols - 1
-        for (col <- (cols - 1) to 0 by -1) {
-            result(row)(col) match {
+    for (y <- 0 until height) {
+        var nextEmptyCol = width - 1
+        for (x <- (width - 1) to 0 by -1) {
+            result(y)(x) match {
                 case 'O' => 
-                    if (nextEmptyCol > col) {
+                    if (nextEmptyCol > x) {
                         // Move the rounded rock to the empty spot
-                        result(row)(nextEmptyCol) = 'O'
-                        result(row)(col) = '.'
+                        result(y)(nextEmptyCol) = 'O'
+                        result(y)(x) = '.'
                         nextEmptyCol -= 1
                     } else {
-                        nextEmptyCol = col - 1
+                        nextEmptyCol = x - 1
                     }
                 case '#' => 
                     // Cube-shaped rocks don't move, but block movement
-                    nextEmptyCol = col - 1
+                    nextEmptyCol = x - 1
                 case '.' => 
                     // Do nothing for empty spaces
             }
@@ -135,10 +135,10 @@ def tiltEast(platform: Array[Array[Char]]): Array[Array[Char]] = {
   
 // Calculate the load on the north support beams
 def calculateLoad(platform: Array[Array[Char]]): Int = {
-    val rows = platform.length
+    val height = platform.length
     
-    return (0 until rows).map { row =>
-        platform(row).count(_ == 'O') * (rows - row)
+    return (0 until height).map { y =>
+        platform(y).count(_ == 'O') * (height - y)
     }.sum
 }
   
