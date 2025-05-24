@@ -3,7 +3,7 @@ package aoc2024.day09
 import java.io.File
 import java.util.ArrayList
 
-data class Block(var fileId: Int, var length: Int)
+data class Block(val fileId: Int, val length: Int)
 
 typealias Fs = ArrayList<Block>
 
@@ -13,8 +13,7 @@ fun parse(input: String): Fs {
     })
 }
 
-fun compactFs(fs: ArrayList<Block>, fragmentsEnabled: Boolean): ArrayList<Block> {
-    // Convert to array for faster processing
+fun compactFs(fs: Fs, fragmentsEnabled: Boolean): Fs {
     var i = 0
     var j = fs.size - 1
 
@@ -39,7 +38,7 @@ fun compactFs(fs: ArrayList<Block>, fragmentsEnabled: Boolean): ArrayList<Block>
     return fs
 }
 
-fun relocateBlock(blocks: ArrayList<Block>, startIdx: Int, jIdx: Int, fragmentsEnabled: Boolean) {
+fun relocateBlock(blocks: Fs, startIdx: Int, jIdx: Int, fragmentsEnabled: Boolean) {
     var i = startIdx
 
     while (i < jIdx) {
