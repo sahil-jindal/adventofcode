@@ -63,7 +63,7 @@ def project(inputRanges: List[Range], map: Map[Range, Range]): List[Range] = {
 
 def solve(input: List[String], parseSeeds: List[Long] => List[Range]): Long = {
     val seedRanges = parseSeeds(parseNumbers(input.head))
-    val maps = groupLines(input.drop(2)).tail.map(parseMap)
+    val maps = groupLines(input.drop(2)).map(parseMap)
 
     return maps.foldLeft(seedRanges)(project).map(_.start).min
 }
