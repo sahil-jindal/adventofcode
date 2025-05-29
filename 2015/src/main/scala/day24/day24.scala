@@ -3,7 +3,7 @@ package day24
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def parseInput(input: List[String]): List[Long] = input.map(_.toLong).sorted
+def parseInput(input: List[String]) = input.map(_.toLong).sorted
 
 def findCombinations(numbers: List[Long], len: Int, target: Long): List[List[Long]] = {
     return numbers.combinations(len).filter(_.sum == target).toList

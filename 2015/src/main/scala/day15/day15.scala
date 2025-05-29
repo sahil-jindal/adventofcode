@@ -14,7 +14,7 @@ case class Ingredient(capacity: Int, durability: Int, flavor: Int, texture: Int,
     )
 }
 
-def parseInput(input: List[String]): List[Ingredient] = input.map(line => {
+def parseInput(input: List[String]) = input.map(line => {
     val Seq(a, b, c, d, e) = raw"(-?\d+)".r.findAllIn(line).map(_.toInt).toSeq
     Ingredient(a, b, c, d, e)
 })
@@ -58,7 +58,7 @@ def evaluatorOne(ingredients: List[Ingredient]): Int = {
 }
 
 def evaluatorTwo(ingredients: List[Ingredient]): Int = {
-    val healthyRecipes = allPossibleRecipes(ingredients).filter(it => it.calories == maxCalories)
+    val healthyRecipes = allPossibleRecipes(ingredients).filter(_.calories == maxCalories)
     return bestPossibleRecipe(healthyRecipes)
 }
 

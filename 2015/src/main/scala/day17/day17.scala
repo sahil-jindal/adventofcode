@@ -5,7 +5,7 @@ import scala.io.Source
 
 val totalLiters = 150
 
-def parseInput(input: List[String]): List[Int] = input.map(_.toInt).sorted
+def parseInput(input: List[String]) = input.map(_.toInt).sorted
 
 def findAllCombinations(containers: List[Int], target: Int): List[List[Int]] = {
     if (target < 0 || containers.isEmpty) return Nil

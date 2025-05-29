@@ -5,10 +5,8 @@ import scala.io.Source
 
 case class Box(l: Int, b: Int, h: Int)
 
-val BoxRegex = raw"(\d+)x(\d+)x(\d+)".r
-
-def parseInput(input: List[String]): List[Box] = input.map(line => {
-    val boxes = BoxRegex.findFirstMatchIn(line).get.subgroups.map(_.toInt).sorted
+def parseInput(input: List[String]) = input.map(line => {
+    val boxes = line.split("x").map(_.toInt).sorted
     Box(boxes(0), boxes(1), boxes(2))
 })
 
