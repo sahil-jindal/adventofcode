@@ -5,7 +5,7 @@ import scala.io.Source
 
 case class Layer(depth: Int, range: Int)
 
-def parseInput(input: List[String]): List[Layer] = input.map(line => {
+def parseInput(input: List[String]) = input.map(line => {
     val Array(depth, range) = line.split(": ").map(_.toInt)
     Layer(depth, range)
 })
@@ -15,7 +15,7 @@ def severities(layers: List[Layer], t: Int): List[Int] = {
 }
 
 def evaluatorOne(layers: List[Layer]): Int = severities(layers, 0).sum
-def evaluatorTwo(layers: List[Layer]): Int = Iterator.from(0).find(n => severities(layers, n).isEmpty).get
+def evaluatorTwo(layers: List[Layer]): Int = Iterator.from(0).find(severities(layers, _).isEmpty).get
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

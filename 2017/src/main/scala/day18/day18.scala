@@ -45,7 +45,7 @@ case class Machine1() extends Machine[Option[Long]] {
     private var sent: Option[Long] = None
     private var received: Option[Long] = None
 
-    override protected def state(): Option[Long] = received
+    override protected def state() = received
 
     override protected def snd(reg: String): Unit = {
         sent = Some(getReg(reg))

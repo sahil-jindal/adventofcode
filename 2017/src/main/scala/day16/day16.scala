@@ -9,7 +9,7 @@ case class Spin(size: Int) extends Move
 case class Exchange(a: Int, b: Int) extends Move
 case class Partner(a: Char, b: Char) extends Move
 
-def parseInput(input: String): List[Move] = input.split(',').map(move => {
+def parseInput(input: String) = input.split(',').map(move => {
     move(0) match {
         case 's' => Spin(move.tail.toInt)
         case 'x' => {

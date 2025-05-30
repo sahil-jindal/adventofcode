@@ -3,7 +3,7 @@ package day11
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def parseInput(input: String): List[String] = input.split(',').toList
+def parseInput(input: String) = input.split(',').toList
 
 def wander(directions: List[String]): List[(Int, Int, Int)] = {
     return directions.scanLeft((0, 0, 0)) {
