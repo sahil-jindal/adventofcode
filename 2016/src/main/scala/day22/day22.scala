@@ -3,19 +3,16 @@ package day22
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Node(y: Int, x: Int, size: Int, used: Int, goal: Boolean = false) {
-    val avail: Int = size - used
+case class Node(y: Int, x: Int, size: Int, var used: Int) {
+    var goal = false
+    def avail = size - used
 }
 
-class Grid(nodes: Array[Array[Node]]) {
-    var yEmpty = 0
-    var xEmpty = 0
+case class Grid(nodes: Array[Array[Node]]) {
+    private val unused = nodes.flatten.find(_.used == 0).get
+    var yEmpty = unused.y
+    var xEmpty = unused.x
     var moves = 0
-
-    for { row <- nodes; node <- row if node.used == 0 } {
-        yEmpty = node.y
-        xEmpty = node.x
-    }
 
     val height = nodes.length
     val width = nodes.head.length
@@ -34,12 +31,12 @@ class Grid(nodes: Array[Array[Node]]) {
         require(xT >= 0 && xT < width, "Column out of bounds")
         require(nodes(yT)(xT).used <= nodes(yEmpty)(xEmpty).avail, "Move not possible")
 
-        nodes(yEmpty)(xEmpty) = nodes(yEmpty)(xEmpty).copy(
-            used = nodes(yT)(xT).used, 
-            goal = nodes(yT)(xT).goal
-        )
+        nodes(yEmpty)(xEmpty).used = nodes(yT)(xT).used
+        nodes(yEmpty)(xEmpty).goal = nodes(yT)(xT).goal
 
-        nodes(yT)(xT) = nodes(yT)(xT).copy(used = 0, goal = false)
+        nodes(yT)(xT).used = 0  
+        nodes(yT)(xT).goal = false
+
         yEmpty = yT
         xEmpty = xT
         moves += 1
@@ -49,8 +46,8 @@ class Grid(nodes: Array[Array[Node]]) {
 
 def parseInput(input: List[String]): Array[Array[Node]] = {
     val nodes = input.drop(2).map(line => {
-        val Seq(y, x, size, used) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toSeq
-        Node(y, x, size, used)
+        val nums = raw"(\d+)".r.findAllIn(line).map(_.toInt).toList
+        Node(nums(1), nums(0), nums(2), nums(3))
     })
 
     val height = nodes.map(_.y).max + 1
@@ -60,7 +57,7 @@ def parseInput(input: List[String]): Array[Array[Node]] = {
 
     for (n <- nodes) { grid(n.y)(n.x) = n }
     
-    grid(0)(width - 1) = grid(0)(width - 1).copy(goal = true)
+    grid(0)(width - 1).goal = true
     
     return grid
 }
