@@ -3,7 +3,7 @@ package day18
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def parseInput(input: String): Seq[Boolean] = input.map(_ == '^')
+def parseInput(input: String) = input.map(_ == '^').toList
 
 def safeCount(input: String, row: Int): Int = {
     var current = parseInput(input)
@@ -11,8 +11,8 @@ def safeCount(input: String, row: Int): Int = {
 
     for _ <- 1 to row do {
         count += current.count(!_)
-        val temp = Seq(false) ++ current ++ Seq(false)
-        current = temp.sliding(3).map { it => it(0) ^ it(2) }.toSeq
+        val temp = List(false) ++ current ++ List(false)
+        current = temp.sliding(3).map { it => it(0) ^ it(2) }.toList
     }
 
     return count

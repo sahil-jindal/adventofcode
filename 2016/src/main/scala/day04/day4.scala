@@ -5,12 +5,12 @@ import scala.io.Source
 
 case class Room(encrypted: String, id: Int, checkSum: String)
 
-def parseInput(input: List[String]): List[Room] = input.map(line => { 
+def parseInput(input: List[String]) = input.map(line => { 
     val List(first, second, third) = raw"([^\d]+)\-(\d+)\[(.*)\]".r.findFirstMatchIn(line).get.subgroups
     Room(first.replaceAll("-",""), second.toInt, third)
 })
 
-def getRealRooms(rooms: List[Room]): List[Room] = rooms.filter(room => { 
+def getRealRooms(rooms: List[Room]) = rooms.filter(room => { 
     val computedhash = room.encrypted.groupMapReduce(identity)(_ => 1)(_ + _).toSeq
         .sortBy { case (char, count) => (-count, char) }
         .take(5)

@@ -7,9 +7,10 @@ case class Disc(id: Int, pos: Int, mod: Int)
 
 val pattern = raw"Disc #(\d+) has (\d+) positions; at time=0, it is at position (\d+).".r
 
-def parseInput(input: List[String]): List[Disc] = input.collect {
-    case pattern(id, mod, pos) => Disc(id.toInt, pos.toInt, mod.toInt)
-}
+def parseInput(input: List[String]) = input.map(line => {
+    val Seq(id, mod, pos) = pattern.findFirstMatchIn(line).get.subgroups.map(_.toInt)
+    Disc(id, pos, mod)
+})
 
 def iterate(discs: List[Disc]): Int = Iterator.from(0).find(t => 
     discs.forall { case Disc(id, pos, mod) => (pos + t + id) % mod == 0 }

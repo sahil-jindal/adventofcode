@@ -2,13 +2,13 @@ package day16
 
 import scala.collection.mutable.ArrayBuffer
 
-def parseInput(input: String): List[Boolean] = input.map(_ == '1').toList
+def parseInput(input: String) = input.map(_ == '1').toList
 
 def generateRandomData(seed: String, disk: Int): List[Boolean] = {
     var temp = ArrayBuffer.from(parseInput(seed))
 
     while (temp.length < disk) {
-        val reversedFlipped = temp.reverseIterator.map(!_).toList
+        val reversedFlipped = temp.reverse.map(!_).toList
         temp.append(false).appendAll(reversedFlipped)
     }
 
