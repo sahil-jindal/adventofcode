@@ -48,7 +48,7 @@ def fillRecursive(mtx: Array[Array[Char]], x: Int, y: Int): Unit = {
     }
 }
 
-def fill(input: List[String]): Seq[Char] = {
+def fill(input: List[String]): Array[Char] = {
     val (width, height) = (2000, 2000)
     val mtx = Array.fill(height, width)('.')
 
@@ -65,14 +65,14 @@ def fill(input: List[String]): Seq[Char] = {
 
     var (minY, maxY) = (Int.MaxValue, Int.MinValue)
     
-    for (y <- 0 until height; x <- 0 until width) {
-        if (mtx(y)(x) == '#') {
+    for ((row, y) <- mtx.zipWithIndex) {
+        if (row.exists(_ == '#')) {
             minY = math.min(minY, y)
             maxY = math.max(maxY, y)
         }
     }
     
-    return for (y <- minY to maxY; x <- 0 until width) yield mtx(y)(x)
+    return mtx.slice(minY, maxY + 1).flatten
 }
 
 def evaluatorOne(input: List[Char]): Int = input.count(it => it == '~' || it == '|')

@@ -5,7 +5,7 @@ import scala.io.Source
 import scala.collection.mutable.{Map, Set}
 
 def parseInput(input: List[String]): Map[Char, Set[Char]] = {
-    val dict = Map.empty[Char, Set[Char]].withDefaultValue(Set.empty)
+    val dict = Map.empty[Char, Set[Char]]
 
     for (line <- input) {
         val parts = line.split(" ")

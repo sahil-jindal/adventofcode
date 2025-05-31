@@ -8,7 +8,7 @@ case class Node(children: Seq[Node], metadata: Seq[Int])
 def parseInput(input: String) = input.split(" ").map(_.toInt).toSeq
  
 def parseNode(input: Seq[Int]): (Node, Seq[Int]) = {
-    val numChildren = input.head
+    val numChildren = input(0)
     val numMetadata = input(1)
     var remaining = input.drop(2)
  

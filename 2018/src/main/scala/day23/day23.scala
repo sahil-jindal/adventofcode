@@ -6,7 +6,7 @@ import scala.collection.mutable.PriorityQueue
 import scala.math.BigInt
 
 case class Vec3D(x: Int, y: Int, z: Int) {
-    def manhattanDistance(other: Vec3D): Int = (x - other.x).abs + (y - other.y).abs + (z - other.z).abs
+    def manhattan(other: Vec3D): Int = (x - other.x).abs + (y - other.y).abs + (z - other.z).abs
 }
 
 case class Drone(pos: Vec3D, r: Int) {
@@ -54,7 +54,7 @@ def parseInput(input: List[String]) = input.map(line => {
 
 def evaluatorOne(drones: List[Drone]): Int = {
     val maxDrone = drones.maxBy(_.r)
-    return drones.count(_.pos.manhattanDistance(maxDrone.pos) <= maxDrone.r)
+    return drones.count(_.pos.manhattan(maxDrone.pos) <= maxDrone.r)
 }
 
 def evaluatorTwo(drones: List[Drone]): Int = {

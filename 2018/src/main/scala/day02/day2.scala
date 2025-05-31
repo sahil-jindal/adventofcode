@@ -22,13 +22,9 @@ def evaluatorOne(input: List[String]): Int = {
 }
 
 def evaluatorTwo(input: List[String]): String = {
-    return (for {
-        i <- input.indices
-        j <- i + 1 until input.length
-        line1 = input(i)
-        line2 = input(j)
-        if diff(line1, line2) == 1
-    } yield common(line1, line2)).head
+    return input.combinations(2).collectFirst {
+        case List(a, b) if diff(a, b) == 1 => common(a, b)
+    }.get
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

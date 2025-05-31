@@ -4,7 +4,7 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
 case class Vec4D(x: Int, y: Int, z: Int, w: Int) {
-    def manhattanDistance(other: Vec4D): Int = {
+    def manhattan(other: Vec4D): Int = {
         (x - other.x).abs + (y - other.y).abs + (z - other.z).abs + (w - other.w).abs
     }
 }
@@ -47,9 +47,9 @@ def formConstellations(points: List[Vec4D]): Int = {
     val uf = DisjointUnionSets(points.length)
     
     for {
-        i <- points.indices
-        j <- i + 1 until points.length
-        if points(i).manhattanDistance(points(j)) <= 3
+        i <- 0 to points.length - 2
+        j <- i + 1 to points.length - 1
+        if points(i).manhattan(points(j)) <= 3
     } uf.union(i, j)
 
     return points.indices.map(uf.find).toSet.size
@@ -60,7 +60,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 
 def hello(): Unit = {
     readLinesFromFile("day25.txt") match {
-        case Success(lines) => println(s"Part One: ${formConstellations(parseInput(lines))}")
+        case Success(lines) => println(s"Answer: ${formConstellations(parseInput(lines))}")
         case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
     }
 }

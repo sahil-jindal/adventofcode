@@ -18,7 +18,7 @@ def react(polymer: String): String = {
 def evaluatorOne(polymer: String): Int = react(polymer).length
 
 def evaluatorTwo(polymer: String): Int = ('a' to 'z').map { ch =>
-    val filteredPolymer = polymer.filterNot(c => c.toLower == ch)
+    val filteredPolymer = polymer.filterNot(_.toLower == ch)
     react(filteredPolymer).length
 }.min
 

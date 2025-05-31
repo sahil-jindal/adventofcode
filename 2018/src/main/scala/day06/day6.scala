@@ -5,7 +5,7 @@ import scala.io.Source
 import scala.collection.mutable.{Map, Set}
 
 case class Point(y: Int, x: Int) {
-    def manhattanDistance(other: Point): Int = (x - other.x).abs + (y - other.y).abs
+    def manhattan(other: Point): Int = (x - other.x).abs + (y - other.y).abs
 }
 
 case class Plane(minX: Int, maxX: Int, minY: Int, maxY: Int) {
@@ -25,7 +25,7 @@ def parseInput(input: List[String]): (Plane, List[Point]) = {
 }
 
 def findClosest(point: Point, points: List[Point]): Option[Int] = {
-    val distances = points.map(point.manhattanDistance)
+    val distances = points.map(point.manhattan)
     val minDistance = distances.min
     
     val closestIndices = distances.zipWithIndex.collect {
@@ -57,7 +57,7 @@ def evaluatorOne(plane: Plane, points: List[Point]): Int = {
 }
 
 def evaluatorTwo(plane: Plane, points: List[Point]): Int = plane.grid.count { point =>
-    points.map(point.manhattanDistance).sum < 10000
+    points.map(point.manhattan).sum < 10000
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

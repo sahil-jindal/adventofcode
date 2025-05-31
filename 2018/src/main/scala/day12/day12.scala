@@ -7,15 +7,14 @@ import scala.util.control.Breaks._
 case class State(left: Long, pots: String)
 
 def parseInput(input: List[String]): (State, Map[String, String]) = {
-    val lines = input.map(_.trim).filter(_.nonEmpty)
-    val state = State(0, lines.head.stripPrefix("initial state: "))
+    val state = State(0, input.head.stripPrefix("initial state: "))
     
-    val rules = lines.drop(2).map { line =>
+    val rules = input.drop(2).map(line => {
         val Array(key, value) = line.split(" => ")
         key -> value
-    }.toMap
+    }).toMap
     
-    (state, rules)
+    return (state, rules)
 }
 
 def step(state: State, rules: Map[String, String]): State = {
