@@ -6,7 +6,7 @@ import scala.collection.mutable.Set
 
 case class Rectangle(claimId: Int, startX: Int, startY: Int, w: Int, h: Int)
 
-def parseInput(input: List[String]): List[Rectangle] = input.map(line => {
+def parseInput(input: List[String]) = input.map(line => {
     val Seq(a, b, c, d, e) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toSeq
     Rectangle(a, b, c, d, e)
 })

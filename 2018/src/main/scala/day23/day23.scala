@@ -47,7 +47,7 @@ case class Box(min: Vec3D, size: Vec3D) {
     }
 }
 
-def parseInput(input: List[String]): List[Drone] = input.map(line => {
+def parseInput(input: List[String]) = input.map(line => {
     val nums = raw"(-?\d+)".r.findAllIn(line).map(_.toInt).toList
     Drone(Vec3D(nums(0), nums(1), nums(2)), nums(3))
 })
