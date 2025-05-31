@@ -2,38 +2,43 @@ package day13
 
 import scala.collection.mutable.{Queue, Set}
 
-val Direction = List((-1, 0), (0, 1), (1, 0), (1, 0))
-
 case class Point(y: Int, x: Int)
-case class Group(steps: Int, y: Int, x: Int)
+case class Pair(steps: Int, pos: Point)
 
-def steps(input: Int): Iterator[Group] = {
-    val q = Queue(Group(0, 1, 1))
-    val seen = Set((1, 1))
-    val directions = Seq((-1, 0), (1, 0), (0, -1), (0, 1))
+def getNeighbours(pos: Point) = Seq(
+    pos.copy(x = pos.x - 1),
+    pos.copy(x = pos.x + 1),
+    pos.copy(y = pos.y - 1),
+    pos.copy(y = pos.y + 1)
+)
+
+def steps(input: Int): Iterator[Pair] = {
+    val start = Point(1, 1)
+    val q = Queue(Pair(0, start))
+    val seen = Set(start)
 
     Iterator.continually {
         if q.isEmpty then Iterator.empty else {
-            val Group(steps, y, x) = q.dequeue()
+            val Pair(steps, pos) = q.dequeue()
             
-            val nextMoves = directions.flatMap { case (dy, dx) =>
-                val (newY, newX) = (y + dy, x + dx)
-                if newY < 0 || newX < 0 || seen.contains((newY, newX)) then None else {
-                    val w = newX * newX + 3 * newX + 2 * newX * newY + newY + newY * newY + input
+            val nextMoves = getNeighbours(pos).flatMap { newPos =>
+                if newPos.y < 0 || newPos.x < 0 || seen.contains(newPos) then None else {
+                    val Point(y, x) = newPos
+                    val w = x*x + 3*x + 2*x*y + y + y*y + input
                     if w.toBinaryString.count(_ == '1') % 2 != 0 then None else {
-                        seen.add((newY, newX))
-                        Some(Group(steps + 1, newY, newX))
+                        seen.add(newPos)
+                        Some(Pair(steps + 1, newPos))
                     }
                 }
             }
 
             q.enqueueAll(nextMoves)
-            Iterator.single(Group(steps, y, x))
+            Iterator.single(Pair(steps, pos))
         }
     }.flatten
 }
 
-def evaluatorOne(input: Int): Int = steps(input).collectFirst { case Group(steps, y, x) if y == 39 && x == 31 => steps }.get
+def evaluatorOne(input: Int): Int = steps(input).collectFirst { case Pair(steps, pos) if pos == Point(39, 31) => steps }.get
 def evaluatorTwo(input: Int): Int = steps(input).takeWhile(_.steps <= 50).size
 
 def hello(): Unit = {
