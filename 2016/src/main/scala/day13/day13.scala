@@ -40,7 +40,6 @@ def steps(input: Int): Iterator[Pair] = {
 def evaluatorOne(input: Int): Int = steps(input).collectFirst { case Pair(steps, pos) if pos == Point(39, 31) => steps }.get
 def evaluatorTwo(input: Int): Int = steps(input).takeWhile(_.steps <= 50).size
 
-@main
 def hello(): Unit = {
     val inputLine = 1350
     println(s"Part One: ${evaluatorOne(inputLine)}")
