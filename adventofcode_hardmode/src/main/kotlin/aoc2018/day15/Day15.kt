@@ -4,172 +4,134 @@ import java.io.File
 
 enum class Direction { UP, LEFT, RIGHT, DOWN }
 
-data class CombatUnit(val type: Char, var x: Int, var y: Int, var hp: Int = 200, val attackPower: Int = 3)
+data class Point(val y: Int, val x: Int) : Comparable<Point> {
+    override fun compareTo(other: Point): Int {
+        return compareValuesBy(this, other, Point::y, Point::x)
+    }
+}
 
-typealias Grid = List<List<Boolean>>
+data class CombatUnit(val type: Char, var pos: Point, val attackPower: Int = 3, var hp: Int = 200)
+
+typealias Grid = Map<Point, Boolean>
 
 fun parseInput(input: List<String>): Pair<Grid, List<CombatUnit>> {
-    val grid = mutableListOf<List<Boolean>>()
+    val grid = mutableMapOf<Point, Boolean>()
     val units = mutableListOf<CombatUnit>()
 
-    for (y in input.indices) {
-        val line = input[y]
-        val row = mutableListOf<Boolean>()
-        for (x in line.indices) {
-            when (line[x]) {
-                '#' -> row.add(true)
-                '.' -> row.add(false)
+    for ((y, line) in input.withIndex()) {
+        for ((x, ch) in line.withIndex()) {
+            val pos = Point(y, x)
+            when (ch) {
+                '#' -> grid.put(pos, true)
+                '.' -> grid.put(pos, false)
                 'E', 'G' -> {
-                    row.add(false)
-                    units.add(CombatUnit(line[x], x, y))
+                    grid.put(pos, false)
+                    units.add(CombatUnit(ch, pos))
                 }
-                else -> throw IllegalArgumentException("Invalid character in input: ${line[x]}")
+                else -> throw IllegalArgumentException("Invalid character in input: $ch")
             }
         }
-        grid.add(row)
     }
 
-    return Pair(grid, units)
+    return grid.toMap() to units.toList()
 }
 
-fun bfs(startX: Int, startY: Int, occupiedPositions: Set<Pair<Int, Int>>, grid: Grid): Pair<Map<Pair<Int, Int>, Int>, Map<Pair<Int, Int>, Direction>> {
-    val queue = ArrayDeque<Pair<Int, Int>>()
-    val distanceMap = mutableMapOf<Pair<Int, Int>, Int>()
-    val firstStepDirMap = mutableMapOf<Pair<Int, Int>, Direction>()
-
-    queue.add(Pair(startX, startY))
-    distanceMap[Pair(startX, startY)] = 0
+fun bfs(start: Point, occupiedPositions: Set<Point>, grid: Grid): Pair<Map<Point, Int>, Map<Point, Direction>> {
+    val queue = ArrayDeque(listOf(start))
+    val distanceMap = mutableMapOf(start to 0)
+    val firstStepDirMap = mutableMapOf<Point, Direction>()
 
     while (queue.isNotEmpty()) {
-        val (currentX, currentY) = queue.removeFirst()
-        val currentDistance = distanceMap[currentX to currentY] ?: continue
+        val currentPos = queue.removeFirst()
+        val currentDistance = distanceMap[currentPos]!!
 
-        listOf(
-            Direction.UP to (0 to -1),
-            Direction.LEFT to (-1 to 0),
-            Direction.RIGHT to (1 to 0),
-            Direction.DOWN to (0 to 1)
-        ).forEach {
-            val nextX = currentX + it.second.first
-            val nextY = currentY + it.second.second
+        val directions = listOf(
+            Direction.UP to Point(currentPos.y - 1, currentPos.x),
+            Direction.LEFT to Point(currentPos.y, currentPos.x - 1),
+            Direction.RIGHT to Point(currentPos.y, currentPos.x + 1),
+            Direction.DOWN to Point(currentPos.y + 1, currentPos.x),
+        )
 
-            if (nextY < 0 || nextY >= grid.size || nextX < 0 || nextX >= grid[nextY].size) return@forEach
-            if (grid[nextY][nextX]) return@forEach
-            if (occupiedPositions.contains(nextX to nextY)) return@forEach
-
-            val nextPos = nextX to nextY
-
-            if (!distanceMap.containsKey(nextPos)) {
-                distanceMap[nextPos] = currentDistance + 1
-
-                val firstStepDir = if (currentX == startX && currentY == startY) {
-                    it.first
-                } else {
-                    firstStepDirMap[currentX to currentY]
-                }
-
-                firstStepDirMap[nextPos] = firstStepDir!!
-                queue.add(nextPos)
-            } else if (distanceMap[nextPos] == currentDistance + 1) {
-                val existingFirstStep = firstStepDirMap[nextPos]
-
-                val newFirstStep = if (currentX == startX && currentY == startY) {
-                    it.first
-                } else {
-                    firstStepDirMap[currentX to currentY]
-                }
-
-                if (newFirstStep != null && (existingFirstStep == null || newFirstStep.ordinal < existingFirstStep.ordinal)) {
-                    firstStepDirMap[nextPos] = newFirstStep
+        for ((move, newPos) in directions) {
+            if (grid.contains(newPos) && !grid[newPos]!! && !occupiedPositions.contains(newPos)) {
+                if (!distanceMap.containsKey(newPos)) {
+                    distanceMap[newPos] = currentDistance + 1
+                    val firstStepDir = if (currentPos == start) move else firstStepDirMap[currentPos]!!
+                    firstStepDirMap[newPos] = firstStepDir
+                    queue.add(newPos)
+                } else if (distanceMap[newPos] == currentDistance + 1) {
+                    val existingFirstStep = firstStepDirMap[newPos]!!
+                    val newFirstStep = if (currentPos == start) move else firstStepDirMap[currentPos]!!
+                    if (newFirstStep.ordinal < existingFirstStep.ordinal) {
+                        firstStepDirMap[newPos] = newFirstStep
+                    }
                 }
             }
         }
     }
 
-    return distanceMap to firstStepDirMap
+    return distanceMap.toMap() to firstStepDirMap.toMap()
 }
 
-fun moveUnit(unit: CombatUnit, units: List<CombatUnit>, grid: Grid) {
-    val occupiedPositions = units
-        .filter { it.hp > 0 && it != unit }
-        .map { Pair(it.x, it.y) }
-        .toSet()
+fun getNeighbours(pos: Point) = listOf(
+    pos.copy(x = pos.x - 1),
+    pos.copy(x = pos.x + 1),
+    pos.copy(y = pos.y - 1),
+    pos.copy(y = pos.y + 1)
+)
 
+fun moveUnit(unit: CombatUnit, units: List<CombatUnit>, grid: Grid) {
+    val occupiedPositions = units.filter { it.hp > 0 && it != unit }.map { it.pos }.toSet()
     val enemies = units.filter { it.type != unit.type && it.hp > 0 }
 
     if (enemies.isEmpty()) return
 
-    val inRangeSquares = mutableSetOf<Pair<Int, Int>>()
-
-    for (enemy in enemies) {
-        listOf(
-            Pair(enemy.x, enemy.y - 1),
-            Pair(enemy.x - 1, enemy.y),
-            Pair(enemy.x + 1, enemy.y),
-            Pair(enemy.x, enemy.y + 1)
-        ).forEach { (nx, ny) ->
-            if (ny < 0 || ny >= grid.size || nx < 0 || nx >= grid[ny].size) return@forEach
-            if (grid[ny][nx]) return@forEach
-            if (occupiedPositions.contains(Pair(nx, ny))) return@forEach
-            inRangeSquares.add(Pair(nx, ny))
-        }
-    }
+    val inRangeSquares = enemies.flatMap { getNeighbours(it.pos) }
+        .filter { grid.contains(it) && !grid[it]!! && !occupiedPositions.contains(it) }
+        .toSet()
 
     if (inRangeSquares.isEmpty()) return
 
-    val (distanceMap, firstStepDirMap) = bfs(unit.x, unit.y, occupiedPositions, grid)
+    val (distanceMap, firstStepDirMap) = bfs(unit.pos, occupiedPositions, grid)
 
     val reachableSquares = inRangeSquares.filter { distanceMap.containsKey(it) }
 
     if (reachableSquares.isEmpty()) return
 
-    val targetSquare = reachableSquares.minWithOrNull(compareBy(
-        { distanceMap[it]!! },
-        { it.second },
-        { it.first }
-    )) ?: return
+    val targetSquare = reachableSquares.minWithOrNull(compareBy<Point> { distanceMap[it]!! }.thenBy { it }) ?: return
 
-    val direction = firstStepDirMap[targetSquare] ?: return
+    val movement = firstStepDirMap[targetSquare] ?: return
 
-    when (direction) {
-        Direction.UP -> unit.y--
-        Direction.LEFT -> unit.x--
-        Direction.RIGHT -> unit.x++
-        Direction.DOWN -> unit.y++
+    unit.pos = when (movement) {
+        Direction.UP -> unit.pos.copy(y = unit.pos.y - 1)
+        Direction.LEFT -> unit.pos.copy(x = unit.pos.x - 1)
+        Direction.RIGHT -> unit.pos.copy(x = unit.pos.x + 1)
+        Direction.DOWN -> unit.pos.copy(y = unit.pos.y + 1)
     }
 }
 
 fun attack(unit: CombatUnit, units: List<CombatUnit>): Boolean {
-    val adjacentEnemies = listOf(
-        unit.x to unit.y - 1,
-        unit.x - 1 to unit.y,
-        unit.x + 1 to unit.y,
-        unit.x to unit.y + 1
-    ).mapNotNull { (nx, ny) ->
-        units.find { it.x == nx && it.y == ny && it.type != unit.type && it.hp > 0 }
+    val adjacentEnemies = getNeighbours(unit.pos).mapNotNull { newPos ->
+        units.find { it.pos == newPos && it.type != unit.type && it.hp > 0 }
     }
 
     if (adjacentEnemies.isEmpty()) return false
 
-    val targetEnemy = adjacentEnemies.minWithOrNull(compareBy(
-        { it.hp },
-        { it.y },
-        { it.x }
-    )) ?: return false
+    val targetEnemy = adjacentEnemies.minWithOrNull(compareBy<CombatUnit> { it.hp }.thenBy { it.pos }) ?: return false
 
     targetEnemy.hp -= unit.attackPower
+
     return targetEnemy.type == 'E' && targetEnemy.hp <= 0
 }
 
-fun simulateBattle(grid: Grid, initialUnits: List<CombatUnit>, checkElfDeaths: Boolean = false): Triple<Int, Int, Boolean> {
+fun simulateBattle(grid: Grid, initialUnits: List<CombatUnit>, checkElfDeaths: Boolean): Triple<Int, Int, Boolean> {
     val units = initialUnits.toMutableList()
     var rounds = 0
-    var combatEnded: Boolean
+    var combatEnded = false
     var elvesDied = false
 
-    while (true) {
-        units.sortWith(compareBy<CombatUnit> { it.y }.thenBy { it.x })
-        combatEnded = false
+    while (!combatEnded) {
+        units.sortWith(compareBy { it.pos })
 
         val unitsToProcess = units.toList()
 
@@ -192,24 +154,18 @@ fun simulateBattle(grid: Grid, initialUnits: List<CombatUnit>, checkElfDeaths: B
             }
         }
 
-        if (combatEnded) {
-            break
-        }
-
         units.removeAll { it.hp <= 0 }
         rounds++
     }
 
-    // Filter out dead units before summing HP
-    val remainingUnits = units.filter { it.hp > 0 }
-    val totalHp = remainingUnits.sumOf { it.hp }
+    val totalHp = units.sumOf { it.hp }
 
-    return Triple(rounds, totalHp, elvesDied)
+    return Triple(rounds - 1, totalHp, elvesDied)
 }
 
 fun evaluatorOne(input: List<String>): Int {
     val (grid, initialUnits) = parseInput(input)
-    val (rounds, totalHp) = simulateBattle(grid, initialUnits)
+    val (rounds, totalHp) = simulateBattle(grid, initialUnits, false)
     return rounds * totalHp
 }
 
