@@ -4,14 +4,14 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{PriorityQueue, Queue, Map => MutableMap, Set => MutableSet}
 
-case class Point(y: Int, x: Int) {
-    def getNeighbours() = Seq(
-        copy(x = x - 1),
-        copy(x = x + 1),
-        copy(y = y - 1),
-        copy(y = y + 1)
-    )
-}
+case class Point(y: Int, x: Int)
+
+def getNeighbours(pos: Point) = Seq(
+    pos.copy(x = pos.x - 1),
+    pos.copy(x = pos.x + 1),
+    pos.copy(y = pos.y - 1),
+    pos.copy(y = pos.y + 1)
+)
 
 case class Maze(private val maze: Seq[String]) extends Seq[String] {
     private val height = maze.size
@@ -33,7 +33,7 @@ case class Maze(private val maze: Seq[String]) extends Seq[String] {
         } yield c -> Point(y, x)).toMap
     }
 
-    def getAdjacent(pos: Point) = pos.getNeighbours().filter(p => 
+    def getAdjacent(pos: Point) = getNeighbours(pos).filter(p => 
         p.y >= 0 && p.y < height && p.x >= 0 && p.x < width && maze(p.y)(p.x) != '#'
     )
 
@@ -100,13 +100,13 @@ def solveMultiOptimized(starts: Seq[Point], maze: Maze, allKeys: Set[Char]): Int
         return result.toMap
     }
 
-    val sources = (starts.indices.map(_.toString) zip starts).toMap ++ maze.getKeyPositions.map { case (k, p) => k.toString -> p }
+    val sources = starts.zipWithIndex.map { case (k, p) => p.toString -> k }.toMap ++ maze.getKeyPositions.map { case (k, p) => k.toString -> p }
     val graph = sources.view.mapValues(it => bfsFrom(it).map { case (k, (d, r)) => (k, d, r) }.toList).toMap
 
     val targetMask = (1 << allKeys.size) - 1
     val memo = MutableMap.empty[(Seq[String], Int), Int]
 
-    def dfs(positions: Seq[String], collected: Int): Int = {
+    def dfs(positions: List[String], collected: Int): Int = {
         if (collected == targetMask) return 0
 
         return memo.getOrElseUpdate((positions, collected), {
@@ -119,13 +119,13 @@ def solveMultiOptimized(starts: Seq[Point], maze: Maze, allKeys: Set[Char]): Int
         })
     }
 
-    return dfs(starts.indices.map(_.toString), 0)
+    return dfs(starts.indices.map(_.toString).toList, 0)
 }
 
 def evaluatorOne(input: List[String]): Int = {
     val maze = new Maze(input)
-    val start = maze.getStartPositions.head
-    return solveSingle(start, maze, maze.getKeyPositions.keys.toSet)
+    val start = maze.getStartPositions
+    return solveMultiOptimized(start, maze, maze.getKeyPositions.keys.toSet)
 }
 
 def evaluatorTwo(input: List[String]): Int = {
