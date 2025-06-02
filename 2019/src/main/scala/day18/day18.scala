@@ -2,7 +2,7 @@ package day18
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{PriorityQueue, Queue, Map => MutableMap, Set => MutableSet}
+import scala.collection.mutable.{Queue, Map => MutableMap, Set => MutableSet}
 
 case class Point(y: Int, x: Int)
 
@@ -42,39 +42,7 @@ case class Maze(private val maze: Seq[String]) extends Seq[String] {
     override def iterator: Iterator[String] = maze.iterator
 }
 
-def solveSingle(start: Point, maze: Maze, allKeys: Set[Char]): Int = {
-    val keyMask = allKeys.zipWithIndex.map { case (c, idx) => c -> (1 << idx) }.toMap
-    val targetMask = (1 << allKeys.size) - 1
-    val visited = MutableSet.empty[(Point, Int)]
-    val pq = PriorityQueue.empty(using Ordering.by[(Int, (Point, Int)), Int](_._1).reverse)
-
-    pq.enqueue((0, (start, 0)))
-
-    while (pq.nonEmpty) {
-        val (dist, (pos, mask)) = pq.dequeue()
-        if (mask == targetMask) return dist
-        
-        if (!visited.contains((pos, mask))) {
-            visited.add((pos, mask))
-
-            for (nextPos <- maze.getAdjacent(pos)) {
-                val c = maze(nextPos.y)(nextPos.x)
-                var newMask = mask
-
-                if (!c.isUpper || (mask & keyMask.getOrElse(c.toLower, 0)) != 0) {
-                    if (c.isLower) newMask |= keyMask.getOrElse(c, 0)
-                    if (!visited.contains((nextPos, newMask))) {
-                        pq.enqueue((dist + 1, (nextPos, newMask)))
-                    }
-                }
-            }
-        }
-    }
-
-    return Int.MaxValue
-}
-
-def solveMultiOptimized(starts: Seq[Point], maze: Maze, allKeys: Set[Char]): Int = {
+def solver(starts: Seq[Point], maze: Maze, allKeys: Set[Char]): Int = {
     val keyMask = allKeys.zipWithIndex.map { case (c, idx) => c -> (1 << idx) }.toMap
 
     def bfsFrom(start: Point): Map[Char, (Int, Int)] = {
@@ -93,14 +61,18 @@ def solveMultiOptimized(starts: Seq[Point], maze: Maze, allKeys: Set[Char]): Int
                 
                 if (c.isLower && dist > 0) result(c) = (dist, newReq)
 
-                q.enqueueAll(maze.getAdjacent(p).filterNot(seen.contains).map(n => (n, dist + 1, newReq)))
+                for (n <- maze.getAdjacent(p).filterNot(seen.contains)) {
+                    q.enqueue((n, dist + 1, newReq))
+                }
             }
         }
         
         return result.toMap
     }
 
-    val sources = starts.zipWithIndex.map { case (k, p) => p.toString -> k }.toMap ++ maze.getKeyPositions.map { case (k, p) => k.toString -> p }
+    val sources = starts.zipWithIndex.map { case (k, p) => p.toString -> k }.toMap ++ 
+                maze.getKeyPositions.map { case (k, p) => k.toString -> p }
+
     val graph = sources.view.mapValues(it => bfsFrom(it).map { case (k, (d, r)) => (k, d, r) }.toList).toMap
 
     val targetMask = (1 << allKeys.size) - 1
@@ -125,7 +97,7 @@ def solveMultiOptimized(starts: Seq[Point], maze: Maze, allKeys: Set[Char]): Int
 def evaluatorOne(input: List[String]): Int = {
     val maze = new Maze(input)
     val start = maze.getStartPositions
-    return solveMultiOptimized(start, maze, maze.getKeyPositions.keys.toSet)
+    return solver(start, maze, maze.getKeyPositions.keys.toSet)
 }
 
 def evaluatorTwo(input: List[String]): Int = {
@@ -142,12 +114,13 @@ def evaluatorTwo(input: List[String]): Int = {
 
     require(starts.size == 4, "Expected 4 start positions")
     
-    return solveMultiOptimized(starts, maze, maze.getKeyPositions.keys.toSet)
+    return solver(starts, maze, maze.getKeyPositions.keys.toSet)
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
+@main
 def hello(): Unit = {
     readLinesFromFile("day18.txt") match {
         case Success(lines) => {
