@@ -8,19 +8,20 @@ val totalLiters = 150
 def parseInput(input: List[String]) = input.map(_.toInt).sorted
 
 def findAllCombinations(containers: List[Int], target: Int): List[List[Int]] = {
-    if (target < 0 || containers.isEmpty) return Nil
-    if (target == 0) return List(Nil)               
+    if (target < 0) return Nil
+    if (target == 0) return List(Nil)
+    if (containers.isEmpty) return Nil
     
-    findAllCombinations(containers.tail, target - containers.head).map(containers.head :: _) :::
-    findAllCombinations(containers.tail, target)
+    val (curr, rest) = (containers.head, containers.tail)
+
+    findAllCombinations(rest, target - curr).map(curr :: _) :::
+    findAllCombinations(rest, target)
 }
 
-def evaluatorOne(containers: List[Int]): Int = findAllCombinations(containers, totalLiters).size
-
-def evaluatorTwo(containers: List[Int]): Int = {
+def solver(containers: List[Int]): (Int, Int) = {
     val combinations = findAllCombinations(containers, totalLiters)
     val minContainerCount = combinations.map(_.size).min
-    return combinations.count(_.size == minContainerCount)
+    return (combinations.size, combinations.count(_.size == minContainerCount))
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -29,9 +30,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day17.txt") match {
         case Success(lines) => {
-            val containers = parseInput(lines)
-            println(s"Part One: ${evaluatorOne(containers)}")
-            println(s"Part Two: ${evaluatorTwo(containers)}")
+            val (partOne, partTwo) = solver(parseInput(lines))
+            println(s"Part One: $partOne")
+            println(s"Part Two: $partTwo")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
