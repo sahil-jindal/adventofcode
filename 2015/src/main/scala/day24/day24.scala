@@ -5,19 +5,17 @@ import scala.io.Source
 
 def parseInput(input: List[String]) = input.map(_.toLong).sorted
 
-def findCombinations(numbers: List[Long], len: Int, target: Long): List[List[Long]] = {
-    return numbers.combinations(len).filter(_.sum == target).toList
+def findCombinations(numbers: List[Long], len: Int, target: Long) = {
+    numbers.combinations(len).filter(_.sum == target)
 }
 
 def solver(numbers: List[Long], groupLength: Int): Long = {
     val target = numbers.sum / groupLength
 
-    val packages = (1 to numbers.length).collectFirst {
-        case n if findCombinations(numbers, n, target).nonEmpty => 
-            findCombinations(numbers, n, target)
-    }
-
-    return packages.get.map(_.product).min
+    return (1 to numbers.length).iterator
+        .map(findCombinations(numbers, _, target))
+        .find(_.nonEmpty).get
+        .map(_.product).min
 }
 
 def evaluatorOne(numbers: List[Long]): Long = solver(numbers, 3)
