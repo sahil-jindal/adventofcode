@@ -18,7 +18,7 @@ def run(program: List[Stm]): Pair = {
 
     while (true) {
         if (ip >= program.length) return Pair(acc, true)
-        if (seen(ip)) return Pair(acc, false)
+        if (seen.contains(ip)) return Pair(acc, false)
       
         seen += ip
         program(ip) match {
@@ -32,16 +32,15 @@ def run(program: List[Stm]): Pair = {
     throw new RuntimeException("Unreachable")
 }
 
-def patches(program: List[Stm]): Seq[List[Stm]] = {
-    return program.indices.filter(line => program(line).op != "acc").map(lineToPatch => {
-        program.zipWithIndex.map { case (stm, line) =>
-            if (line != lineToPatch) stm
-            else stm.op match {
-                case "jmp" => stm.copy(op = "nop")
-                case "nop" => stm.copy(op = "jmp")
-                case _ => throw Exception()
-            }   
-        }
+def patches(program: List[Stm]): List[List[Stm]] = {
+    return program.zipWithIndex.collect { case (stm, idx) if stm.op != "acc" => idx }.map(lineToPatch => {
+        val oldStm = program(lineToPatch)
+
+        program.updated(lineToPatch, oldStm.op match {
+            case "jmp" => oldStm.copy(op = "nop")
+            case "nop" => oldStm.copy(op = "jmp")
+            case _ => throw Exception()
+        })
     })
 }
 

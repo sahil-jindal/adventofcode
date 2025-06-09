@@ -2,7 +2,6 @@ package day24
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.Map
 
 case class Direction(dy: Int, dx: Int)
 
@@ -33,36 +32,27 @@ def walk(line: String): Tile = {
 }
 
 def parseBlackTiles(input: List[String]): Set[Tile] = {
-    val tiles = Map.empty[Tile, Boolean].withDefaultValue(false)
-
-    for (line <- input) {
-        val tile = walk(line)
-        tiles(tile) = !tiles(tile)
-    }
-
-    return tiles.collect { case (tile, true) => tile }.toSet
+    val tiles = input.map(walk).groupMapReduce(identity)(_ => 1)(_ + _)
+    return tiles.collect { case (tile, n) if n % 2 == 1 => tile }.toSet
 }
 
-def neighbourhood(tile: Tile) = HexDirections.values.map(tile + _).toSet
+def neighbourhood(tile: Tile) = HexDirections.values.map(tile + _).toSet + tile
 
 def flip(blackTiles: Set[Tile]): Set[Tile] = {
-    val tiles = blackTiles.flatMap(neighbourhood)
-
-    return tiles.filter(tile => {
+    return blackTiles.flatMap(neighbourhood).filter(tile => {
         val blacks = neighbourhood(tile).count(blackTiles.contains)
-        val isBlack = blackTiles.contains(tile)
-        (isBlack && (blacks == 1 || blacks == 2)) || (!isBlack && blacks == 2)
+        blacks == 2 || (blacks == 3 && blackTiles.contains(tile))
     })
 }
 
-def solve(input: List[String]) = {
-    var tiles = parseBlackTiles(input)
-
-    println(s"Part One: ${tiles.size}")
-
-    for (_ <- 1 to 100) tiles = flip(tiles)
+def evaluatorOne(input: Set[Tile]): Int = input.size
     
-    println(s"Part Two: ${tiles.size}")
+def evaluatorTwo(input: Set[Tile]): Int = {
+    var tiles = input
+    
+    for (_ <- 1 to 100) { tiles = flip(tiles) }
+    
+    return tiles.size
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -70,7 +60,13 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 
 def hello(): Unit = {
     readLinesFromFile("day24.txt") match {
-        case Success(lines) => solve(lines)
-        case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
+        case Success(lines) => {
+            var input = parseBlackTiles(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part One: ${evaluatorTwo(input)}")
+        }
+        case Failure(exception) => {
+            println(s"Error reading file: ${exception.getMessage}")
+        }
     }
 }

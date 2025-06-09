@@ -34,11 +34,11 @@ def fieldCandidates(fields: Seq[Field], values: Int*): Seq[Field] = {
 }
 
 def evaluatorOne(problem: Problem): Int = {
-    return problem.tickets.flatten.filterNot(value => fieldCandidates(problem.fields, value).nonEmpty).sum
+    return problem.tickets.flatten.filterNot(fieldCandidates(problem.fields, _).nonEmpty).sum
 }
 
 def evaluatorTwo(problem: Problem): Long = {
-    val tickets = problem.tickets.filter(_.forall(value => fieldCandidates(problem.fields, value).nonEmpty))
+    val tickets = problem.tickets.filter(_.forall(fieldCandidates(problem.fields, _).nonEmpty))
 
     val fields = Set(problem.fields*)
     val columns = Set((0 until fields.size)*)

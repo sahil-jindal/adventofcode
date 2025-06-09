@@ -38,11 +38,7 @@ def solve(input: String, maxLabel: Int, rotate: Int): LazyList[Long] = {
 }
 
 def evaluatorOne(input: String): String = solve(input, 9, 100).take(8).mkString("")
-
-def evaluatorTwo(input: String): Long = {
-    val labels = solve(input, 1000000, 10000000).take(2)
-    return labels(0) * labels(1)
-}
+def evaluatorTwo(input: String): Long = solve(input, 1000000, 10000000).take(2).product
 
 def hello(): Unit = {
     val inputLine = "418976235"

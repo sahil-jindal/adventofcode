@@ -3,13 +3,20 @@ package day15
 def numberAt(input: String, count: Int): Int = {
     val numbers = input.split(",").map(_.toInt)
 
+    assert(numbers.length <= count)
+
     val lastSeen = Array.fill(count)(-1)
     var number = numbers(0)
 
-    for (round <- 0 until count) {
+    for (round <- numbers.indices) {
+        val nextNumber = numbers(round)
+        lastSeen(number) = round
+        number = nextNumber
+    }
+
+    for (round <- numbers.length until count) {
         val nextNumber = 
-            if (round < numbers.length) numbers(round)
-            else if (lastSeen(number) == -1) 0
+            if (lastSeen(number) == -1) 0
             else round - lastSeen(number)
       
         lastSeen(number) = round

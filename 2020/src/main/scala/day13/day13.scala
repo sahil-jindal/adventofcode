@@ -16,7 +16,7 @@ def parseInput(input: List[String]): PairOne = {
     return PairOne(input(0).toInt, buses.toList)
 }
 
-def modInv(a: Long, m: Long): Long = BigInt(a).modPow(m - 2, m).toLong
+def modInv(a: Long, m: Long): Long = BigInt(a).modInverse(m).toLong
 
 def chineseRemainderTheorem(items: List[PairThree]): Long = {
     val prod = items.map(_.mod).product

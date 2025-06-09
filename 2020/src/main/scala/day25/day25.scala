@@ -4,19 +4,19 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
 def solve(input: List[String]): Long = {
-    val numbers = input.map(_.toLong)
+    val List(doorKey, cardKey) = input.map(_.toLong)
 
     val mod = 20201227L
     var pow = 0
     var subj = 7L
     var num = subj
     
-    while (num != numbers(0) && num != numbers(1)) {
+    while (num != doorKey && num != cardKey) {
         num = (num * subj) % mod
         pow += 1
     }
 
-    subj = if (num == numbers(0)) numbers(1) else numbers(0)
+    subj = if (num == doorKey) cardKey else doorKey
     num = subj
     
     while (pow > 0) {

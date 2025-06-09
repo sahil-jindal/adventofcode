@@ -18,11 +18,10 @@ def parseInput(input: List[String]): Problem = {
     return Problem(mapping.flatMap(_.allergens).toSet, mapping.flatMap(_.ingredients).toSet, mapping)
 }
 
-def getIngredientsByAllergen(problem: Problem): Map[String, Set[String]] = {
+def getIngredientsByAllergen(problem: Problem): Map[String, MutableSet[String]] = {
     return problem.allergens.map(allergen => {
-        allergen -> problem.mapping.collect { 
-            case it if it.allergens.contains(allergen) => it.ingredients 
-        }.reduce(_ & _)
+        val value = problem.mapping.filter(_.allergens.contains(allergen)).map(_.ingredients).reduce(_ & _)
+        allergen -> MutableSet(value.toSeq*)
     }).toMap
 }
 
@@ -32,7 +31,7 @@ def evaluatorOne(problem: Problem): Int = {
 }
 
 def evaluatorTwo(problem: Problem): String = {
-    val ingredientsByAllergen = getIngredientsByAllergen(problem).view.mapValues(_.to(MutableSet)).toMap
+    val ingredientsByAllergen = getIngredientsByAllergen(problem)
     
     while (ingredientsByAllergen.values.exists(_.size > 1)) {
         for (allergen <- problem.allergens) {

@@ -5,22 +5,27 @@ import scala.io.Source
 
 def parseInput(input: List[String]) = input.map(_.toInt).toSet
 
-def evaluatorOne(numbers: Set[Int]): Int = {
-    return (for {
-        x <- numbers
-        y = 2020 - x
-        if numbers.contains(y)
-    } yield x * y).head
+def partitions(total: Int, n: Int): List[List[Int]] = {
+    def helper(remaining: Int, length: Int, minValue: Int): List[List[Int]] = {
+        if (length <= 0 || length > remaining) return List(Nil)
+        if (length == 1) return List(List(remaining))
+
+        val maxValue = remaining / length
+
+        return (minValue to maxValue).toList.flatMap { value =>
+            helper(remaining - value, length - 1, value).map(value :: _)
+        }
+    }
+
+    return helper(total, n, 1)
 }
 
-def evaluatorTwo(numbers: Set[Int]): Int = {
-    return (for {
-        x <- numbers
-        y <- numbers
-        z = 2020 - x - y
-        if numbers.contains(z)
-    } yield x * y * z).head
+def solver(numbers: Set[Int], n: Int): Int = {
+    return partitions(2020, n).find(_.forall(numbers.contains)).get.product
 }
+
+def evaluatorOne(numbers: Set[Int]): Int = solver(numbers, 2)
+def evaluatorTwo(numbers: Set[Int]): Int = solver(numbers, 3)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

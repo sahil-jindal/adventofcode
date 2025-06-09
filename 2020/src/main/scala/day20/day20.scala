@@ -2,31 +2,18 @@ package day20
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Map, Set}
-import scala.util.boundary, boundary.break
+import scala.collection.mutable.{Map => MutableMap, Set => MutableSet}
 
 case class Tile(id: Long, grid: List[Array[Char]]) {
     val size: Int = grid.length
-  
+
+    val top = grid(0).mkString
+    val bottom = grid(size - 1).mkString
+    val left = grid.map(_(0)).mkString
+    val right = grid.map(_(size - 1)).mkString
+
     // Extract the borders of the tile in all 8 possible orientations
-    lazy val borders: Set[String] = {
-        val top = grid(0).mkString
-        val bottom = grid(size - 1).mkString
-        val left = grid.map(_(0)).mkString
-        val right = grid.map(_(size - 1)).mkString
-    
-        Set(top, top.reverse, bottom, bottom.reverse, left, left.reverse, right, right.reverse)
-    }
-  
-    // Get the current borders in clockwise order: top, right, bottom, left
-    def currentBorders: Array[String] = {
-        val top = grid(0).mkString
-        val bottom = grid(size - 1).mkString
-        val left = grid.map(_(0)).mkString
-        val right = grid.map(_(size - 1)).mkString
-    
-        return Array(top, right, bottom, left)
-    }
+    val borders = Set(top, top.reverse, bottom, bottom.reverse, left, left.reverse, right, right.reverse)
   
     // Rotate the tile 90 degrees clockwise
     def rotate: Tile = {
@@ -78,40 +65,36 @@ def groupLines(input: List[String]): List[List[String]] = {
 }
 
 def parseTiles(input: List[String]): List[Tile] = {
-    return groupLines(input).map { lines =>
-        val tileId = lines(0).drop(5).dropRight(1).toLong
-        val grid = lines.drop(1).map(_.toCharArray)
+    return groupLines(input).map(lines => {
+        val tileId = raw"Tile (\d+):".r.findFirstMatchIn(lines.head).get.group(1).toLong
+        val grid = lines.tail.map(_.toCharArray)
         Tile(tileId, grid)
-    }
+    })
 }
 
 def findCornerTiles(tiles: List[Tile]): List[Long] = {
-    val borderCount = Map.empty[String, Int].withDefaultValue(0)
-    
     // Count each border's occurrences
-    for (tile <- tiles; border <- tile.borders) {
-        borderCount(border) += 1
-    }
+    val borderCount = tiles.flatMap(_.borders).groupMapReduce(identity)(_ => 1)(_ + _)
     
     // Find tiles with exactly 4 unique borders (2 sides that match other tiles)
     return tiles.filter(_.borders.count(borderCount(_) == 1) == 4).map(_.id)
 }
 
 def findBorderMatches(tiles: List[Tile]): Map[Long, Set[String]] = {
-    val borderMatches = Map.empty[Long, Set[String]]
+    val borderMatches = MutableMap.empty[Long, Set[String]]
     
     // For each tile, store all borders that match with another tile
     for (tile <- tiles) {
-        val matches = Set.empty[String]
+        val matches = MutableSet.empty[String]
+
         for (otherTile <- tiles if tile.id != otherTile.id) {
-            val sharedBorders = tile.borders.intersect(otherTile.borders)
-            matches ++= sharedBorders
+            matches ++= tile.borders.intersect(otherTile.borders)
         }
         
-        borderMatches(tile.id) = matches
+        borderMatches(tile.id) = matches.toSet
     }
     
-    return borderMatches
+    return borderMatches.toMap
 }
 
 def orientCornerTile(tile: Tile, borderMatches: Map[Long, Set[String]]): Tile = {
@@ -119,35 +102,27 @@ def orientCornerTile(tile: Tile, borderMatches: Map[Long, Set[String]]): Tile = 
     
     // Find orientation where matches are on right and bottom
     return tile.allOrientations.find(orientedTile => {
-        val borders = orientedTile.currentBorders
-        val topMatches = matches.contains(borders(0))
-        val rightMatches = matches.contains(borders(1))
-        val bottomMatches = matches.contains(borders(2))
-        val leftMatches = matches.contains(borders(3))
+        val topMatches = matches.contains(orientedTile.top)
+        val rightMatches = matches.contains(orientedTile.right)
+        val bottomMatches = matches.contains(orientedTile.bottom)
+        val leftMatches = matches.contains(orientedTile.left)
         rightMatches && bottomMatches && !topMatches && !leftMatches
     }).getOrElse(tile)
 }
 
 def orientTileToMatchLeft(tile: Tile, leftBorder: String): Tile = {
-    return tile.allOrientations.find(_.currentBorders(3) == leftBorder).getOrElse(tile)
+    return tile.allOrientations.find(_.left == leftBorder).getOrElse(tile)
 }
 
 def orientTileToMatchTop(tile: Tile, topBorder: String): Tile = {
-    return tile.allOrientations.find(_.currentBorders(0) == topBorder).getOrElse(tile)
+    return tile.allOrientations.find(_.top == topBorder).getOrElse(tile)
 }
 
 def isSeaMonsterAt(image: List[Array[Char]], pattern: List[String], x: Int, y: Int): Boolean = {
-    val patternHeight = pattern.length
-    val patternWidth = pattern(0).length
-    
-    boundary {
-        for (py <- 0 until patternHeight; px <- 0 until patternWidth) {
-            if (pattern(py)(px) == '#' && image(y + py)(x + px) != '#') {
-                break(false)
-            }
+    return pattern.zipWithIndex.forall { case (line, py) =>
+        line.zipWithIndex.forall { case (ch, px) =>
+            ch != '#' || image(y + py)(x + px) == '#'
         }
-    
-        true
     }
 }
   
@@ -156,17 +131,12 @@ def countSeaMonsters(image: List[Array[Char]], pattern: List[String]): Int = {
     val patternWidth = pattern(0).length
     val imageHeight = image.length
     val imageWidth = image(0).length
-    var count = 0
     
-    for (y <- 0 until imageHeight - patternHeight + 1) {
-        for (x <- 0 until imageWidth - patternWidth + 1) {
-            if (isSeaMonsterAt(image, pattern, x, y)) {
-                count += 1
-            }
-        }
-    }
-    
-    return count
+    return (for {
+        y <- 0 until imageHeight - patternHeight + 1
+        x <- 0 until imageWidth - patternWidth + 1
+        if isSeaMonsterAt(image, pattern, x, y)
+    } yield 1).sum
 }
 
 def assembleImage(tiles: List[Tile]): Array[Array[Char]] = {
@@ -183,55 +153,48 @@ def assembleImage(tiles: List[Tile]): Array[Array[Char]] = {
     // Start with a corner tile
     val cornerTileId = findCornerTiles(tiles).head
     val cornerTile = tilesById(cornerTileId)
+
+    // Orient the corner tile correctly (top-left corner)
+    val orientedCorner = orientCornerTile(cornerTile, borderMatches)
     
     // Arrange tiles in a grid
     val arrangementGrid = Array.ofDim[Tile](tilesPerSide, tilesPerSide)
-    
-    // Orient the corner tile correctly (top-left corner)
-    val orientedCorner = orientCornerTile(cornerTile, borderMatches)
+
+    def isIdNotPresent(id: Long) = arrangementGrid.flatten.forall(t => t == null || t.id != id)
+
+    def findMatchingTileId(border: String): Long = {
+        return borderMatches.view.filterKeys(isIdNotPresent).collectFirst { 
+            case (id, matches) if matches.contains(border) => id
+        }.get
+    }
+
     arrangementGrid(0)(0) = orientedCorner
     
     // Fill the first row
     for (x <- 1 until tilesPerSide) {
-        val leftTile = arrangementGrid(0)(x - 1)
-        val leftBorder = leftTile.currentBorders(1)  // Right border of left tile
-      
-        val matchingTileId = borderMatches.filter { case (id, matches) => 
-            matches.contains(leftBorder) && !arrangementGrid.flatten.exists(t => t != null && t.id == id)
-        }.keys.head
-      
-        val matchingTile = tilesById(matchingTileId)
-        val orientedTile = orientTileToMatchLeft(matchingTile, leftBorder)
-        arrangementGrid(0)(x) = orientedTile
+        val leftBorder = arrangementGrid(0)(x - 1).right  // Right border of left tile
+        val matchingTileId = findMatchingTileId(leftBorder)
+        arrangementGrid(0)(x) = orientTileToMatchLeft(tilesById(matchingTileId), leftBorder)
+    }
+
+    for (y <- 1 until tilesPerSide) {
+        val topBorder = arrangementGrid(y - 1)(0).bottom  // Bottom border of top tile
+        val matchingTileId = findMatchingTileId(topBorder) 
+        arrangementGrid(y)(0) = orientTileToMatchTop(tilesById(matchingTileId), topBorder)
     }
     
     // Fill remaining rows
-    for (y <- 1 until tilesPerSide) {
-        for (x <- 0 until tilesPerSide) {
-            val topTile = arrangementGrid(y - 1)(x)
-            val topBorder = topTile.currentBorders(2)  // Bottom border of top tile
-        
-            val matchingTileId = borderMatches.filter { case (id, matches) => 
-                matches.contains(topBorder) && !arrangementGrid.flatten.exists(t => t != null && t.id == id)
-            }.keys.head
-        
-            val matchingTile = tilesById(matchingTileId)
-            val orientedTile = orientTileToMatchTop(matchingTile, topBorder)
-        
-        // If not in the first column, ensure it also matches the left tile
-            if (x > 0) {
-                val leftTile = arrangementGrid(y)(x - 1)
-                val leftBorder = leftTile.currentBorders(1)  // Right border of left tile
-          
-                val finalOrientedTile = orientedTile.allOrientations
-                    .find(t => t.currentBorders(3) == leftBorder && t.currentBorders(0) == topBorder.reverse)
-                    .getOrElse(orientedTile)
-          
-                arrangementGrid(y)(x) = finalOrientedTile
-            } else {
-                arrangementGrid(y)(x) = orientedTile
-            }
-        }
+    for (y <- 1 until tilesPerSide; x <- 1 until tilesPerSide) {
+        val topBorder = arrangementGrid(y - 1)(x).bottom  // Bottom border of top tile
+        val matchingTileId = findMatchingTileId(topBorder) 
+        val orientedTile = orientTileToMatchTop(tilesById(matchingTileId), topBorder)
+    
+        // ensure it also matches the left tile
+        val leftBorder = arrangementGrid(y)(x - 1).right  // Right border of left tile
+    
+        arrangementGrid(y)(x) = orientedTile.allOrientations
+            .find(t => t.left == leftBorder && t.top == topBorder.reverse)
+            .getOrElse(orientedTile)
     }
     
     // Create the final image by removing borders

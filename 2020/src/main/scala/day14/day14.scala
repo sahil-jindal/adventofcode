@@ -2,57 +2,72 @@ package day14
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import java.lang.Long
 import scala.collection.mutable.Map
 
-def addresses(baseAddr: Long, mask: String, i: Int): Seq[Long] = {
-    if (i == -1) return Seq(0)
-    
-    val prefixes = addresses(baseAddr, mask, i - 1)
-    
-    return mask(i) match {
-        case '0' => prefixes.map(prefix => (prefix << 1) + ((baseAddr >> (35 - i)) & 1))
-        case '1' => prefixes.map(prefix => (prefix << 1) + 1)
-        case _   => prefixes.flatMap(prefix => Seq((prefix << 1), (prefix << 1) + 1))
+case class Command(baseAddr: Int, value: Long)
+case class ProgramSegment(mask: String, commands: List[Command])
+
+def parseBinaryToLong(str: String): Long = {
+    if (!str.matches("^[01]+$")) throw new NumberFormatException(str)
+    return str.map(_.asDigit).foldLeft(0L) { case (acc, item) => 2 * acc + item }
+}
+
+def groupCommands(input: List[String]): List[List[String]] = {
+    return input.foldLeft(List.empty[List[String]]) {
+        case (Nil, line) if line.startsWith("mask") => List(List(line))
+        case (acc, line) if line.startsWith("mask") => acc :+ List(line)
+        case (acc, line) => acc.init :+ (acc.last :+ line)
+    }
+}
+
+def parseInput(input: List[String]): List[ProgramSegment] = {
+    return groupCommands(input).map(group => {
+        val mask = group.head.split(" = ")(1)
+
+        val commands = group.tail.map(line => {
+            val nums = raw"(\d+)".r.findAllIn(line).map(_.toInt).toList
+            Command(nums(0), nums(1).toLong)
+        })
+
+        ProgramSegment(mask, commands)
+    })
+}
+
+def addresses(baseAddr: Long, mask: String): Seq[Long] = {
+    return mask.zipWithIndex.foldLeft(Seq(0L)) { case (prefixes, (ch, i)) =>
+        val bit = (baseAddr >> (35 - i)) & 1
+
+        ch match {
+            case '0' => prefixes.map(prefix => (prefix << 1) + bit)
+            case '1' => prefixes.map(prefix => (prefix << 1) + 1)
+            case  _  => prefixes.flatMap(prefix => Seq((prefix << 1), (prefix << 1) + 1))
+        }
     }    
 }
 
-def evaluatorOne(input: List[String]): Long = {
-    val mem = Map.empty[Long, Long]
-    var orMask = 0L
-    var andMask = 0xffffffffffffffL
+def evaluatorOne(input: List[ProgramSegment]): Long = {
+    val mem = Map.empty[Int, Long]
     
-    for (line <- input) {
-        if (line.startsWith("mask")) {
-            val mask = line.split(" = ")(1)
-            andMask = Long.parseLong(mask.replace("X", "1"), 2)
-            orMask = Long.parseLong(mask.replace("X", "0"), 2)
-        } else {
-            val num = raw"(\d+)".r.findAllIn(line).map(_.toLong).toArray
-            mem(num(0)) = (num(1) & andMask) | orMask
-        }
-    }
+    for {
+        ProgramSegment(mask, commands) <- input
+        andMask = parseBinaryToLong(mask.replace("X", "1"))
+        orMask = parseBinaryToLong(mask.replace("X", "0"))
+        Command(baseAddr, value) <- commands
+    } mem(baseAddr) = (value & andMask) | orMask
     
-    return mem.values.foldLeft(0L)(_ + _)
+    return mem.values.sum
 }
 
-def evaluatorTwo(input: List[String]): Long = {
+def evaluatorTwo(input: List[ProgramSegment]): Long = {
     val mem = Map.empty[Long, Long]
-    var mask = ""
     
-    for (line <- input) {
-        if (line.startsWith("mask")) {
-            mask = line.split(" = ")(1)
-        } else {
-            val num = raw"(\d+)".r.findAllIn(line).map(_.toLong).toArray
-            val (baseAddr, value) = (num(0), num(1))
-            for (addr <- addresses(baseAddr, mask, 35)) {
-                mem(addr) = value
-            }
-        }
-    }
-
-    return mem.values.foldLeft(0L)(_ + _)
+    for {
+        ProgramSegment(mask, commands) <- input
+        Command(baseAddr, value) <- commands
+        addr <- addresses(baseAddr, mask)
+    } mem(addr) = value
+    
+    return mem.values.sum
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -61,8 +76,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day14.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
