@@ -44,9 +44,9 @@ def evaluatorTwo(input: List[Pair]): Int = {
         digits(8) = lookup(7, 2, 4)
         digits(9) = lookup(6, 2, 4)
 
-        def decode(v: String) = (0 until 10).find(i => digits(i) == v.toSet).get
+        def decode(v: String) = digits.indexWhere(_ == v.toSet)
 
-        res += pair.second.foldLeft(0) { case (n, digit) => n * 10 + decode(digit) }
+        res += pair.second.map(decode).mkString.toInt
     }
 
     return res

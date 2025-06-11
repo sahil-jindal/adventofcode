@@ -6,7 +6,9 @@ import scala.collection.mutable.{PriorityQueue, Map => MutableMap}
 
 case class Point(y: Int, x: Int)
 
-def parseInput(input: List[String]): Map[Point, Int] = {
+type Grid = Map[Point, Int]
+
+def parseInput(input: List[String]): Grid = {
     return (for {
         (line, y) <- input.zipWithIndex
         (ch, x) <- line.zipWithIndex
@@ -20,7 +22,7 @@ def getNeighbours(pos: Point) = Seq(
     pos.copy(y = pos.y - 1)
 )
 
-def solve(riskMap: Map[Point, Int]): Int = {
+def solve(riskMap: Grid): Int = {
     val topLeft = Point(0, 0)
     val maxY = riskMap.keys.map(_.y).max
     val maxX = riskMap.keys.map(_.x).max
@@ -51,7 +53,7 @@ def solve(riskMap: Map[Point, Int]): Int = {
     return totalRiskMap(bottomRight)
 }
 
-def scaleUp(map: Map[Point, Int]): Map[Point, Int] = {
+def scaleUp(map: Grid): Grid = {
     val width = map.keys.map(_.x).max + 1
     val height = map.keys.map(_.y).max + 1
 
@@ -66,8 +68,8 @@ def scaleUp(map: Map[Point, Int]): Map[Point, Int] = {
     } yield Point(y, x) -> riskLevel).toMap
 }
 
-def evaluatorOne(map: Map[Point, Int]): Int = solve(map)
-def evaluatorTwo(map: Map[Point, Int]): Int = solve(scaleUp(map))
+def evaluatorOne(map: Grid): Int = solve(map)
+def evaluatorTwo(map: Grid): Int = solve(scaleUp(map))
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

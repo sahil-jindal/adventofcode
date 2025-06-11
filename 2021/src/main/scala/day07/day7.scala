@@ -3,11 +3,11 @@ package day07
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def parseInput(input: String): List[Int] = input.split(",").map(_.toInt).toList
+def parseInput(input: String) = input.split(",").map(_.toInt).toList
 
 def fuelMin(positions: List[Int], fuelConsumption: Int => Int): Int = {
     return (positions.min to positions.max).map(target => {
-        positions.map(it => fuelConsumption(math.abs(target - it))).sum
+        positions.map(it => fuelConsumption((target - it).abs)).sum
     }).min
 }
 

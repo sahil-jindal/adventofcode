@@ -3,7 +3,7 @@ package day25
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def evaluatorOne(input: List[String]): Int = {
+def solver(input: List[String]): Int = {
     var map = input
     val height = map.length
     val width = map(0).length
@@ -69,7 +69,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 
 def hello(): Unit = {
     readLinesFromFile("day25.txt") match {
-        case Success(lines) => println(s"Part One: ${evaluatorOne(lines)}")
+        case Success(lines) => println(s"Answer: ${solver(lines)}")
         case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
     }
 }

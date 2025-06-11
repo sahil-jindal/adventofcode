@@ -4,7 +4,7 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.ListBuffer
 
-case class Packet(version: Int, `type`: Int, payload: Long, packets: List[Packet])
+case class Packet(version: Int, ptype: Int, payload: Long, packets: List[Packet])
 
 case class BitSequenceReader(private val bits: Seq[Boolean]) {
     private var ptr = 0
@@ -33,11 +33,11 @@ def getReader(input: String) = BitSequenceReader(
 
 def getPacket(reader: BitSequenceReader): Packet = {
     val version = reader.readInt(3)
-    val `type` = reader.readInt(3)
+    val ptype = reader.readInt(3)
     val packets = ListBuffer.empty[Packet]
     var payload = 0L
 
-    if (`type` == 4) {
+    if (ptype == 4) {
         var continue = true
         while (continue) {
             val isLast = reader.readInt(1) == 0
@@ -55,7 +55,7 @@ def getPacket(reader: BitSequenceReader): Packet = {
         packets ++= (for (_ <- 0 until packetCount) yield getPacket(reader))
     }
 
-    return Packet(version, `type`, payload, packets.toList)
+    return Packet(version, ptype, payload, packets.toList)
 }
 
 def getTotalVersion(packet: Packet): Int = {
@@ -65,7 +65,7 @@ def getTotalVersion(packet: Packet): Int = {
 def evaluate(packet: Packet): Long = {
     val parts = packet.packets.map(evaluate)
 
-    return packet.`type` match {
+    return packet.ptype match {
         case 0 => parts.sum
         case 1 => parts.product
         case 2 => parts.min

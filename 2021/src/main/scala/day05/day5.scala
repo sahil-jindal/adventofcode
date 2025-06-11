@@ -17,22 +17,22 @@ def parseInput(input: List[String]) = input.map(line => {
     Segment(Vec2D(sx, sy), Vec2D(ex, ey))
 })
 
-def parseLines(input: List[Segment], skipDiagonals: Boolean): Seq[Seq[Vec2D]] = {
+def getLines(input: List[Segment], skipDiagonals: Boolean): Seq[Seq[Vec2D]] = {
     return (for {
         Segment(start, end) <- input
-        displacement = end - start
-        dir = displacement.sign
-        length = 1 + math.max(displacement.x.abs, displacement.y.abs)
+        dispmnt = end - start
+        dir = dispmnt.sign
+        length = 1 + math.max(dispmnt.x.abs, dispmnt.y.abs)
         if !skipDiagonals || dir.x == 0 || dir.y == 0
     } yield (0 until length).map(start + dir * _))
 }
 
-def getIntersections(lines: Seq[Seq[Vec2D]]): Seq[Vec2D] = {
-    return lines.flatten.groupBy(identity).collect { case (pt, occurrences) if occurrences.size > 1 => pt }.toSeq
+def getIntersections(lines: Seq[Seq[Vec2D]]): Int = {
+    return lines.flatten.groupMapReduce(identity)(_ => 1)(_ + _).values.count(_ > 1)
 }
 
-def evaluatorOne(input: List[Segment]): Int = getIntersections(parseLines(input, true)).size
-def evaluatorTwo(input: List[Segment]): Int = getIntersections(parseLines(input, false)).size
+def evaluatorOne(input: List[Segment]): Int = getIntersections(getLines(input, true))
+def evaluatorTwo(input: List[Segment]): Int = getIntersections(getLines(input, false))
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

@@ -3,7 +3,7 @@ package day06
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def parseInput(input: String): List[Int] = input.split(",").map(_.toInt).toList
+def parseInput(input: String) = input.split(",").map(_.toInt).toList
 
 def fishCountAfterNDays(fish: List[Int], days: Int): Long = {
     val fishCountByInternalTimer = Array.fill(9)(0L)

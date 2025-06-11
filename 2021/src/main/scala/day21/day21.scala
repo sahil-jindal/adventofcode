@@ -3,6 +3,7 @@ package day21
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Map
+import scala.util.boundary, boundary.break
 
 case class Player(score: Int, pos: Int) {
     def move(steps: Int): Player = {
@@ -39,23 +40,21 @@ def diracThrows(): Seq[Int] = {
 def evaluatorOne(opponents: PairOne): Int = {
     var PairOne(active, other) = opponents
     var rounds = 0
-    var done = false
 
-    while (!done) {
-        val steps = threeRolls().next()
-        rounds += 1
-        active = active.move(steps)
+    boundary {
+        for (steps <- threeRolls()) {
+            rounds += 1
+            active = active.move(steps)
 
-        if (active.score >= 1000) {
-            done = true
-        } else {
+            if (active.score >= 1000) break()
+
             val temp = active
             active = other
             other = temp
         }
     }
 
-    return other.score * 3 * rounds
+    return 3 * rounds * other.score 
 }
 
 def evaluatorTwo(opponents: PairOne): Long = {

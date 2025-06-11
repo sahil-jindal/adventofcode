@@ -2,7 +2,7 @@ package day18
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.ArrayBuffer
 import scala.util.boundary, boundary.break
 
 sealed trait TokenKind
@@ -12,13 +12,13 @@ case object Digit extends TokenKind
 
 case class Token(kind: TokenKind, value: Int = 0)
 
-class Number(private val input: ListBuffer[Token]) extends ListBuffer[Token] {
+class Number(private val input: ArrayBuffer[Token]) extends ArrayBuffer[Token] {
     this ++= input  // copy the input into this buffer
     def insertAll(i: Int, number: Number): Unit = this.insertAll(i, number.toList)
 }
   
 object Number {
-    def apply(tokens: List[Token] = Nil) = new Number(ListBuffer.from(tokens))
+    def apply(tokens: List[Token] = Nil) = new Number(ArrayBuffer.from(tokens))
     def digit(value: Int) = Number(List(Token(Digit, value)))
     def pair(a: Number, b: Number) = Number(Token(Open) +: (a.toList ++ b.toList) :+ Token(Close))
 }

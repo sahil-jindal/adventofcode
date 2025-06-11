@@ -2,9 +2,11 @@ package day09
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Set, Queue}
+import scala.collection.mutable.{Queue, Set}
 
 case class Point(y: Int, x: Int)
+
+type Grid = Map[Point, Int]
 
 def parseInput(map: List[String]): Map[Point, Int] = {
     return (for { 
@@ -20,38 +22,35 @@ def getNeighbours(pos: Point) = Seq(
     pos.copy(y = pos.y + 1)
 )
 
-def getLowPoints(map: Map[Point, Int]): Seq[Point] = map.keys.filter(point =>
-    getNeighbours(point).forall { neighbor => map.getOrElse(neighbor, 9) > map(point) }
+def getLowPoints(grid: Grid) = grid.keys.filter(pos =>
+    getNeighbours(pos).forall(nbr => grid.getOrElse(nbr, 9) > grid(pos))
 ).toSeq
 
-
-def basicInSize(map: Map[Point, Int], point: Point): Int = {
-    val filled = Set(point)
+def basicInSize(grid: Grid, point: Point): Int = {
     val queue = Queue(point)
+    val filled = Set(point)
 
     while (queue.nonEmpty) {
         val current = queue.dequeue()
         
-        for {
-            neighbor <- getNeighbours(current)
-            if !filled.contains(neighbor)
-            if map.getOrElse(neighbor, 9) != 9
-        } {
-            filled += neighbor
-            queue.enqueue(neighbor)
+        for (nbr <- getNeighbours(current)) {
+            if (!filled.contains(nbr) && grid.getOrElse(nbr, 9) != 9) {
+                filled += nbr
+                queue.enqueue(nbr)
+            }
         }
     }
 
     return filled.size
 }
 
-def evaluatorOne(map: Map[Point, Int]): Int = {
-    return getLowPoints(map).map(point => 1 + map(point)).sum
+def evaluatorOne(grid: Grid): Int = {
+    return getLowPoints(grid).map(point => 1 + grid(point)).sum
 }
 
-def evaluatorTwo(map: Map[Point, Int]): Int = {
-    return getLowPoints(map)
-        .map(p => basicInSize(map, p))
+def evaluatorTwo(grid: Grid): Int = {
+    return getLowPoints(grid)
+        .map(p => basicInSize(grid, p))
         .sorted(using Ordering.Int.reverse)
         .take(3)
         .product
@@ -67,8 +66,8 @@ def hello(): Unit = {
             println(s"Part One: ${evaluatorOne(input)}")
             println(s"Part Two: ${evaluatorTwo(input)}")
         }
-        case Failure(exception) => {
-            println(s"Error reading file: ${exception.getMessage}")
+        case Failure(exceposion) => {
+            println(s"Error reading file: ${exceposion.getMessage}")
         }
     }
 }

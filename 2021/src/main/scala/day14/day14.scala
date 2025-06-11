@@ -8,19 +8,19 @@ def solve(input: List[String], steps: Int): Long = {
     val polymer = input.head
 
     val template = input.drop(2).map(line => {
-        val parts = line.split(" -> ")
-        parts(0) -> parts(1)(0)
+        val Seq(a, b, c) = raw"(\w)".r.findAllIn(line).map(_.head).toSeq
+        (a, b) -> c
     }).toMap
 
-    var moleculeCount = polymer.sliding(2).toSeq.groupMapReduce(identity)(_ => 1L)(_ + _)
+    var moleculeCount = (polymer.init zip polymer.tail).groupMapReduce(identity)(_ => 1L)(_ + _)
 
     for (_ <- 1 to steps) {
-        val updatedMap = Map.empty[String, Long].withDefaultValue(0L)
+        val updatedMap = Map.empty[(Char, Char), Long].withDefaultValue(0L)
 
-        for ((molecule, count) <- moleculeCount) { 
-            val (a, n, b) = (molecule(0), template(molecule), molecule(1))
-            updatedMap(s"$a$n") += count
-            updatedMap(s"$n$b") += count
+        for (((a, b), count) <- moleculeCount) { 
+            val n = template((a, b))
+            updatedMap((a, n)) += count
+            updatedMap((n, b)) += count
         }
 
         moleculeCount = updatedMap.toMap

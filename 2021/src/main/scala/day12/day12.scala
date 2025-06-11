@@ -25,7 +25,7 @@ def explore(input: List[String], partTwo: Boolean): Int = {
             val seen = visitedCaves.contains(cave)
 
             if (!seen || isBigCave) {
-                res += pathCount(cave, visitedCaves.incl(cave), anySmallCaveWasVisitedTwice)
+                res += pathCount(cave, visitedCaves + cave, anySmallCaveWasVisitedTwice)
             } else if (partTwo && !isBigCave && cave != "start" && !anySmallCaveWasVisitedTwice) {
                 res += pathCount(cave, visitedCaves, true)
             }

@@ -23,10 +23,9 @@ case class Region(x: Range, y: Range, z: Range) {
 
 case class Cmd(turnOff: Boolean, region: Region)
 
-def parseInput(input: List[String]): List[Cmd] = input.map(line => {
-    val turnOff = line.startsWith("off")
+def parseInput(input: List[String]) = input.map(line => {
     val Seq(sx, ex, sy, ey, sz, ez) = raw"(-?\d+)".r.findAllIn(line).map(_.toInt).toSeq
-    Cmd(turnOff, Region(Range(sx, ex), Range(sy, ey), Range(sz, ez)))
+    Cmd(line.startsWith("off"), Region(Range(sx, ex), Range(sy, ey), Range(sz, ez)))
 })
 
 def activeCubesInRange(cmds: List[Cmd], range: Int): Long = {
