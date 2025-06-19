@@ -63,7 +63,7 @@ def getPois(input: List[String]): List[Poi] = {
     return poiByCoord.values.toList
 }
 
-def evaluatorOne(pois: List[Poi]): Int = pois.find(_.symbol == startSymbol).get.distanceFromGoal
+def evaluatorOne(pois: List[Poi]): Int = pois.collectFirst { case pos if pos.symbol == startSymbol => pos.distanceFromGoal }.get
 def evaluatorTwo(pois: List[Poi]): Int = pois.collect { case pos if pos.elevation == lowestElevation => pos.distanceFromGoal }.min
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

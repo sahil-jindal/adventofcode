@@ -9,8 +9,8 @@ case class Pos(x: Int, y: Int) {
 
 case class Rect(x: Int, y: Int, width: Int, height: Int) {
     val left = x
-    val right = x + width - 1
     val top = y
+    val right = x + width - 1
     val bottom = y + height - 1
 
     def corners = Seq(
@@ -47,14 +47,14 @@ def parseInput(input: List[String]) = input.map(line => {
 })
 
 def getUncoveredAreas(pairing: List[Pair], rect: Rect): Seq[Rect] = {
-    if (rect.width == 0 || rect.height == 0) return Seq.empty[Rect]
+    if (rect.width <= 0 || rect.height <= 0) return Seq.empty[Rect]
 
     val coveredByCorners = pairing.exists(pair => rect.corners.forall(pair.inRange))
     if (coveredByCorners) return Seq.empty[Rect]
 
     if (rect.width == 1 && rect.height == 1) return Seq(rect)
 
-    return rect.split().flatMap(rectT => getUncoveredAreas(pairing, rectT))
+    return rect.split().flatMap(getUncoveredAreas(pairing, _))
 }
 
 def evaluatorOne(pairing: List[Pair]): Int = {

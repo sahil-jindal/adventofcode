@@ -10,7 +10,7 @@ case class Monkey(
     val mod: Int,
     val passToMonkeyIfDivides: Int,
     val passToMonkeyOtherwise: Int,
-    var inspectedItems: Int = 0
+    var inspectedItems: Long = 0
 )
 
 def groupLines(input: List[String]): List[List[String]] = {
@@ -21,10 +21,10 @@ def groupLines(input: List[String]): List[List[String]] = {
 }
 
 def parseMonkey(input: List[String]): Monkey = {
-    val startingItems = input(1).split(": ")(1).split(", ").map(_.toLong)
+    val startingItems = input(1).trim().stripPrefix("Starting items: ").split(", ").map(_.toLong)
     val items = Queue(startingItems*)
 
-    val Array(_, operand, b) = input(2).split(" = ")(1).split(" ")
+    val Array(operand, b) = input(2).trim().stripPrefix("Operation: new = old ").split(" ")
 
     var operation: Long => Long = identity
 
@@ -38,44 +38,42 @@ def parseMonkey(input: List[String]): Monkey = {
         }
     }
 
-    val mod = input(3).split(": ")(1).split(" ")(2).toInt
-    val passToMonkeyIfDivides = input(4).split(": ")(1).split(" ")(3).toInt
-    val passToMonkeyOtherwise = input(5).split(": ")(1).split(" ")(3).toInt
+    val mod = input(3).trim().stripPrefix("Test: divisible by ").toInt
+    val passToMonkeyIfDivides = input(4).trim().stripPrefix("If true: throw to monkey ").toInt
+    val passToMonkeyOtherwise = input(5).trim().stripPrefix("If false: throw to monkey ").toInt
 
     return Monkey(items, operation, mod, passToMonkeyIfDivides, passToMonkeyOtherwise)
 }
 
-def parseMonkeys(input: List[String]) = groupLines(input).map(parseMonkey).toArray
+def parseMonkeys(input: List[String]) = groupLines(input).map(parseMonkey)
 
-def run(rounds: Int, monkeys: Array[Monkey], updateWorryLevel: Long => Long): Unit = {
-    for (_ <- 1 to rounds) {
-        for (monkey <- monkeys) {
-            while (monkey.items.nonEmpty) {
-                monkey.inspectedItems += 1
+def run(monkeys: List[Monkey], rounds: Int, updateWorryLevel: Long => Long): List[Long] = {
+    for (_ <- 1 to rounds; monkey <- monkeys) {
+        while (monkey.items.nonEmpty) {
+            monkey.inspectedItems += 1
 
-                var item = monkey.items.dequeue()
-                item = monkey.operation(item)
-                item = updateWorryLevel(item)
+            var item = monkey.items.dequeue()
+            item = monkey.operation(item)
+            item = updateWorryLevel(item)
 
-                val target = if (item % monkey.mod == 0) {
-                    monkey.passToMonkeyIfDivides
-                } else {
-                    monkey.passToMonkeyOtherwise
-                }
-
-                monkeys(target).items.enqueue(item)
+            val target = if (item % monkey.mod == 0) {
+                monkey.passToMonkeyIfDivides
+            } else {
+                monkey.passToMonkeyOtherwise
             }
+
+            monkeys(target).items.enqueue(item)
         }
     }
+
+    return monkeys.map(_.inspectedItems)
 }
 
-def getMonkeyBusinessLevel(monkeys: Array[Monkey]): Long = {
+def getMonkeyBusinessLevel(monkeyTransfers: List[Long]): Long = {
     var topMost: Option[Long] = None
     var secondMost: Option[Long] = None
 
-    for(monkey <- monkeys) {
-        val value = monkey.inspectedItems.toLong
-
+    for (value <- monkeyTransfers) {
         if (topMost.isEmpty || value >= topMost.get) {
             secondMost = topMost
             topMost = Some(value)
@@ -89,15 +87,13 @@ def getMonkeyBusinessLevel(monkeys: Array[Monkey]): Long = {
 
 def evaluatorOne(input: List[String]): Long = {
     val monkeys = parseMonkeys(input)
-    run(20, monkeys, _ / 3)
-    getMonkeyBusinessLevel(monkeys)
+    return getMonkeyBusinessLevel(run(monkeys, 20, _ / 3))
 }
 
 def evaluatorTwo(input: List[String]): Long = {
     val monkeys = parseMonkeys(input)
     val mod = monkeys.map(_.mod).product
-    run(10000, monkeys, _ % mod)
-    getMonkeyBusinessLevel(monkeys)
+    return getMonkeyBusinessLevel(run(monkeys, 10000, _ % mod))
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

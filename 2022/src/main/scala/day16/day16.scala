@@ -121,8 +121,7 @@ def hello(): Unit = {
         case Success(lines) => {
             val valves = parseInput(lines)
             val distances = calculateDistances(valves)
-            val nonZeroValves = valves.values.filter(_.flowRate > 0).map(_.name).toSet
-            val sortedNonZero = nonZeroValves.toList.sorted
+            val sortedNonZero = valves.values.filter(_.flowRate > 0).map(_.name).toList.distinct.sorted
             val valveIndices = sortedNonZero.zipWithIndex.toMap
             println(s"Part One: ${evaluatorOne(valves, distances, sortedNonZero, valveIndices)}")
             println(s"Part Two: ${evaluatorTwo(valves, distances, sortedNonZero, valveIndices)}")

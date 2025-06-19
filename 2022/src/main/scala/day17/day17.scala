@@ -12,7 +12,7 @@ case class Pos(y: Int, x: Int) {
     def +(posB: Pos) = Pos(y + posB.y, x + posB.x)
 }
 
-class Tunnel(jets: String, linesToStore: Int) {
+case class Tunnel(jets: String, linesToStore: Int) {
     private var lines = List.empty[Array[Char]]
     private var linesNotStored = 0L
 
@@ -29,16 +29,16 @@ class Tunnel(jets: String, linesToStore: Int) {
     private val irock = Iterator.continually(rocks.indices).flatten
     private val ijet = Iterator.continually(jets.indices).flatten
 
-    private def set(mat: Seq[Array[Char]], pos: Pos, ch: Char): Unit = {
+    private def set(mat: List[Array[Char]], pos: Pos, ch: Char): Unit = {
         mat(pos.y)(pos.x) = ch
     }
     
-    private def get(mat: List[String], pos: Pos): Char = {
+    private def getRock(mat: List[String], pos: Pos): Char = {
         if (pos.y < 0 || pos.y >= mat.length || pos.x < 0 || pos.x >= mat(0).length) return ' '
         return mat(pos.y)(pos.x)
     }
 
-    private def get(mat: Seq[Array[Char]], pos: Pos): Char = {
+    private def getState(mat: List[Array[Char]], pos: Pos): Char = {
         return mat.lift(pos.y).getOrElse("#########".toCharArray).lift(pos.x).getOrElse(' ')
     }
 
@@ -47,32 +47,27 @@ class Tunnel(jets: String, linesToStore: Int) {
     }
 
     private def hit(rock: List[String], pos: Pos): Boolean = {
-        return area(rock).exists(pt => get(rock, pt) == '#' && get(lines, pt + pos) != ' ')
+        return area(rock).exists(pt => getRock(rock, pt) == '#' && getState(lines, pt + pos) != ' ')
     }
 
     private def draw(rock: List[String], pos: Pos): Unit = {
         for(pt <- area(rock)) {
-            if (get(rock, pt) == '#') {
+            if (getRock(rock, pt) == '#') {
                 set(lines, pt + pos, '#')
             }
         }
 
-        while (lines.headOption.exists(!_.contains('#'))) {
-            lines = lines.tail
-        }
+        lines = lines.dropWhile(!_.contains('#'))
 
-        while (lines.size > linesToStore) {
-            lines = lines.dropRight(1)
-            linesNotStored += 1
-        }
+        val excessCount = math.max(0, lines.size - linesToStore)
+        lines = lines.dropRight(excessCount)
+        linesNotStored += excessCount
     }
 
-    def addRock(): Tunnel = {
+    private def addRock(): Unit = {
         val rock = rocks(irock.next())
         
-        for (_ <- 0 until rock.length + 3) {
-            lines = "|       |".toCharArray :: lines
-        }
+        lines = List.fill(rock.length + 3)("|       |".toCharArray) ++ lines
 
         var pos = Pos(0, 3)
 
@@ -80,25 +75,19 @@ class Tunnel(jets: String, linesToStore: Int) {
             while (true) {
                 val jet = jets(ijet.next())
                 
-                pos = jet match {
-                    case '>' if !hit(rock, pos.right) => pos.right
-                    case '<' if !hit(rock, pos.left)  => pos.left
-                    case _                            => pos
-                }
+                if (jet == '>' && !hit(rock, pos.right)) { pos = pos.right }
+                else if (jet == '<' && !hit(rock, pos.left)) { pos = pos.left }
 
-                if (hit(rock, pos.below)) {
-                    break()            
-                }
+                if (hit(rock, pos.below)) break()
 
                 pos = pos.below
             }
         }
 
         draw(rock, pos)
-        return this
     }
     
-    def addRocks(rocksToAddInit: Long): Tunnel = {
+    def addRocks(rocksToAddInit: Long): Long = {
         var rocksToAdd = rocksToAddInit
         val seen = Map.empty[String, (Long, Long)]
 
@@ -123,17 +112,14 @@ class Tunnel(jets: String, linesToStore: Int) {
             }
         }
 
-        while (rocksToAdd > 0) {
-            addRock()
-            rocksToAdd -= 1
-        }
+        for (_ <- 1L to rocksToAdd) { addRock() }
         
-        return this
+        return height
     }    
 }
 
-def evaluatorOne(input: String): Long = Tunnel(input, 100).addRocks(2022).height
-def evaluatorTwo(input: String): Long = Tunnel(input, 100).addRocks(1000000000000L).height
+def evaluatorOne(input: String): Long = Tunnel(input, 100).addRocks(2022)
+def evaluatorTwo(input: String): Long = Tunnel(input, 100).addRocks(1000000000000L)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

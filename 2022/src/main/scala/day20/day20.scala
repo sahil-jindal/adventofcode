@@ -2,27 +2,25 @@ package day20
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.ArrayBuffer
 
-case class Data(idx: Int, value: Long)
+case class Data(idx: Int, value: Long) {
+    def *(num: Long) = Data(idx, value * num)
+}
 
-def parseInput(input: List[String], m: Long): List[Data] = {
-    return input.zipWithIndex.map { case (line, idx) => Data(idx, line.toInt * m) }
+def parseInput(input: List[String]): List[Data] = {
+    return input.zipWithIndex.map { case (line, idx) => Data(idx, line.toInt) }
 }
 
 def mix(numsWithIdxInit: List[Data]): List[Data] = {
-    val numsWithIdx = ListBuffer(numsWithIdxInit*)
+    val numsWithIdx = ArrayBuffer(numsWithIdxInit*)
     val mod = numsWithIdxInit.size - 1
 
     for (idx <- numsWithIdxInit.indices) {
         val srcIdx = numsWithIdx.indexWhere(_.idx == idx)
         val num = numsWithIdx(srcIdx)
 
-        var dstIdx = (srcIdx + num.value) % mod
-
-        if (dstIdx < 0) {
-            dstIdx += mod
-        }
+        val dstIdx = ((srcIdx + num.value) % mod + mod) % mod
 
         numsWithIdx.remove(srcIdx)
         numsWithIdx.insert(dstIdx.toInt, num)
@@ -32,17 +30,15 @@ def mix(numsWithIdxInit: List[Data]): List[Data] = {
 }
 
 def getGrooveCoordinates(numsWithIdx: List[Data]): Long = {
-    val idx = numsWithIdx.indexWhere(_.value == 0)
-    
-    numsWithIdx((idx + 1000) % numsWithIdx.size).value +
-    numsWithIdx((idx + 2000) % numsWithIdx.size).value +
-    numsWithIdx((idx + 3000) % numsWithIdx.size).value
+    val nums = numsWithIdx.map(_.value)
+    val idx = nums.indexWhere(_ == 0)
+    return Seq(1000, 2000, 3000).map(it => nums((idx + it) % nums.size)).sum
 }
 
-def evaluatorOne(input: List[String]): Long = getGrooveCoordinates(mix(parseInput(input, 1L)))
+def evaluatorOne(input: List[Data]): Long = getGrooveCoordinates(mix(input))
 
-def evaluatorTwo(input: List[String]): Long = {
-    var data = parseInput(input, 811589153L)
+def evaluatorTwo(input: List[Data]): Long = {
+    var data = input.map(_ * 811589153L)
     for (_ <- 0 until 10) data = mix(data)
     return getGrooveCoordinates(data)
 }
@@ -53,8 +49,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day20.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

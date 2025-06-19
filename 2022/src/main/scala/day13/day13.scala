@@ -29,7 +29,7 @@ object PacketOrdering extends Ordering[JsValue] {
             case _               => Seq.empty
         }
 
-        return arrayA.zip(arrayB)
+        return (arrayA zip arrayB)
             .map { case (a, b) => compare(a, b) }
             .find(_ != 0)
             .getOrElse(arrayA.size - arrayB.size)

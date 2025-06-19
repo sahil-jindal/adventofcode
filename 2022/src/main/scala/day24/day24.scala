@@ -2,27 +2,24 @@ package day24
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Set, PriorityQueue}
+import scala.collection.mutable.{PriorityQueue, Set}
 
 case class Pos(time: Int, y: Int, x: Int)
 
 case class Maps(private val map: List[String]) {    
-    val height = map.size
-    val width = map(0).size
+    val (height, width) = (map.size, map(0).size)
 
     def get(pos: Pos): Char = {
-        if (pos.y == 0 && pos.x == 1) then return '.'
-        if (pos.y == height - 1 && pos.x == width - 2) then return '.'
+        if (pos.y == 0 && pos.x == 1) return '.'
+        if (pos.y == height - 1 && pos.x == width - 2) return '.'
 
         if (pos.y <= 0 || pos.y >= height - 1 || 
-            pos.x <= 0 || pos.x >= width - 1
-        ) {
-            return '#'
-        }
+            pos.x <= 0 || pos.x >= width - 1) return '#'
 
         // blizzards have a horizontal and a vertical loop
         // it's easy to check the original postions with going back in time
         // using modular arithmetic
+        
         val hmod = width - 2
         val vmod = height - 2
 
@@ -31,10 +28,10 @@ case class Maps(private val map: List[String]) {
         val yN = (pos.y - 1 + vmod - (pos.time % vmod)) % vmod + 1
         val yS = (pos.y - 1 + vmod + (pos.time % vmod)) % vmod + 1
 
-        if map(pos.y)(xW) == '>' then return '>'
-        if map(pos.y)(xE) == '<' then return '<'
-        if map(yN)(pos.x) == 'v' then return 'v'
-        if map(yS)(pos.x) == '^' then return '^'
+        if (map(pos.y)(xW) == '>') return '>'
+        if (map(pos.y)(xE) == '<') return '<'
+        if (map(yN)(pos.x) == 'v') return 'v'
+        if (map(yS)(pos.x) == '^') return '^'
         
         return '.'
     }
@@ -66,35 +63,32 @@ def walkTo(start: Pos, goal: Pos, maps: Maps): Pos = {
 
     def evaluation(pos: Pos): Int = pos.time + (goal.y - pos.y).abs + (goal.x - pos.x).abs
 
-    val pq = PriorityQueue.empty(using Ordering.by(evaluation).reverse)
+    val pq = PriorityQueue(start)(using Ordering.by(evaluation).reverse)
     val seen = Set.empty[Pos]
-
-    pq.enqueue(start)
 
     while (pq.nonEmpty) {
         var pos = pq.dequeue()
 
         if (pos.y == goal.y && pos.x == goal.x) return pos
 
-        for (nextPos <- nextPositions(pos, maps)) {
-            if (!seen.contains(nextPos)) {
-                seen.add(nextPos)
-                pq.enqueue(nextPos)
-            }
-        }
+        val positions = nextPositions(pos, maps).filterNot(seen.contains)
+        seen.addAll(positions)
+        pq.addAll(positions)
     }
 
     throw Exception("No solution found")
 }
 
-def solver(input: List[String]): Unit = {
+def solver(input: List[String]): (Int, Int) = {
     val (entry, exit, maps) = parseInput(input)
     var pos = walkTo(entry, exit, maps)
-    println(s"Part One: ${pos.time}")
+    val partOne = pos.time
 
     pos = walkTo(pos, entry, maps)
     pos = walkTo(pos, exit, maps)
-    println(s"Part Two: ${pos.time}")
+    val partTwo = pos.time
+
+    return (partOne, partTwo)
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -102,7 +96,13 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 
 def hello(): Unit = {
     readLinesFromFile("day24.txt") match {
-        case Success(lines) => solver(lines)
-        case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
+        case Success(lines) => {
+            val (partOne, partTwo) = solver(lines)
+            println(s"Part One: ${partOne}")
+            println(s"Part Two: ${partTwo}")
+        }
+        case Failure(exception) => {
+            println(s"Error reading file: ${exception.getMessage}")
+        }
     }
 }

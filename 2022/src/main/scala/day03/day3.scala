@@ -4,11 +4,21 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
 def getCommonItemPriority(texts: List[String]): Int = {
-    return texts.head.collectFirst { case ch if texts.forall(_.contains(ch)) => if ch < 'a' then ch - 'A' + 27 else ch - 'a' + 1 }.get
+    val ch = texts.map(_.toSet).reduce(_ & _).head
+    
+    if (('A' to 'Z').contains(ch)) return ch - 'A' + 27 
+    if (('a' to 'z').contains(ch)) return ch - 'a' + 1
+
+    return ch
 }
 
-def evaluatorOne(input: List[String]) = input.map(it => getCommonItemPriority(it.grouped(it.length / 2).toList)).sum
-def evaluatorTwo(input: List[String]) = input.grouped(3).map(getCommonItemPriority).sum
+def solver(input: List[List[String]]): Int = input.map(getCommonItemPriority).sum
+
+def transformationOne(input: List[String]) = input.map(it => it.grouped(it.length / 2).toList)
+def transformationTwo(input: List[String]) = input.grouped(3).toList
+
+def evaluatorOne(input: List[String]): Int = solver(transformationOne(input))
+def evaluatorTwo(input: List[String]): Int = solver(transformationTwo(input))
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

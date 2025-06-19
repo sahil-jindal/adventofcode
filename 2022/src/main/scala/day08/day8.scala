@@ -4,67 +4,58 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.ListBuffer
 
-sealed trait Direction(val dy: Int, val dx: Int)
-case object Up extends Direction(-1, 0)
-case object Down extends Direction(1, 0)
-case object Left extends Direction(0, -1)
-case object Right extends Direction(0, 1)
+case class Direction(dy: Int, dx: Int)
 
-case class Tree(height: Int, y: Int, x: Int)
+case class Point(y: Int, x: Int) {
+    def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
+}
 
-case class Forest(items: List[String], height: Int, width: Int) {
-    def trees(): List[Tree] = {
-        return (for {
-            y <- 0 until height
-            x <- 0 until width
-        } yield Tree(items(y)(x).toInt, y, x)).toList
-    }
+val directions = Seq(Direction(-1, 0), Direction(1, 0), Direction(0, -1), Direction(0, 1))
 
-    private def treesInDirection(tree: Tree, dir: Direction): List[Tree] = {
-        var (y, x) = (tree.y + dir.dy, tree.x + dir.dx)
+case class Forest(trees: Map[Point, Int]) {
+    type Tree = (Point, Int)
+    
+    private def treesInDirection(tree: Point, dir: Direction): List[Int] = {
+        val res = ListBuffer.empty[Int]
+        var pos = tree + dir
 
-        val res = ListBuffer.empty[Tree]
-
-        while (y >= 0 && y < height && x >= 0 && x < width) {
-            res += Tree(items(y)(x).toInt, y, x)
-            y += dir.dy
-            x += dir.dx
+        while (trees.contains(pos)) {
+            res += trees(pos)
+            pos += dir
         }
 
         return res.toList
     }
 
-    private def smallerTrees(tree: Tree, dir: Direction): List[Tree] = {
-        return treesInDirection(tree, dir).takeWhile(_.height < tree.height)
+    private def smallerTrees(tree: Tree, dir: Direction): List[Int] = {
+        val (pos, height) = tree
+        return treesInDirection(pos, dir).takeWhile(_ < height)
     }
 
     def isTallest(tree: Tree, dir: Direction): Boolean = {
-        return treesInDirection(tree, dir).forall(_.height < tree.height)
+        val (pos, height) = tree
+        return treesInDirection(pos, dir).forall(_ < height)
     }
 
     def viewDistance(tree: Tree, dir: Direction): Int = {
-        if (isTallest(tree, dir)) return treesInDirection(tree, dir).size
+        if (isTallest(tree, dir)) return treesInDirection(tree(0), dir).size
         return smallerTrees(tree, dir).size + 1
     }
 }
 
 def parseInput(input: List[String]): Forest = {
-    val (width, height) = (input(0).length, input.length)
-    return Forest(input, height, width)
+    return Forest((for {
+        (line, y) <- input.zipWithIndex
+        (ch, x) <- line.zipWithIndex
+    } yield Point(y, x) -> ch.asDigit).toMap)
 }
 
 def evaluatorOne(forest: Forest): Int = {
-    return forest.trees().count(tree => 
-        forest.isTallest(tree, Left) || forest.isTallest(tree, Right) ||
-        forest.isTallest(tree, Up) || forest.isTallest(tree, Down)
-    )
+    return forest.trees.count(tree => directions.exists(forest.isTallest(tree, _)))
 }
 
 def evaluatorTwo(forest: Forest): Int = {
-    return forest.trees().map(tree => 
-        forest.viewDistance(tree, Left) * forest.viewDistance(tree, Right) *
-        forest.viewDistance(tree, Up) * forest.viewDistance(tree, Down)
-    ).max
+    return forest.trees.map(tree => directions.map(forest.viewDistance(tree, _)).product).max
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

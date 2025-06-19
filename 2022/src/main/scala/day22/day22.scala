@@ -147,7 +147,7 @@ def solve(input: List[String], topology: Map[Char, List[Pair]]): Int = {
     This mapping was generated from a paper model.
 */
 
-def evaluatorOne(input: List[String]) = solve(
+def evaluatorOne(input: List[String]): Int = solve(
     input, Map(
         'A' -> List(Pair('B', 0), Pair('C', 0), Pair('B', 0), Pair('E', 0)),
         'B' -> List(Pair('A', 0), Pair('B', 0), Pair('A', 0), Pair('B', 0)),
@@ -158,7 +158,7 @@ def evaluatorOne(input: List[String]) = solve(
     )
 )
 
-def evaluatorTwo(input: List[String]) = solve(
+def evaluatorTwo(input: List[String]): Int = solve(
     input, Map(
         'A' -> List(Pair('B', 0), Pair('C', 0), Pair('D', 2), Pair('F', 1)),
         'B' -> List(Pair('E', 2), Pair('C', 1), Pair('A', 0), Pair('F', 0)),

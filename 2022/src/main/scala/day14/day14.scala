@@ -5,93 +5,64 @@ import scala.io.Source
 import scala.collection.mutable.Map
 import scala.util.control.Breaks._
 
-case class Direction(dy: Int, dx: Int)
-
-case class Point(y: Int, x: Int) {
-    def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
+case class Vec2D(y: Int, x: Int) {
+    def sign = Vec2D(y.sign, x.sign)
+    def *(num: Int) = Vec2D(y * num, x * num)
+    def +(that: Vec2D) = Vec2D(y + that.y, x + that.x)
+    def -(that: Vec2D) = Vec2D(y - that.y, x - that.x)
 }
 
-class Cave(input: List[String], hasFloor: Boolean) {
-    private val map = Map.empty[Point, Char]
+case class Cave(input: List[Array[Vec2D]], hasFloor: Boolean) {
+    private val grid = Map.empty[Vec2D, Char]
 
-    private val maxFoor: Int = {
-        for(line <- input) {
-            val steps = line.split(" -> ").map(step => {
-                val Array(x, y) = step.split(",").map(_.toInt)
-                Point(y, x)
-            })
+    input.flatMap(steps => (steps.init zip steps.tail)).foreach(fillWithRocks)
+    private val maxFoor = grid.keys.map(_.y).max
 
-            for (i <- 1 until steps.length) {
-                fillWithRocks(steps(i - 1), steps(i))
-            }
-        }
-        
-        map.keys.map(_.y).max
+    private def fillWithRocks(start: Vec2D, end: Vec2D): Unit = {
+        val dispmnt = end - start
+        val dir = dispmnt.sign
+        val length = 1 + math.max(dispmnt.x.abs, dispmnt.y.abs)
+        (0 until length).map(start + dir * _).foreach(pos => grid(pos) = '#')
     }
 
-    def fillWithRocks(from: Point, to: Point): Int = {
-        val dir = Direction((to.y - from.y).sign, (to.x - from.x).sign)
-        var pos = from
-        var steps = 0
-
-        while (pos != to + dir) {
-            map(pos) = '#'
-            pos += dir
-            steps += 1
-        }
-        
-        steps
-    }
-
-    def fillWithSand(sandSource: Point): Int = {
-        breakable {
-            while (true) {
-                val location = simulateFallingSand(sandSource)
-
-                // already has sand there
-                if (map.contains(location)) {
-                    break()
-                }
-
-                // flows into the void
-                if (!hasFloor && location.y == maxFoor + 1) {
-                    break()
-                }
-
-                map(location) = 'o'
-            }
-        }
-        
-        return map.values.count(_ == 'o')
-    }
-
-    def simulateFallingSand(sand: Point): Point = {
-        val down = Direction(1, 0)
-        val left = Direction(1, -1)
-        val right = Direction(1, 1)
-
+    private def simulateFallingSand(sand: Vec2D): Vec2D = {
+        val movements = Seq(Vec2D(1, 0), Vec2D(1, -1), Vec2D(1, 1))
         var current = sand
 
         breakable {
             while (current.y < maxFoor + 1) {
-                if (!map.contains(current + down)) {
-                    current += down
-                } else if (!map.contains(current + left)) {
-                    current += left
-                } else if (!map.contains(current + right)) {
-                    current += right
-                } else {
-                    break()
-                }
+                val found = movements.find(it => !grid.contains(current + it))
+                if (found.isEmpty) break()
+                current += found.get
             }
         }
 
-        current
+        return current
+    }
+
+    def fillWithSand(sandSource: Vec2D): Int = {
+        breakable {
+            while (true) {
+                val location = simulateFallingSand(sandSource)
+                if (grid.contains(location)) break()  // already has sand there
+                if (!hasFloor && location.y == maxFoor + 1) break()  // flows into the void
+                grid(location) = 'o'
+            }
+        }
+        
+        return grid.values.count(_ == 'o')
     }
 }
 
-def evaluatorOne(input: List[String]): Int = new Cave(input, false).fillWithSand(Point(0, 500))
-def evaluatorTwo(input: List[String]): Int = new Cave(input, true).fillWithSand(Point(0, 500))
+def parseInput(input: List[String]): List[Array[Vec2D]] = {
+    return input.map(_.split(" -> ").map(step => {
+        val Array(x, y) = step.split(",").map(_.toInt)
+        Vec2D(y, x)
+    }))
+}
+
+def evaluatorOne(input: List[Array[Vec2D]]): Int = new Cave(input, false).fillWithSand(Vec2D(0, 500))
+def evaluatorTwo(input: List[Array[Vec2D]]): Int = new Cave(input, true).fillWithSand(Vec2D(0, 500))
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -99,8 +70,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day14.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

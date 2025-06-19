@@ -22,6 +22,7 @@ val SE = S + E
 val SW = S + W
 
 val directions = Seq(NW, N, NE, E, SE, S, SW, W)
+val extendDir = Map(N -> Seq(NW, N, NE), E -> Seq(NE, E, SE), S -> Seq(SW, S, SE), W -> Seq(NW, W, SW))
 
 def parseInput(input: List[String]): Set[Point] = {
     return (for {
@@ -29,14 +30,6 @@ def parseInput(input: List[String]): Set[Point] = {
         (ch, x) <- line.zipWithIndex
         if ch == '#'
     } yield Point(y, x)).toSet
-}
-
-def extendDir(dir: Direction): Seq[Direction] = {
-    if dir == N then return Seq(NW, N, NE)
-    if dir == E then return Seq(NE, E, SE)
-    if dir == S then return Seq(SW, S, SE)
-    if dir == W then return Seq(NW, W, SW)
-    throw Exception()
 }
 
 def simulate(elvesInit: Set[Point]): List[Set[Point]] = {

@@ -9,18 +9,14 @@ case class Pair(elf: Char, human: Char)
 
 def parseInput(input: List[String]): List[Pair] = input.map(it => Pair(it(0), it(2)))
 
-def next(sign: Sign): Sign = sign match {
-    case Sign.Rock => Sign.Paper 
-    case Sign.Paper => Sign.Scissors
-    case Sign.Scissors => Sign.Rock
-}
-
 def score(elfSign: Sign, humanSign: Sign): Int = {
-    if (humanSign == next(elfSign)) return 6 + humanSign.ordinal + 1 
-    if (humanSign == elfSign) return 3 + humanSign.ordinal + 1 
-    if (humanSign == next(next(elfSign))) return 0 + humanSign.ordinal + 1 
+    val p1 = elfSign.ordinal
+    val p2 = humanSign.ordinal
+
+    if ((p1 + 1) % 3 == p2) return 6 + p2 + 1 
+    if ((p1 + 2) % 3 == p2) return 0 + p2 + 1 
     
-    throw Exception()
+    return 3 + p2 + 1 
 }
 
 def elf(move: Char): Sign = move match {
@@ -41,11 +37,15 @@ def humanOne(move: Pair): Sign = move.human match {
     case _ => throw Exception()
 }
 
-def humanTwo(move: Pair): Sign = move match {   
-    case Pair(first, 'X') => next(next(elf(first))) // elf wins
-    case Pair(first, 'Y') => elf(first)             // draw
-    case Pair(first, 'Z') => next(elf(first))       // you win
-    case _ => throw Exception()
+def humanTwo(move: Pair): Sign = {
+    val p1 = elf(move.elf).ordinal
+
+    move.human match {   
+        case 'X' => Sign.fromOrdinal((p1 + 2) % 3) // elf wins
+        case 'Y' => Sign.fromOrdinal(p1)           // draw
+        case 'Z' => Sign.fromOrdinal((p1 + 1) % 3) // you win
+        case _ => throw Exception()
+    }
 }
 
 def evaluatorOne(input: List[Pair]) = total(input, humanOne)

@@ -24,12 +24,9 @@ def getDirectorySizes(input: List[String]): List[Int] = {
     return sizes.values.toList
 }
 
-def evaluatorOne(input: List[String]): Int = {
-    return getDirectorySizes(input).filter(_ < 100000).sum
-}
+def evaluatorOne(directorySizes: List[Int]): Int = directorySizes.filter(_ < 100000).sum
 
-def evaluatorTwo(input: List[String]): Int = {
-    val directorySizes = getDirectorySizes(input)
+def evaluatorTwo(directorySizes: List[Int]): Int = {
     val freeSpace = 70000000 - directorySizes.max
     return directorySizes.filter(_ + freeSpace >= 30000000).min
 }
@@ -40,8 +37,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day07.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = getDirectorySizes(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

@@ -2,7 +2,8 @@ package day21
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.Map
+
+type Context = Map[String, List[String]]
 
 sealed trait Expr { def simplify(): Expr }
 
@@ -35,28 +36,26 @@ case class Op(left: Expr, op: String, right: Expr) extends Expr {
     }
 }
 
-def parseInput(input: List[String], part2: Boolean): Expr = {
-    val context = Map.empty[String, Array[String]]
-    
-    for (line <- input) {
-        val parts = line.split(" ")
-        context(parts(0).stripSuffix(":")) = parts.drop(1)
-    }
+def parseInput(input: List[String]) = input.map(line => {
+    val Array(key, value) = line.split(": ")
+    key -> value.split(" ").toList
+}).toMap
 
+def createExpression(context: Context, part2: Boolean): Expr = {
     def buildExpr(name: String): Expr = {
         val parts = context(name)
         
         if (part2) {
-            if name == "humn" then return Var("humn")
-            if name == "root" then return Eq(buildExpr(parts(0)), buildExpr(parts(2)))
+            if (name == "humn") return Var("humn")
+            if (name == "root") return Eq(buildExpr(parts(0)), buildExpr(parts(2)))
         }
         
-        if parts.length == 1 then return Const(parts(0).toLong)
+        if (parts.length == 1) return Const(parts(0).toLong)
 
         return Op(buildExpr(parts(0)), parts(1), buildExpr(parts(2)))
     }
 
-    buildExpr("root")
+    return buildExpr("root")
 }
 
 def solve(eq: Eq): Eq = eq.left match {
@@ -70,16 +69,16 @@ def solve(eq: Eq): Eq = eq.left match {
     case _ => eq
 }
 
-def evaluatorOne(input: List[String]): String = parseInput(input, false).simplify().toString()
+def evaluatorOne(context: Context): String = {
+    return createExpression(context, false).simplify().toString()
+}
 
-def evaluatorTwo(input: List[String]): String = {
-    var expr = parseInput(input, true).asInstanceOf[Eq]
+def evaluatorTwo(context: Context): String = {
+    var expr = createExpression(context, true).asInstanceOf[Eq]
     
-    while !expr.left.isInstanceOf[Var] do {
-        expr = solve(expr)
-    }
+    while (!expr.left.isInstanceOf[Var]) { expr = solve(expr) }
     
-    expr.right.toString()
+    return expr.right.toString()
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -88,8 +87,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day21.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
