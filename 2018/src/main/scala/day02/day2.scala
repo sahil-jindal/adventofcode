@@ -4,7 +4,7 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
 def checkLine(input: String, n: Int): Boolean = {
-    return input.groupBy(identity).values.map(_.length).exists(_ == n)
+    return input.groupMapReduce(identity)(_ => 1)(_ + _).values.exists(_ == n)
 }
 
 def diff(line1: String, line2: String): Int = {
@@ -16,8 +16,8 @@ def common(line1: String, line2: String): String = {
 }
 
 def evaluatorOne(input: List[String]): Int = {
-    val doubles = input.count(line => checkLine(line, 2))
-    val triples = input.count(line => checkLine(line, 3))
+    val doubles = input.count(checkLine(_, 2))
+    val triples = input.count(checkLine(_, 3))
     return doubles * triples
 }
 
@@ -30,6 +30,7 @@ def evaluatorTwo(input: List[String]): String = {
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
+@main
 def hello(): Unit = {
     readLinesFromFile("day02.txt") match {
         case Success(lines) => {
