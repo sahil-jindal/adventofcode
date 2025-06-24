@@ -16,7 +16,7 @@ def checkTLSCompatibility(ipAddress: IPAddress): Boolean = {
 }
 
 def checkSSLCompatibility(ipAddress: IPAddress): Boolean = {
-    def findABASequences(input: String) = input.sliding(3).collect { case s if s(0) == s(2) && s(0) != s(1) => s }
+    def findABASequences(input: String) = input.sliding(3).filter(s => s(0) == s(2) && s(0) != s(1))
     def findCorrespondingBABs(aba: String) = aba(1).toString + aba(0).toString + aba(1).toString
 
     val outsideABAs = ipAddress.outside.flatMap(findABASequences).toSet
