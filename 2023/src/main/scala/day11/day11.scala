@@ -9,11 +9,11 @@ def emptyRows(map: List[List[Char]]) = map.zipWithIndex.collect {
     case (row, idx) if row.forall(_ == '.') => idx
 }
 
-def findAll(map: List[String], key: Char): List[Position] = {
+def findAll(map: List[String]): List[Position] = {
     return (for {
         (line, y) <- map.zipWithIndex
         (ch, x) <- line.zipWithIndex
-        if ch == key
+        if ch == '#'
     } yield Position(y, x)).toList
 }
 
@@ -29,7 +29,7 @@ def solve(input: List[String], expansion: Int): Long = {
     val isRowEmpty = emptyRows(map).toSet.contains
     val isColEmpty = emptyRows(map.transpose).toSet.contains
 
-    val galaxies = findAll(input, '#')
+    val galaxies = findAll(input)
 
     return (for {
         g <- galaxies.combinations(2)

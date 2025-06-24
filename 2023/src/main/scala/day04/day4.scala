@@ -3,23 +3,21 @@ package day04
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Card(matches: Int)
-
 def parseInput(input: List[String]) = input.map(line => {
-    val parts = line.split(Array(':', '|'))
-    val l = raw"(\d+)".r.findAllIn(parts(1)).toSet
-    val r = raw"(\d+)".r.findAllIn(parts(2)).toSet
-    Card((l & r).size)
+    val Array(_, b, c) = line.split(Array(':', '|'))
+    val l = raw"(\d+)".r.findAllIn(b).toSet
+    val r = raw"(\d+)".r.findAllIn(c).toSet
+    (l & r).size
 })
 
-def evaluatorOne(cards: List[Card]): Int = {
-    return cards.collect { case Card(matches) if matches > 0 => 1 << (matches - 1) }.sum
+def evaluatorOne(cards: List[Int]): Int = {
+    return cards.collect { case matches if matches > 0 => 1 << (matches - 1) }.sum
 }
 
-def evaluatorTwo(cards: List[Card]): Int = {
+def evaluatorTwo(cards: List[Int]): Int = {
     val counts = Array.fill(cards.length)(1)
 
-    for ((card, i) <- cards.zipWithIndex; j <- 0 until card.matches) {
+    for ((matches, i) <- cards.zipWithIndex; j <- 0 until matches) {
         counts(i + j + 1) += counts(i)
     }
 

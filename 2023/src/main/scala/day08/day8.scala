@@ -3,15 +3,20 @@ package day08
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Pair(left: String, right: String)
+case class PairOne(left: String, right: String)
+case class PairTwo(dirs: String, map: Edges)
 
-type Edges = Map[String, Pair]
+type Edges = Map[String, PairOne]
 
-def parseMap(input: List[String]): Edges = {
-    return input.map(line => {
-        val parts = raw"(\w+)".r.findAllIn(line).toList
-        parts(0) -> Pair(parts(1), parts(2))
+def parseInput(input: List[String]): PairTwo = {
+    val dirs = input.head
+
+    val map = input.drop(2).map(line => {
+        val Seq(key, left, right) = raw"(\w+)".r.findAllIn(line).toSeq
+        key -> PairOne(left, right)
     }).toMap
+
+    return PairTwo(dirs, map)
 }
 
 def stepsToZ(currentInit: String, zMarker: String, dirsInit: String, map: Edges): Long = {
@@ -31,15 +36,13 @@ def stepsToZ(currentInit: String, zMarker: String, dirsInit: String, map: Edges)
 def gcd(a: Long, b: Long): Long = if b == 0 then a else gcd(b, a % b)
 def lcm(a: Long, b: Long): Long = a * b / gcd(a, b)
 
-def solve(input: List[String], aMarker: String, zMarker: String): Long = {
-    val dirs = input.head
-    val map = parseMap(input.drop(2))
-
+def solve(input: PairTwo, aMarker: String, zMarker: String): Long = {
+    val PairTwo(dirs, map) = input
     return map.keys.collect { case w if w.endsWith(aMarker) => stepsToZ(w, zMarker, dirs, map) }.reduce(lcm)
 }
 
-def evaluatorOne(input: List[String]): Long = solve(input, "AAA", "ZZZ")
-def evaluatorTwo(input: List[String]): Long = solve(input, "A", "Z")
+def evaluatorOne(input: PairTwo): Long = solve(input, "AAA", "ZZZ")
+def evaluatorTwo(input: PairTwo): Long = solve(input, "A", "Z")
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -47,8 +50,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day08.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

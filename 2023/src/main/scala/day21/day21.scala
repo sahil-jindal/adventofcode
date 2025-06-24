@@ -54,7 +54,7 @@ def evaluatorTwo(input: Set[Point]): Long = {
 
     val n = 26501365
 
-    Math.round(y0 + y01 * (n - x0) + y012 * (n - x0) * (n - x1))
+    return Math.round(y0 + y01 * (n - x0) + y012 * (n - x0) * (n - x1))
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

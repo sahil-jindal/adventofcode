@@ -35,9 +35,7 @@ def repeater(name: String, inputs: List[String], outputs: List[String]): Gate = 
     })
 }
 
-def parseGates(inputInit: List[String]): Map[String, Gate] = {
-    val input = inputInit :+ "rx ->" // an extra rule for rx with no output
-
+def parseGates(input: List[String]): Map[String, Gate] = {
     val descriptions = input.map(line => {
         val words = raw"(\w+)".r.findAllIn(line).toList
         Group(line.head, words.head, words.tail)
@@ -95,8 +93,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day20.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = lines :+ "rx ->" // an extra rule for rx with no output
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

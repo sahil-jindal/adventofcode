@@ -4,8 +4,8 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.ListBuffer
 
-case class Point(x: Int, y: Int) {
-    def swap = Point(y, x)
+case class Point(y: Int, x: Int) {
+    def swap = Point(x, y)
 }
 
 def groupLines(input: List[String]): List[List[String]] = {
@@ -20,7 +20,7 @@ def parseGrid(input: List[String]): Set[Point] = {
         (line, y) <- input.zipWithIndex
         (ch, x) <- line.zipWithIndex
         if ch == '#'
-    } yield Point(x, y)).toSet
+    } yield Point(y, x)).toSet
 }
 
 def parseInput(input: List[String]): List[Set[Point]] = {

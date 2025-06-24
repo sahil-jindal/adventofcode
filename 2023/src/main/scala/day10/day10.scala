@@ -39,48 +39,46 @@ def parseMap(input: List[String]): Grid = {
     } yield Point(y, x) -> ch).toMap
 }
 
-def loopPositions(map: Grid): (Set[Point], Char) = {
-    var position = map.keys.find(k => map(k) == 'S').get
-    var positions = Set.empty[Point]
+def loopPositions(grid: Grid): (Set[Point], Grid) = {
+    var position = grid.collectFirst { case (k, v) if v == 'S' => k }.get
+    val positions = Set.empty[Point]
 
     val initialDir = Dirs.find(dir => {
         val nextPos = position + dir
-        map.contains(nextPos) && Exits(map(nextPos)).contains(-dir)
+        grid.contains(nextPos) && Exits(grid(nextPos)).contains(-dir)
     }).get
 
     var dir = initialDir
-    var sReplacement = ' '
 
     breakable {
         while (true) {
             positions += position
             position += dir
 
-            if (map(position) == 'S') {
-                // Determine the replacement for 'S' based on the first and last directions
-                val lastDir = -dir
-                sReplacement = (initialDir, lastDir) match {
-                    case (Up, Down) | (Down, Up) => '|'
-                    case (Left, Right) | (Right, Left) => '-'
-                    case (Up, Right) | (Right, Up) => 'L'
-                    case (Up, Left) | (Left, Up) => 'J'
-                    case (Down, Left) | (Left, Down) => '7'
-                    case (Down, Right) | (Right, Down) => 'F'
-                    case _ => 'S' // Fallback, though this case shouldn't occur
-                }
-
-                break()
-            }
-
-            dir = Exits(map(position)).find(_ != -dir).get
+            if (grid(position) == 'S') break()
+            
+            dir = Exits(grid(position)).find(_ != -dir).get
         }
     }
 
-    return (positions, sReplacement)
+    // Determine the replacement for 'S' based on the first and last directions
+    val lastDir = -dir
+
+    val sReplacement = (initialDir, lastDir) match {
+        case (Up, Down) | (Down, Up) => '|'
+        case (Left, Right) | (Right, Left) => '-'
+        case (Up, Right) | (Right, Up) => 'L'
+        case (Up, Left) | (Left, Up) => 'J'
+        case (Down, Left) | (Left, Down) => '7'
+        case (Down, Right) | (Right, Down) => 'F'
+        case _ => 'S' // Fallback, though this case shouldn't occur
+    }
+
+    return (positions, grid.updated(position, sReplacement))
 }
 
 // Check if position is inside the loop using ray casting algorithm
-def inside(positionInit: Point, map: Grid, loop: Set[Point]): Boolean = {
+def inside(positionInit: Point, grid: Grid, loop: Set[Point]): Boolean = {
     // Imagine a small elf starting from the top half of a cell and moving 
     // to the left jumping over the pipes it encounters. It needs to jump 
     // over only 'vertically' oriented pipes leading upwards, since it runs 
@@ -91,8 +89,8 @@ def inside(positionInit: Point, map: Grid, loop: Set[Point]): Boolean = {
     var inside = false
     var position = positionInit + Left
 
-    while (map.contains(position)) {
-        if (loop.contains(position) && Exits(map(position)).contains(Up)) {
+    while (grid.contains(position)) {
+        if (loop.contains(position) && Exits(grid(position)).contains(Up)) {
             inside = !inside
         }
         
@@ -102,16 +100,10 @@ def inside(positionInit: Point, map: Grid, loop: Set[Point]): Boolean = {
     return inside
 }
 
-def solver(input: List[String]) = {
+def solver(input: List[String]): (Int, Int) = {
     val originalMap = parseMap(input)
-    val (loop, sReplacement) = loopPositions(originalMap)
-    val startPos = originalMap.keys.find(k => originalMap(k) == 'S').get
-    val updatedMap = originalMap.updated(startPos, sReplacement)
-
-    println(s"Part One: ${loop.size / 2}")
-
-    val partTwo = updatedMap.keys.count(inside(_, updatedMap, loop))
-    println(s"Part Two: $partTwo")
+    val (loop, updatedMap) = loopPositions(originalMap)
+    return (loop.size / 2, updatedMap.keys.count(inside(_, updatedMap, loop)))
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -119,7 +111,13 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 
 def hello(): Unit = {
     readLinesFromFile("day10.txt") match {
-        case Success(lines) => solver(lines)
-        case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
+        case Success(lines) => {
+            val (partOne, partTwo) = solver(lines)
+            println(s"Part One: $partOne")
+            println(s"Part Two: $partTwo")
+        }
+        case Failure(exception) => {
+            println(s"Error reading file: ${exception.getMessage}")
+        }
     }
 }

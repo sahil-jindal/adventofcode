@@ -2,162 +2,68 @@ package day14
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Map, ListBuffer}
-import scala.util.boundary, boundary.break
+import scala.collection.mutable.Map
+import scala.util.control.Breaks._
 
-type Grid = List[Array[Char]]
+type Grid = Array[Array[Char]]
 
 def parseInput(input: List[String]) = input.map(_.toCharArray).toArray
 
 // Tilt the platform north
-def tiltNorth(platform: Array[Array[Char]]): Array[Array[Char]] = {
-    val height = platform.length
-    val width = platform(0).length
+def tiltNorth(platform: Grid): Grid = {
+    val (height, width) = (platform.length, platform(0).length)
     val result = platform.map(_.clone())
-    
+
     for (x <- 0 until width) {
         var nextEmptyRow = 0
         for (y <- 0 until height) {
             result(y)(x) match {
-                case 'O' => 
-                    if (nextEmptyRow < y) {
-                        // Move the rounded rock to the empty spot
-                        result(nextEmptyRow)(x) = 'O'
-                        result(y)(x) = '.'
-                        nextEmptyRow += 1
-                    } else {
-                        nextEmptyRow = y + 1
-                    }
-                case '#' => 
-                    // Cube-shaped rocks don't move, but block movement
-                    nextEmptyRow = y + 1
-                case '.' => 
-                    // Do nothing for empty spaces
+                case '#' => nextEmptyRow = y + 1
+                case 'O' => {
+                    result(y)(x) = '.'
+                    result(nextEmptyRow)(x) = 'O'
+                    nextEmptyRow += 1
+                }
+                case _ =>
             }
         }
     }
-    
-    result
+
+    return result
 }
-  
-// Tilt the platform south
-def tiltSouth(platform: Array[Array[Char]]): Array[Array[Char]] = {
-    val height = platform.length
-    val width = platform(0).length
-    val result = platform.map(_.clone())
+
+// Rotate the platform 90 degrees clockwise
+def rotateClockwise(platform: Grid): Grid = {
+    val (height, width) = (platform.length, platform(0).length)
+    val rotated = Array.ofDim[Char](width, height)
     
-    for (x <- 0 until width) {
-        var nextEmptyRow = height - 1
-        for (y <- (height - 1) to 0 by -1) {
-            result(y)(x) match {
-                case 'O' => 
-                    if (nextEmptyRow > y) {
-                        // Move the rounded rock to the empty spot
-                        result(nextEmptyRow)(x) = 'O'
-                        result(y)(x) = '.'
-                        nextEmptyRow -= 1
-                    } else {
-                        nextEmptyRow = y - 1
-                    }
-                case '#' => 
-                    // Cube-shaped rocks don't move, but block movement
-                    nextEmptyRow = y - 1
-                case '.' => 
-                    // Do nothing for empty spaces
-            }
-        }
+    for (y <- 0 until height; x <- 0 until width) {
+        rotated(x)(height - y - 1) = platform(y)(x)
     }
     
-    result
+    return rotated
 }
-  
-// Tilt the platform west
-def tiltWest(platform: Array[Array[Char]]): Array[Array[Char]] = {
-    val height = platform.length
-    val width = platform(0).length
-    val result = platform.map(_.clone())
-    
-    for (y <- 0 until height) {
-        var nextEmptyCol = 0
-        for (x <- 0 until width) {
-            result(y)(x) match {
-                case 'O' => 
-                    if (nextEmptyCol < x) {
-                        // Move the rounded rock to the empty spot
-                        result(y)(nextEmptyCol) = 'O'
-                        result(y)(x) = '.'
-                        nextEmptyCol += 1
-                    } else {
-                        nextEmptyCol = x + 1
-                    }
-                case '#' => 
-                    // Cube-shaped rocks don't move, but block movement
-                    nextEmptyCol = x + 1
-                case '.' => 
-                    // Do nothing for empty spaces
-            }
-        }
-    }
-    
-    result
-}
-  
-// Tilt the platform east
-def tiltEast(platform: Array[Array[Char]]): Array[Array[Char]] = {
-    val height = platform.length
-    val width = platform(0).length
-    val result = platform.map(_.clone())
-    
-    for (y <- 0 until height) {
-        var nextEmptyCol = width - 1
-        for (x <- (width - 1) to 0 by -1) {
-            result(y)(x) match {
-                case 'O' => 
-                    if (nextEmptyCol > x) {
-                        // Move the rounded rock to the empty spot
-                        result(y)(nextEmptyCol) = 'O'
-                        result(y)(x) = '.'
-                        nextEmptyCol -= 1
-                    } else {
-                        nextEmptyCol = x - 1
-                    }
-                case '#' => 
-                    // Cube-shaped rocks don't move, but block movement
-                    nextEmptyCol = x - 1
-                case '.' => 
-                    // Do nothing for empty spaces
-            }
-        }
-    }
-    
-    result
-}
-  
-// Calculate the load on the north support beams
-def calculateLoad(platform: Array[Array[Char]]): Int = {
-    val height = platform.length
-    
-    return (0 until height).map { y =>
-        platform(y).count(_ == 'O') * (height - y)
-    }.sum
-}
-  
+
 // One complete cycle: North, West, South, East
-def cycle(platform: Array[Array[Char]]): Array[Array[Char]] = {
-    val afterNorth = tiltNorth(platform)
-    val afterWest = tiltWest(afterNorth)
-    val afterSouth = tiltSouth(afterWest)
-    tiltEast(afterSouth)
+def cycle(platform: Grid): Grid = {
+    var current = platform
+
+    for (_ <- 0 until 4) { 
+        current = rotateClockwise(tiltNorth(current)) 
+    }
+
+    return current
 }
-  
+
 // Run the specified number of cycles, detecting cycles to avoid unnecessary computation
-def runCycles(platform: Array[Array[Char]], numCycles: Int): Int = {
+def runCycles(platform: Grid): Grid = {
+    val numCycles = 1000000000
     var current = platform
     val seen = Map.empty[String, Int]
     
-    boundary {
+    breakable {
         for (i <- 0 until numCycles) {
-            val platformKey = current.map(_.mkString).mkString("\n")
+            val platformKey = current.flatten.mkString
         
             if (seen.contains(platformKey)) {
                 // Found a cycle, calculate the final state
@@ -170,16 +76,26 @@ def runCycles(platform: Array[Array[Char]], numCycles: Int): Int = {
                     current = cycle(current)
                 }
 
-                break(calculateLoad(current))
+                break()
             }
         
             seen(platformKey) = i
             current = cycle(current)
         }
-    
-        calculateLoad(current)
     }
+    
+    return current
 }
+
+// Calculate the load on the north support beams
+def calculateLoad(platform: Grid): Int = {
+    return platform.reverseIterator.zipWithIndex.map { case (line, y) => 
+        line.count(_ == 'O') * (y + 1)
+    }.sum
+}
+
+def evaluatorOne(input: Grid): Int = calculateLoad(tiltNorth(input))
+def evaluatorTwo(input: Grid): Int = calculateLoad(runCycles(input))
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -187,10 +103,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day14.txt") match {
         case Success(lines) => {
-            val examplePlatform = parseInput(lines)
-            val tiltedPlatform = tiltNorth(examplePlatform)
-            println(s"Part One: ${calculateLoad(tiltedPlatform)}")
-            println(s"Part Two: ${runCycles(examplePlatform, 1000000000)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

@@ -15,8 +15,8 @@ case class Point(y: Long, x: Long) {
 }
 
 def parseInput(input: List[String]) = input.map(line => {
-    val parts = line.split(" ")
-    Group(parts(0).head, parts(1).toInt, parts(2).substring(2, 8))
+    val Array(a, b, c) = line.split(" ")
+    Group(a.head, b.toInt, c.substring(2, 8))
 })
 
 def stepsOne(input: List[Group]) = input.map(group => {
@@ -41,13 +41,9 @@ def stepsTwo(input: List[Group]) = input.map(group => {
     dir * Integer.parseInt(group.color.init, 16) 
 })
 
-def getVertices(steps: List[Direction]): List[Point] = {
-    return steps.scanLeft(Point(0, 0))(_ + _).tail
-}
-
 // We are using a combination of the shoelace formula with Pick's theorem
 def area(steps: List[Direction]): Long = {
-    val vertices = getVertices(steps)
+    val vertices = steps.scanLeft(Point(0, 0))(_ + _).tail
 
     // Shoelace formula https://en.wikipedia.org/wiki/Shoelace_formula
     val shiftedVertices = vertices.tail :+ vertices.head

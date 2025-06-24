@@ -16,10 +16,6 @@ type Cache = Map[(String, List[Int]), Long]
 // a dead range needs special treatment: it cannot be a '#', and if it was a '?'
 // we should consider it as a '.' according to the problem statement.
 
-def unfold(s: String, sep: Char, times: Int): String = {
-    return List.fill(times)(s).mkString(sep.toString)
-}
-
 // no numbers left at the end of pattern -> good
 def processEnd(nums: List[Int]): Long = if (nums.nonEmpty) 0 else 1
 
@@ -64,18 +60,20 @@ def compute(pattern: String, nums: List[Int], cache: Cache): Long = {
     return cache.getOrElseUpdate((pattern, nums), dispatch(pattern, nums, cache))
 }
 
-def solve(input: List[String], repeat: Int): Long = {
-    input.map(line => {
-        val parts = line.split(" ")
-        val pattern = unfold(parts(0), '?', repeat)
-        val numString = unfold(parts(1), ',', repeat)
-        val nums = numString.split(',').map(_.toInt).toList
-        compute(pattern, nums, Map.empty)
-    }).sum
+def unfold(s: String, sep: Char, times: Int): String = {
+    return List.fill(times)(s).mkString(sep.toString)
 }
 
-def evaluatorOne(input: List[String]): Long = solve(input, 1)
-def evaluatorTwo(input: List[String]): Long = solve(input, 5)
+def solve(line: String, repeat: Int): Long = {
+    val Array(ptrn, numStr) = line.split(" ")
+    val pattern = unfold(ptrn, '?', repeat)
+    val numString = unfold(numStr, ',', repeat)
+    val nums = numString.split(',').map(_.toInt).toList
+    compute(pattern, nums, Map.empty)
+}
+
+def evaluatorOne(input: List[String]): Long = input.map(solve(_, 1)).sum
+def evaluatorTwo(input: List[String]): Long = input.map(solve(_, 5)).sum
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

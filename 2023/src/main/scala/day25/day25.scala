@@ -3,6 +3,7 @@ package day25
 import scala.util.{Try, Success, Failure, Using, Random}
 import scala.io.Source
 import scala.collection.mutable.{Map, Set}
+import scala.util.control.Breaks._
 
 case class Group(size: Int, c1: Int, c2: Int)
 
@@ -68,26 +69,18 @@ def findCut(edges: List[(String, String)], r: Random): Group = {
     val shuffledEdges = r.shuffle(edges)
     val uf = new UnionFind(allNodes)
 
-    var i = 0
-
-    while (uf.getComponentCount > 2 && i < shuffledEdges.length) {
-        val (u, v) = shuffledEdges(i)
-        uf.union(u, v)
-        i += 1
-    }
-
-    var cutSize = 0
-
-    for ((u, v) <- edges) {
-        if (uf.find(u) != uf.find(v)) {
-            cutSize += 1
+    breakable {
+        for ((u, v) <- shuffledEdges) {
+            if (uf.getComponentCount <= 2) break()
+            uf.union(u, v)
         }
     }
 
-    if (uf.getComponentCount != 2) return Group(0, 0, 0)
-    
-    val components = allNodes.groupBy(uf.find).values.map(_.size).toList
-    return Group(cutSize, components.head, components(1))
+    val cutSize = edges.count { case (u, v) => uf.find(u) != uf.find(v) }
+
+    val components = allNodes.groupMapReduce(uf.find)(_ => 1)(_ + _).values.toList
+
+    return Group(cutSize, components(0), components(1))
 }
 
 def solver(input: List[String]): Int = {
