@@ -6,7 +6,6 @@ import scala.io.Source
 case class Vec2D(x: Long, y: Long) {
     def *(num: Long) = Vec2D(x * num, y * num)
     def +(num: Long) = Vec2D(x + num, y + num)
-    def ==(that: Vec2D) = x == that.x && y == that.y
     def +(that: Vec2D) = Vec2D(x + that.x, y + that.y)
 }
 
@@ -21,12 +20,12 @@ def groupLines(input: List[String]): List[List[String]] = {
 
 def parseInput(input: List[String]): List[Machine] = {
     return groupLines(input).map(group => {
-        val vects = group.map(line => {
+        val List(a, b, p) = group.map(line => {
             val Seq(x, y) = raw"(\d+)".r.findAllIn(line).map(_.toLong).toSeq
             Vec2D(x, y)
         })
 
-        Machine(vects(0), vects(1), vects(2))
+        Machine(a, b, p)
     })
 }
 

@@ -4,9 +4,11 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{PriorityQueue, Set}
 
-case class Point(y: Int, x: Int)
+case class Point(y: Int, x: Int) {
+    override def toString(): String = s"$x,$y"
+}
 
-def getBlocks(input: List[String]) = input.map(line => {
+def parseInput(input: List[String]) = input.map(line => {
     val Seq(x, y) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toSeq
     Point(y, x)
 })
@@ -46,11 +48,9 @@ def distance(blocks: List[Point]): Option[Int] = {
     return None
 }
 
-def solver(input: List[String]) = {
-    val blocks = getBlocks(input)
+def evaluatorOne(blocks: List[Point]): Int = distance(blocks.take(1024)).get
 
-    println(s"Part One: ${distance(blocks.take(1024)).get}")
-
+def evaluatorTwo(blocks: List[Point]): String = {
     // find the first block position that will cut off the goal position
     // we can use a binary search for this
 
@@ -66,8 +66,7 @@ def solver(input: List[String]) = {
         }
     }
 
-    val p = blocks(lo)
-    println(s"Part Two: ${p.x},${p.y}")
+    return blocks(lo).toString()
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -75,7 +74,13 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 
 def hello(): Unit = {
     readLinesFromFile("day18.txt") match {
-        case Success(lines) => solver(lines)
-        case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
+        case Success(lines) => {
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
+        }
+        case Failure(exception) => {
+            println(s"Error reading file: ${exception.getMessage}")
+        }
     }
 }

@@ -6,12 +6,14 @@ import scala.collection.mutable.ListBuffer
 
 enum Opcode { case Adv, Bxl, Bst, Jnz, Bxc, Out, Bdv, Cdv }
 
+case class Pair(state: List[Long], program: List[Long])
+
 def parseNums(st: String) = raw"(\d+)".r.findAllIn(st).map(_.toLong).toList
 
-def parseInput(input: List[String]): (List[Long], List[Long]) = {
+def parseInput(input: List[String]): Pair = {
     val state = input.take(3).flatMap(parseNums)
     val program = parseNums(input.last)
-    return (state, program)
+    return Pair(state, program)
 }
 
 def run(state: Array[Long], program: List[Long]): List[Long] = {
@@ -43,23 +45,13 @@ def run(state: Array[Long], program: List[Long]): List[Long] = {
 def generateA(program: List[Long], output: List[Long]): List[Long] = {
     if (output.isEmpty) return List(0)
 
-    return (for {
-        ah <- generateA(program, output.tail)
-        al <- 0 to 7 by 1
-        a = ah * 8 + al
-        if run(Array(a, 0, 0), program).sameElements(output)
-    } yield a).toList
+    return generateA(program, output.tail)
+        .flatMap(ah => (0 to 7 by 1).map(al => ah * 8 + al))
+        .filter(a => run(Array(a, 0, 0), program).sameElements(output))
 }
 
-def evaluatorOne(input: List[String]): String = {
-    val (state, program) = parseInput(input)
-    return run(state.toArray, program).mkString(",")
-}
-
-def evaluatorTwo(input: List[String]): Long = {
-    val (_, program) = parseInput(input)
-    return generateA(program, program).min
-}
+def evaluatorOne(input: Pair): String = run(input.state.toArray, input.program).mkString(",")
+def evaluatorTwo(input: Pair): Long = generateA(input.program, input.program).min
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -67,8 +59,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day17.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

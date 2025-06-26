@@ -63,6 +63,8 @@ def hello(): Unit = {
             println(s"Part One: ${evaluatorOne(input)}")
             println(s"Part Two: ${evaluatorTwo(input)}")
         }
-        case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
+        case Failure(exception) => {
+            println(s"Error reading file: ${exception.getMessage}")
+        }
     }
 }

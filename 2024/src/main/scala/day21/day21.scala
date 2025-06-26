@@ -9,6 +9,9 @@ case class Point(y: Int, x: Int)
 type Cache = MutableMap[(Char, Char, Int), Long]
 type Keypad = Map[Point, Char]
 
+val keypad1 = parseKeypad(List("789", "456", "123", " 0A"))
+val keypad2 = parseKeypad(List(" ^A", "<v>"))
+
 def parseKeypad(input: List[String]): Keypad = {
     return (for {
         (line, y) <- input.zipWithIndex
@@ -69,16 +72,13 @@ def encodeKeys(keys: String, keypads: List[Keypad], cache: Cache): Long = {
     return length
 }
 
-def solve(input: List[String], depth: Int): Long = {
-    val keypad1 = parseKeypad(List("789", "456", "123", " 0A"))
-    val keypad2 = parseKeypad(List(" ^A", "<v>"))
+def solve(line: String, depth: Int): Long = {
     val keypads = keypad1 :: List.fill(depth)(keypad2)
-
-    return input.map(line => line.init.toInt * encodeKeys(line, keypads, MutableMap.empty)).sum
+    return line.init.toInt * encodeKeys(line, keypads, MutableMap.empty)
 }
 
-def evaluatorOne(input: List[String]): Long = solve(input, 2)
-def evaluatorTwo(input: List[String]): Long = solve(input, 25)
+def evaluatorOne(input: List[String]): Long = input.map(solve(_, 2)).sum
+def evaluatorTwo(input: List[String]): Long = input.map(solve(_, 25)).sum
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

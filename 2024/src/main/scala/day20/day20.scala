@@ -41,6 +41,7 @@ def getPath(input: List[String]): List[Point] = {
     return res.toList
 }
 
+// Depending upon the hardware, this would atmost take 45 mins to 1hr
 def solve(path: List[Point], cheat: Int): Int = {
     def cheatsFromI(i: Int): Int = {
         return (0 to i).count(j => {

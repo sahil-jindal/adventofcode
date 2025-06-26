@@ -17,14 +17,12 @@ def parse(input: List[String]): (Map[String, Int], Circuit) = {
         parts(0) -> parts(1).toInt
     }).toMap
 
-    val circuit: Circuit = MutableMap.empty
-
-    for(line <- input.drop(idx + 1)) {
+    val circuit = input.drop(idx + 1).map(line => {
         val Seq(a, kind, b, out) = raw"(\w+)".r.findAllIn(line).toSeq
-        circuit(out) = Gate(a, kind, b)
-    }
+        out -> Gate(a, kind, b)
+    })
 
-    return (inputs, circuit)
+    return (inputs, MutableMap(circuit*))
 }
 
 def eval(label: String, circuit: Circuit, inputs: Map[String, Int]): Int = {
@@ -39,9 +37,8 @@ def eval(label: String, circuit: Circuit, inputs: Map[String, Int]): Int = {
 }
 
 def output(circuit: Circuit, x: String, kind: String, y: String): String = {
-    return circuit.collectFirst { 
-        case (out, gate) if gate == Gate(x, kind, y) || gate == Gate(y, kind, x) => out 
-    }.getOrElse("")
+    val (g1, g2) = (Gate(x, kind, y), Gate(y, kind, x))
+    return circuit.collectFirst { case (out, gate) if gate == g1 || gate == g2 => out }.getOrElse("")
 }
 
 def swapAndFix(circuit: Circuit, out1: String, out2: String): List[String] = {
@@ -53,7 +50,6 @@ def swapAndFix(circuit: Circuit, out1: String, out2: String): List[String] = {
 }
 
 // the circuit should define a full adder for two 44 bit numbers
-
 def fix(circuit: Circuit): List[String] = {
     var cin = output(circuit, "x00", "AND", "y00")
 
@@ -87,9 +83,11 @@ def fix(circuit: Circuit): List[String] = {
 
 def evaluatorOne(input: List[String]): Long = {
     val (inputs, circuit) = parse(input)
-    val outputs = circuit.keys.toSeq.filter(_.startsWith("z"))
-    val binarySeq = outputs.sorted(using Ordering.String.reverse).map(eval(_, circuit, inputs))
-    return binarySeq.foldLeft(0L) { case (acc, item) => 2 * acc + item }
+    
+    return circuit.keys.toSeq.filter(_.startsWith("z"))
+        .sorted(using Ordering.String.reverse)
+        .map(eval(_, circuit, inputs))
+        .foldLeft(0L) { case (acc, item) => 2 * acc + item }
 }
 
 def evaluatorTwo(input: List[String]): String = {
@@ -106,6 +104,8 @@ def hello(): Unit = {
             println(s"Part One: ${evaluatorOne(lines)}")
             println(s"Part Two: ${evaluatorTwo(lines)}")
         }
-        case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
+        case Failure(exception) => {
+            println(s"Error reading file: ${exception.getMessage}")
+        }
     }
 }

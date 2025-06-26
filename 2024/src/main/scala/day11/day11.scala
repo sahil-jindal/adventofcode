@@ -6,6 +6,8 @@ import scala.collection.mutable.Map
 
 type Cache = Map[(String, Int), Long]
 
+def parseInput(line: String) = raw"(\d+)".r.findAllIn(line).map(_.toLong).toSeq
+
 def eval(n: Long, blinks: Int, cache: Cache): Long = {
     val key = (n.toString, blinks)
 
@@ -14,20 +16,15 @@ def eval(n: Long, blinks: Int, cache: Cache): Long = {
         case ("0", _) => eval(1, blinks - 1, cache)
         case (str, _) if str.length % 2 == 0 => {
             val mid = str.length / 2
-            val left = str.substring(0, mid).toLong
-            val right = str.substring(mid).toLong
-            eval(left, blinks - 1, cache) + eval(right, blinks - 1, cache)
+            val (left, right) = str.splitAt(mid)
+            eval(left.toLong, blinks - 1, cache) + eval(right.toLong, blinks - 1, cache)
         }
         case _ => eval(2024 * n, blinks - 1, cache)
     })
 }
 
-def stoneCount(input: String, blinks: Int): Long = {
-    return input.split(" ").map(n => eval(n.toLong, blinks, Map.empty)).sum
-}
-
-def evaluatorOne(input: String): Long = stoneCount(input, 25)
-def evaluatorTwo(input: String): Long = stoneCount(input, 75)
+def evaluatorOne(input: Seq[Long]): Long = input.map(eval(_, 25, Map.empty)).sum
+def evaluatorTwo(input: Seq[Long]): Long = input.map(eval(_, 75, Map.empty)).sum
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -35,8 +32,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day11.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines.head)}")
-            println(s"Part Two: ${evaluatorTwo(lines.head)}")
+            val input = parseInput(lines.head)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

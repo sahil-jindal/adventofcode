@@ -2,6 +2,7 @@ package day15
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
+import scala.collection.mutable.{Map => MutableMap}
 
 case class Direction(dy: Int, dx: Int) {
     def *(num: Int) = Direction(dy * num, dx * num)
@@ -16,7 +17,7 @@ val Down = Direction(1, 0)
 val Left = Direction(0, -1)
 val Right = Direction(0, 1)
 
-type Grid = Map[Point, Char]
+type Grid = MutableMap[Point, Char]
 
 def scaleUp(input: List[String]) = input.map(line => {
     line.replace("#", "##")
@@ -28,16 +29,15 @@ def scaleUp(input: List[String]) = input.map(line => {
 def parse(input: List[String], wannaScaleUp: Boolean): (Grid, List[Direction]) = {
     val idx = input.indexWhere(_.trim.isEmpty)
     var first = input.take(idx)
-    val second = input.drop(idx + 1)
 
     if (wannaScaleUp) first = scaleUp(first)
     
-    val map = (for {
+    val grid = (for {
         (line, y) <- first.zipWithIndex
         (ch, x) <- line.zipWithIndex
-    } yield Point(y, x) -> ch).toMap
+    } yield Point(y, x) -> ch)
 
-    val steps = second.flatten.map {
+    val steps = input.drop(idx + 1).flatten.map {
         case '^' => Up
         case '<' => Left
         case '>' => Right
@@ -45,68 +45,77 @@ def parse(input: List[String], wannaScaleUp: Boolean): (Grid, List[Direction]) =
         case _   => throw new Exception("Invalid direction")
     }
 
-    (map, steps)
+    (MutableMap(grid*), steps)
 }
 
-def tryToStep(map: Grid, pos: Point, dir: Direction): Option[Grid] = {
-    map.get(pos) match {
-        case Some('.') => Some(map)
+def tryToStep(grid: Grid, pos: Point, dir: Direction): Boolean = {
+    val backup = grid.clone()
+
+    def restore(): Boolean = {
+        grid.clear()
+        grid ++= backup
+        false
+    }
+
+    grid.get(pos) match {
+        case Some('.') => true
         case Some('O') | Some('@') => {
-            tryToStep(map, pos + dir, dir).map { newMap =>
-                newMap.updated(pos + dir, map(pos)).updated(pos, '.')
-            }
+            if (tryToStep(grid, pos + dir, dir)) {
+                grid(pos + dir) = grid(pos)
+                grid(pos) = '.'
+                true
+            } else restore()
         }
-        case Some(']') => tryToStep(map, pos + Left, dir)
+        case Some(']') => tryToStep(grid, pos + Left, dir)
         case Some('[') => {
             dir match {
                 case `Left` => {
-                    tryToStep(map, pos + Left, dir).map { newMap =>
-                        newMap.updated(pos + Left, '[')
-                            .updated(pos, ']')
-                            .updated(pos + Right, '.')
-                    }
+                    if (tryToStep(grid, pos + Left, dir)) {
+                        grid(pos + Left) = '['
+                        grid(pos) = ']'
+                        grid(pos + Right) = '.'
+                        true
+                    } else restore()
                 }
                 case `Right` => {
-                    tryToStep(map, pos + Right + Right, dir).map { newMap =>
-                        newMap.updated(pos, '.')
-                            .updated(pos + Right, '[')
-                            .updated(pos + Right * 2, ']')
-                    }
+                    if (tryToStep(grid, pos + Right * 2, dir)) {
+                        grid(pos) = '.'
+                        grid(pos + Right) = '['
+                        grid(pos + Right * 2) = ']'
+                        true
+                    } else restore()
                 }
                 case _ => {
-                    for {
-                        midMap <- tryToStep(map, pos + dir, dir)
-                        finalMap <- tryToStep(midMap, pos + Right + dir, dir)
-                    } yield {
-                        finalMap.updated(pos, '.')
-                            .updated(pos + Right, '.')
-                            .updated(pos + dir, '[')
-                            .updated(pos + dir + Right, ']')
-                    }
+                    if (
+                        tryToStep(grid, pos + dir, dir) &&
+                        tryToStep(grid, pos + dir + Right, dir)
+                    ) {
+                        grid(pos) = '.'
+                        grid(pos + Right) = '.'
+                        grid(pos + dir) = '['
+                        grid(pos + dir + Right) = ']'
+                        true
+                    } else restore()
                 }
             }
         }
-        case _ => None
+        case _ => restore()
     }
 }
 
 def solve(input: List[String], scaleUp: Boolean): Int = {
-    val (map0, steps) = parse(input, scaleUp)
-    var map = map0
+    val (grid0, steps) = parse(input, scaleUp)
+    var grid = grid0
     
-    var robot = map.collectFirst { case (pos, ch) if ch == '@' => pos }.get
+    var robot = grid.collectFirst { case (pos, ch) if ch == '@' => pos }.get
     
     for (dir <- steps) {
-        tryToStep(map, robot, dir) match {
-            case Some(updatedMap) => {
-                map = updatedMap
-                robot += dir
-            }
-            case None => 
+        if (tryToStep(grid, robot, dir)) {
+            robot += dir
         }
     }
 
-    return map.collect { case (pos, c) if c == '[' || c == 'O' => pos.x + 100 * pos.y }.sum
+    return grid.collect { case (pos, c) if c == '[' || c == 'O' => pos.x + 100 * pos.y }.sum
 }
 
 def evaluatorOne(input: List[String]): Int = solve(input, false)

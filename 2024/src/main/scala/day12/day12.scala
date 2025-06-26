@@ -53,22 +53,11 @@ def getRegions(input: List[String]): List[Region] = {
 }
 
 def calculateFencePrice(regions: List[Region], measure: (Region, Point) => Int): Int = {
-    return regions.foldLeft(0) { (acc, region) =>
-        val perim = region.iterator.map(pt => measure(region, pt)).sum
-        acc + region.size * perim
-    }
+    return regions.map(it => it.iterator.map(pt => measure(it, pt)).sum * it.size).sum
 }
 
-def findEdges(region: Region, pt: Point): Int = {
-    var res = 0
-
-    for (du <- Seq(U, R, D, L)) {
-        if (!region.contains(pt + du)) {
-            res += 1
-        }
-    }
-
-    return res
+def findEdges(region: Region, pt: Point): Int = {    
+    return Seq(U, R, D, L).count(du => !region.contains(pt + du))
 }
 
 def findCorners(region: Region, pt: Point): Int = {

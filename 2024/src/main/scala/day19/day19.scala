@@ -32,6 +32,8 @@ def hello(): Unit = {
             println(s"Part One: ${input.size}")
             println(s"Part Two: ${input.sum}")
         }
-        case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
+        case Failure(exception) => {
+            println(s"Error reading file: ${exception.getMessage}")
+        }
     }
 }

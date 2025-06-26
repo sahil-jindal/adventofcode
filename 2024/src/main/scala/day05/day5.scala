@@ -9,14 +9,12 @@ case class Manual(pageNumbers: List[String], pageOrders: List[PageOrder])
 
 def getManuals(input: List[String]): List[Manual] = {
     val idx = input.indexWhere(_.trim.isEmpty)
-    val first = input.take(idx)
-    val second = input.drop(idx + 1)
 
-    val pageOrders = first.map {
+    val pageOrders = input.take(idx).map {
         case s"$earlier|$later" => PageOrder(earlier, later)
     }
 
-    return second.map(line => {
+    return input.drop(idx + 1).map(line => {
         val pages = line.split(",").toList
 
         val applicableOrders = pageOrders.filter(order =>
