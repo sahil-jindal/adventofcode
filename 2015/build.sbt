@@ -7,6 +7,6 @@ lazy val root = project
     version := "0.1.0-SNAPSHOT",
     scalaVersion := scala3Version,
     Global / semanticdbEnabled := true,
-    libraryDependencies += "org.playframework" %% "play-json" % "3.0.4",
+    libraryDependencies += "org.playframework" %% "play-json" % "3.0.5",
     libraryDependencies += "org.scalameta" %% "munit" % "1.0.0" % Test
   )
