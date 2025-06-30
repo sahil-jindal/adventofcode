@@ -18,7 +18,8 @@ def findAllCombinations(containers: List[Int], target: Int): List[List[Int]] = {
     findAllCombinations(rest, target)
 }
 
-def solver(containers: List[Int]): (Int, Int) = {
+def solver(lines: List[String]): (Int, Int) = {
+    val containers = parseInput(lines)
     val combinations = findAllCombinations(containers, totalLiters)
     val minContainerCount = combinations.map(_.size).min
     return (combinations.size, combinations.count(_.size == minContainerCount))
@@ -30,7 +31,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day17.txt") match {
         case Success(lines) => {
-            val (partOne, partTwo) = solver(parseInput(lines))
+            val (partOne, partTwo) = solver(lines)
             println(s"Part One: $partOne")
             println(s"Part Two: $partTwo")
         }

@@ -1,13 +1,14 @@
 package day20
 
 def presentByHouse(l: Int, mul: Int, steps: Int): Int = {
-    val presents = Array.ofDim[Int](1000000)
+    val limit = 1000000
+    val presents = Array.ofDim[Int](limit)
 
-    for (i <- 1 until presents.length) {
+    for (i <- 1 until limit) {
         var j = i
         var step = 0
 
-        while (j < presents.length && step < steps)  {
+        while (j < limit && step < steps)  {
             presents(j) += mul * i
             j += i
             step += 1

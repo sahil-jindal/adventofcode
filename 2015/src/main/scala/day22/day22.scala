@@ -2,7 +2,7 @@ package day22
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.Buffer
+import scala.collection.mutable.ListBuffer
 
 case class State(
     shield: Int = 0,
@@ -30,10 +30,10 @@ case class State(
 
         var newState = this
         
-        if poison > 0 then newState = newState.copy(bossHp = bossHp - 3, poison = poison - 1)
-        if recharge > 0 then newState = newState.copy(playerMana = playerMana + 101, recharge = recharge - 1)
+        if (poison > 0) newState = newState.copy(bossHp = bossHp - 3, poison = poison - 1)
+        if (recharge > 0) newState = newState.copy(playerMana = playerMana + 101, recharge = recharge - 1)
         
-        if shield > 0 then {
+        if (shield > 0) {
             newState = newState.copy(shield = shield - 1, playerArmor = 7)
         } else {
             newState = newState.copy(playerArmor = 0)
@@ -55,7 +55,7 @@ case class State(
     def playerSteps(): Seq[State] = {
         if playerHp <= 0 || bossHp <= 0 then return Seq(this)
     
-        val steps = Buffer.empty[State]
+        val steps = ListBuffer.empty[State]
         
         if playerMana >= missileMana && missileMana + usedMana <= manaLimit then
             steps += copy(
@@ -109,15 +109,13 @@ def parseInput(input: List[String]): State = {
 def binarySearch(f: Int => Boolean): Int = {
     var hi = 1
     
-    while !f(hi) do hi *= 2
+    while (!f(hi)) { hi *= 2 }
     
     var lo = hi / 2
-    var first = false
     
-    while hi - lo > 1 do {
+    while (hi - lo > 1) {
         val m = (hi + lo) / 2
-        if !first && f(m) then { hi = m } else { lo = m }
-        first = false
+        if (f(m)) { hi = m } else { lo = m }
     }
 
     return hi

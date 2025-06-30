@@ -1,24 +1,25 @@
 package day10
 
-def nextSequence(seq: String): String = {
+// StringBuilder is the only most efficient way to do it.
+def nextSequence(str: String): String = {
     val stringBuilder = new StringBuilder
     var count = 1
 
-    for (i <- 1 until seq.length) {
-        if (seq(i) == seq(i - 1)) {
+    for ((prev, ch) <- (str.init zip str.tail)) {
+        if (prev == ch) {
             count += 1
         } else {
-            stringBuilder.append(count).append(seq(i - 1))
+            stringBuilder.append(s"$count$prev")
             count = 1
         }
     }
 
-    return stringBuilder.append(count).append(seq.last).toString
+    return stringBuilder.append(s"$count${str.last}").toString
 }
 
 def lookAndSaySequence(sequence: String, iterations: Int): Int = {
     var currentSequence = sequence
-    for (_ <- 1 to iterations) do currentSequence = nextSequence(currentSequence)
+    for (_ <- 1 to iterations) { currentSequence = nextSequence(currentSequence) }
     return currentSequence.length
 }
 

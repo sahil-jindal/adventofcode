@@ -4,9 +4,9 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Map => MutableMap}
 
- def parseInstructions(input: List[String]) = input.map(line => {
-    val Array(expr, wire) = line.split(" -> ")
-    wire -> expr.split(" ").toSeq
+def parseInput(input: List[String]) = input.map(line => {
+    val words = raw"(\w+)".r.findAllIn(line).toSeq
+    words.last -> words.init
 }).toMap
 
 def evaluate(wire: String, instructions: Map[String, Seq[String]], cache: MutableMap[String, Int]): Int = {
@@ -26,14 +26,14 @@ def evaluate(wire: String, instructions: Map[String, Seq[String]], cache: Mutabl
     value
 }
 
-def evaluator(input: List[String]) = {
-    val originalInstructions = parseInstructions(input)
-    val signalA = evaluate("a", originalInstructions, MutableMap.empty[String, Int])
-    println(s"Signal to wire 'a' (Part One): $signalA")
-
+def solver(input: List[String]): (Int, Int) = {
+    val originalInstructions = parseInput(input)
+    val signalA = evaluate("a", originalInstructions, MutableMap.empty)
+    
     val modifiedInstructions = originalInstructions + ("b" -> Seq(signalA.toString))
-    val newSignalA = evaluate("a", modifiedInstructions, MutableMap.empty[String, Int])
-    println(s"Signal to wire 'a' (Part Two): $newSignalA")
+    val newSignalA = evaluate("a", modifiedInstructions, MutableMap.empty)
+    
+    return (signalA, newSignalA)
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -41,7 +41,13 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 
 def hello(): Unit = {
     readLinesFromFile("day07.txt") match {
-        case Success(lines) => evaluator(lines)
-        case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
+        case Success(lines) => {
+            val (partOne, partTwo) = solver(lines)
+            println(s"Part One: $partOne")
+            println(s"Part Two: $partTwo")
+        }
+        case Failure(exception) => {
+            println(s"Error reading file: ${exception.getMessage}")
+        }
     }
 }

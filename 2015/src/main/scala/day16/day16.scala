@@ -38,9 +38,8 @@ def matchFunctionTwo(key: String, value: Int): Boolean = key match {
     case _ => criteria(key) == value
 }
 
-def findAuntySue(aunts: List[(Int, Map[String, Int])], matchFunction: (String, Int) => Boolean): Int = {
-    def checkProperties(properties: Map[String, Int]): Boolean = properties.forall { case (key, value) => matchFunction(key, value) }
-    return aunts.collectFirst { case (sueNumber, properties) if checkProperties(properties) => sueNumber }.get
+def findAuntySue(aunts: List[(Int, Map[String, Int])], matchFunction: ((String, Int)) => Boolean): Int = {
+    return aunts.collectFirst { case (sueNumber, properties) if properties.forall(matchFunction) => sueNumber }.get
 }
 
 def evaluatorOne(aunts: List[(Int, Map[String, Int])]): Int = findAuntySue(aunts, matchFunctionOne)

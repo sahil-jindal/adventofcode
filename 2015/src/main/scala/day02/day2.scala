@@ -6,8 +6,8 @@ import scala.io.Source
 case class Box(l: Int, b: Int, h: Int)
 
 def parseInput(input: List[String]) = input.map(line => {
-    val boxes = line.split("x").map(_.toInt).sorted
-    Box(boxes(0), boxes(1), boxes(2))
+    val Array(l, b, h) = line.split("x").map(_.toInt).sorted
+    Box(l, b, h)
 })
 
 def evaluatorOne(boxes: List[Box]): Int = boxes.map { case Box(a, b, c) => 3*a*b + 2*a*c + 2*b*c }.sum

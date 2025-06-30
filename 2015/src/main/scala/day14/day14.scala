@@ -10,7 +10,7 @@ case class Reindeer(speed: Int, durationTime: Int, restTime: Int) {
 }
 
 def parseInput(input: List[String]) = input.map(line => {
-    val Seq(a, b, c) = raw"\d+".r.findAllIn(line).map(_.toInt).toSeq
+    val Seq(a, b, c) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toSeq
     Reindeer(a, b, c)
 })
 
@@ -26,21 +26,17 @@ def distanceTravelledEverySecond(reindeer: Reindeer, totalTime: Int): List[Int] 
     return result.scanLeft(0)(_ + _).map(_ * reindeer.speed).tail
 }
 
-def evaluatorOne(reindeers: List[Reindeer]): Int = {
-    return reindeers.map(it => totalDistance(it, raceTotalTime)).max
-}
+def evaluatorOne(reindeers: List[Reindeer]): Int = reindeers.map(totalDistance(_, raceTotalTime)).max
 
 def evaluatorTwo(reindeers: List[Reindeer]): Int = {
-    val raceTimeStamps = reindeers.map(it => distanceTravelledEverySecond(it, raceTotalTime)).transpose
-    val pointsCollection = Array.ofDim[Int](reindeers.length)
+    val raceTimeStamps = reindeers.map(distanceTravelledEverySecond(_, raceTotalTime)).transpose
 
-    for (raceTimeStamp <- raceTimeStamps) {
+    val playersById = raceTimeStamps.flatMap(raceTimeStamp => {
         val maxDistance = raceTimeStamp.max
-        val players = raceTimeStamp.zipWithIndex.collect { case (distance, id) if distance == maxDistance => id }
-        for (i <- players) do pointsCollection(i) += 1
-    }
+        raceTimeStamp.zipWithIndex.collect { case (distance, id) if distance == maxDistance => id }
+    })
 
-    return pointsCollection.max
+    return playersById.groupMapReduce(identity)(_ => 1)(_ + _).values.max
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

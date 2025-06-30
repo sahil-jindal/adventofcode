@@ -4,31 +4,38 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Set
 
-case class Point(y: Int, x: Int)
+case class Direction(dy: Int, dx: Int)
 
-def run(input: String, actors: Int): Int = {
-    val seen = Set(Point(0, 0))
-    val pos = Array.fill(actors)(Point(0, 0))
+case class Point(y: Int, x: Int) {
+    def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
+}
 
-    for ((ch, i) <- input.zipWithIndex) { 
-        val Point(y, x) = pos(i % actors)
-        
-        pos(i % actors) = ch match {
-            case 'v' => Point(y + 1, x)
-            case '<' => Point(y, x - 1)
-            case '>' => Point(y, x + 1)
-            case '^' => Point(y - 1, x)
-            case _   => Point(y, x) // Should not happen
-        }
+def parseInput(line: String) = line.map(ch => {
+    ch match {
+        case 'v' => Direction(1, 0)
+        case '>' => Direction(0, 1)
+        case '<' => Direction(0, -1)
+        case '^' => Direction(-1, 0)
+        case _   => throw new Exception()
+    }
+})
 
-        seen += pos(i % actors)
+def run(input: Seq[Direction], actors: Int): Int = {
+    val start = Point(0, 0)
+    val seen = Set(start)
+    val pos = Array.fill(actors)(start)
+
+    for ((dir, i) <- input.zipWithIndex) {
+        val idx = i % actors
+        pos(idx) += dir
+        seen += pos(idx)
     }
     
     return seen.size
 }
 
-def evaluatorOne(input: String): Int = run(input, 1)
-def evaluatorTwo(input: String): Int = run(input, 2)
+def evaluatorOne(input: Seq[Direction]): Int = run(input, 1)
+def evaluatorTwo(input: Seq[Direction]): Int = run(input, 2)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -36,8 +43,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day03.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines.head)}")
-            println(s"Part Two: ${evaluatorTwo(lines.head)}")
+            val input = parseInput(lines.head)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

@@ -4,10 +4,10 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Map
 
-def parseInput(input: List[String]): List[Array[String]] = input.map(_.replace(",", "").split(" "))
+def parseInput(input: List[String]) = input.map(_.replace(",", "").split(" "))
 
 def Solve(prg: List[Array[String]], a: Long): Long = {
-    val regs = Map[String, Long]("a" -> a)
+    val regs = Map("a" -> a)
     var ip = 0L
 
     def getReg(reg: String): Long = reg.toLongOption.getOrElse(regs.getOrElse(reg, 0L))

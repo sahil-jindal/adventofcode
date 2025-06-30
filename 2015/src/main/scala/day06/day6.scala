@@ -3,9 +3,16 @@ package day06
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
+case class Instruction(action: String, startx: Int, starty: Int, endx: Int, endy: Int)
+
 val instructionRegex = raw"(toggle|turn on|turn off) (\d+),(\d+) through (\d+),(\d+)".r
 
-def evaluatorOne(input: List[String]): Int = {
+def parseInput(input: List[String]) = input.map(line => {
+    val List(action, a, b, c, d) = instructionRegex.findFirstMatchIn(line).get.subgroups
+    Instruction(action, a.toInt, b.toInt, c.toInt, d.toInt)
+})
+
+def evaluatorOne(input: List[Instruction]): Int = {
     
     def turnOnBrightness(grid: Array[Array[Boolean]], startx: Int, starty: Int, endx: Int, endy: Int) = {
         for { i <- starty to endy; j <- startx to endx } do grid(i)(j) = true
@@ -21,13 +28,7 @@ def evaluatorOne(input: List[String]): Int = {
     
     val grid = Array.ofDim[Boolean](1000, 1000)
 
-    for (line <- input) {
-        val List(action, a, b, c, d) = instructionRegex.findFirstMatchIn(line).get.subgroups
-        val startx = a.toInt
-        val starty = b.toInt
-        val endx = c.toInt
-        val endy = d.toInt
-
+    for (Instruction(action, startx, starty, endx, endy) <- input) {
         action match {
             case "turn on" => turnOnBrightness(grid, startx, starty, endx, endy)
             case "turn off" => turnOffBrightness(grid, startx, starty, endx, endy)
@@ -38,7 +39,7 @@ def evaluatorOne(input: List[String]): Int = {
     return grid.flatten.count(identity)
 }
 
-def evaluatorTwo(input: List[String]): Int = {
+def evaluatorTwo(input: List[Instruction]): Int = {
     
     def turnOnBrightness(grid: Array[Array[Int]], startx: Int, starty: Int, endx: Int, endy: Int) = {
         for { i <- starty to endy; j <- startx to endx } do grid(i)(j) += 1
@@ -54,13 +55,7 @@ def evaluatorTwo(input: List[String]): Int = {
     
     val grid = Array.ofDim[Int](1000, 1000)
 
-    for (line <- input) {
-        val List(action, a, b, c, d) = instructionRegex.findFirstMatchIn(line).get.subgroups
-        val startx = a.toInt
-        val starty = b.toInt
-        val endx = c.toInt
-        val endy = d.toInt
-
+    for (Instruction(action, startx, starty, endx, endy) <- input) {
         action match {
             case "turn on" => turnOnBrightness(grid, startx, starty, endx, endy)
             case "turn off" => turnOffBrightness(grid, startx, starty, endx, endy)
@@ -77,8 +72,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day06.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

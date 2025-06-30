@@ -3,8 +3,7 @@ package day15
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-val totalScoops = 100
-val maxCalories = 500
+val (totalScoops, maxCalories) = (100, 500)
 
 case class Ingredient(capacity: Int, durability: Int, flavor: Int, texture: Int, calories: Int) {
     def *(num: Int) = Ingredient(capacity * num, durability * num, flavor * num, texture * num, calories * num)
@@ -53,14 +52,8 @@ def bestPossibleRecipe(cookeRecipes: List[Ingredient]): Int = {
     return cookeRecipes.map(it => it.capacity * it.durability * it.flavor * it.texture).max
 }
 
-def evaluatorOne(ingredients: List[Ingredient]): Int = {
-    return bestPossibleRecipe(allPossibleRecipes(ingredients))
-}
-
-def evaluatorTwo(ingredients: List[Ingredient]): Int = {
-    val healthyRecipes = allPossibleRecipes(ingredients).filter(_.calories == maxCalories)
-    return bestPossibleRecipe(healthyRecipes)
-}
+def evaluatorOne(recipes: List[Ingredient]): Int = bestPossibleRecipe(recipes)
+def evaluatorTwo(recipes: List[Ingredient]): Int = bestPossibleRecipe(recipes.filter(_.calories == maxCalories))
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -68,9 +61,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day15.txt") match {
         case Success(lines) => {
-            val ingredients = parseInput(lines)
-            println(s"Part One: ${evaluatorOne(ingredients)}")
-            println(s"Part Two: ${evaluatorTwo(ingredients)}")
+            val recipes = allPossibleRecipes(parseInput(lines))
+            println(s"Part One: ${evaluatorOne(recipes)}")
+            println(s"Part Two: ${evaluatorTwo(recipes)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

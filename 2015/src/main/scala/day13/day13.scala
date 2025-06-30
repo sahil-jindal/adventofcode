@@ -2,62 +2,62 @@ package day13
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Map, Set}
+import scala.collection.mutable.{Map => MutableMap, Set => MutableSet}
 
 case class Graph(people: Set[String], happiness: Map[(String, String), Int])
 
+val parseRegex = raw"(\w+) would (gain|lose) (\d+) happiness units by sitting next to (\w+)".r
+
 def parseInput(input: List[String]): Graph = {
-    val people = Set.empty[String]
-    val happiness = Map.empty[(String, String), Int]
+    val people = MutableSet.empty[String]
+    val happiness = MutableMap.empty[(String, String), Int]
     
     for (line <- input) {
-        val parts = line.split(" ")
-        val person1 = parts(0)
-        val person2 = parts.last.init // Remove the period
-        val value = parts(3).toInt * (if (parts(2) == "gain") 1 else -1)
+        val parts = parseRegex.findFirstMatchIn(line).get.subgroups
+        val (person1, person2) = (parts.head, parts.last)
+        val value = parts(2).toInt * (if (parts(1) == "gain") 1 else -1)
         happiness((person1, person2)) = value
         people ++= Set(person1, person2)
     }
 
-    return Graph(people, happiness)
+    return Graph(people.toSet, happiness.toMap)
 }
 
 def findMaximumHappiness(graph: Graph): Int = {
     return graph.people.toSeq.permutations.map { arrangement =>
         val leftRotated = arrangement.tail :+ arrangement.head 
-        (arrangement zip leftRotated).foldLeft(0) { case (acc, (a, b)) => 
-            acc + graph.happiness((a, b)) + graph.happiness((b, a))
-        }
+        (arrangement zip leftRotated).map { case (a, b) => 
+            graph.happiness((a, b)) + graph.happiness((b, a))
+        }.sum
     }.max
 }
 
 def addYourself(graph: Graph): Graph = {
-    val updatedHappiness = Map(graph.happiness.toSeq*)
+    val updatedHappiness = MutableMap(graph.happiness.toSeq*)
     
     for (guest <- graph.people) {
         updatedHappiness(("You", guest)) = 0
         updatedHappiness((guest, "You")) = 0
     }
 
-    return Graph(graph.people ++ Set("You"), updatedHappiness)
+    return Graph(graph.people.incl("You"), updatedHappiness.toMap)
 }
 
-def evaluator(input: List[String]): Unit = {
-    val graph = parseInput(input)
-    var maxHappiness = findMaximumHappiness(graph)
-    println(s"Maximum Total Happiness: $maxHappiness")
-
-    val newGraph = addYourself(graph)
-    maxHappiness = findMaximumHappiness(newGraph)
-    println(s"Maximum Total Happiness (including yourself): $maxHappiness")
-}
+def evaluatorOne(graph: Graph): Int = findMaximumHappiness(graph)
+def evaluatorTwo(graph: Graph): Int = findMaximumHappiness(addYourself(graph))
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
 def hello(): Unit = {
     readLinesFromFile("day13.txt") match {
-        case Success(lines) => evaluator(lines)
-        case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
+        case Success(lines) => {
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
+        }
+        case Failure(exception) => {
+            println(s"Error reading file: ${exception.getMessage}")
+        }
     }
 }

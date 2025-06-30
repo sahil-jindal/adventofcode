@@ -1,51 +1,35 @@
 package day11
 
 val consecutiveLetters = List(
-    "abc","bcd","cde","def","efg","fgh","pqr","qrs","rst","stu","tuv","uvw","vwx","wxy","xyz",
-    "abcd","bcde","cdef","defg","efgh","pqrs","qrst","rstu","stuv","tuvw","uvwx","vwxy","wxyz",
-    "abcde","bcdef","cdefg","defgh","pqrst","qrstu","rstuv","stuvw","tuvwx","uvwxy","vwxyz",
-    "abcdef","bcdefg","cdefgh","pqrstu","qrstuv","rstuvw","stuvwx","tuvwxy","uvwxyz",
-    "abcdefg","bcdefgh","pqrstuv","qrstuvw","rstuvwx","stuvwxy","tuvwxyz",
-    "abcdefgh","pqrstuvw","qrstuvwx","rstuvwxy","stuvwxyz",
-    "pqrstuvwx","qrstuvwxy","rstuvwxyz",
-    "pqrstuvwxy","qrstuvwxyz",
-    "pqrstuvwxyz"
+    "abc","bcd","cde","def","efg","fgh","pqr","qrs","rst","stu","tuv","uvw","vwx","wxy","xyz"
 )
 
-def isValidPassword(pword: String): Boolean = {
-    if "iol".exists(pword.contains) then return false
-    if !consecutiveLetters.exists(pword.contains) then return false
-    return (pword.init zip pword.tail).filter { case (a, b) => a == b }.toSet.size >= 2
+def isValidPassword(password: String): Boolean = {
+    if ("iol".exists(password.contains)) return false
+    if (!consecutiveLetters.exists(password.contains)) return false
+    return (password.init zip password.tail).filter { case (a, b) => a == b }.toSet.size >= 2
 }
 
-def incrementPassword(currentPassword: String): String = {
-    val temp = currentPassword.toCharArray
+def incrementPassword(password: String): String = {
+    val remaining = password.lastIndexWhere(_ != 'z') + 1
+    val zlength = password.length - remaining
 
-    val zlength = temp.reverse.takeWhile(_ == 'z').length
-    val remaining = temp.length - zlength
-
-    val first = temp.slice(0, remaining)
+    val first = password.substring(0, remaining)
 
     val prefix = if first.isEmpty then "a" else {
-        first(remaining - 1) = (first(remaining - 1) + 1).toChar
-        first.mkString
+        first.init + (first.last + 1).toChar
     }
 
     return prefix + "a".repeat(zlength)
 }
 
-def findNextPassword(currentPassword: String): String = {
-    var password = incrementPassword(currentPassword)
-    while (!isValidPassword(password)) do password = incrementPassword(password)
-    return password
+def validPasswords(password: String): Iterator[String] = {
+    return Iterator.iterate(password)(incrementPassword).filter(isValidPassword)
 }
 
 def hello(): Unit = {
     val currentPassword = "hepxcrrq"
-
-    val nextPassword = findNextPassword(currentPassword)
-    println(s"The next password is: $nextPassword")
-
-    val secondPassword = findNextPassword(nextPassword)
-    println(s"The second password is: $secondPassword")
+    val List(partOne, partTwo) = validPasswords(currentPassword).take(2).toList
+    println(s"Part One: $partOne")
+    println(s"Part Two: $partTwo")
 }

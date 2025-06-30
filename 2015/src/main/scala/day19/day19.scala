@@ -7,10 +7,8 @@ case class ReplacementString(from: Int, length: Int, to: String)
 case class Fabrication(rules: List[(String, String)], molecule: String)
 
 def parseInput(input: List[String]): Fabrication = {
-    val index = input.indexWhere(_.trim.isEmpty)
-    val (from, to) = input.splitAt(index)
-    val rules = from.map { case s"$a => $b" => (a, b) }
-    return Fabrication(rules, to(1))
+    val rules = input.dropRight(2).map { case s"$a => $b" => (a, b) }
+    return Fabrication(rules, input.last)
 }
 
 def Replacements(fab: Fabrication): List[ReplacementString] = {
@@ -24,8 +22,9 @@ def Replacements(fab: Fabrication): List[ReplacementString] = {
     } yield ReplacementString(i, len, to)).toList
 }
 
-def Replace(molecule: String, repstr: ReplacementString): String = {
-    return molecule.substring(0, repstr.from) + repstr.to + molecule.substring(repstr.from + repstr.length)
+def Replace(molecule: String, replaceString: ReplacementString): String = {
+    val ReplacementString(from, length, to) = replaceString
+    return molecule.substring(0, from) + to + molecule.substring(from + length)
 }
 
 def evaluatorOne(fab: Fabrication): Int = {
