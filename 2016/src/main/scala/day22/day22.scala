@@ -14,8 +14,7 @@ case class Grid(nodes: Array[Array[Node]]) {
     var xEmpty = unused.x
     var moves = 0
 
-    val height = nodes.length
-    val width = nodes.head.length
+    val (height, width) = (nodes.length, nodes(0).length)
 
     def wall(y: Int, x: Int): Boolean = {
         nodes(y)(x).used > nodes(yEmpty)(xEmpty).size

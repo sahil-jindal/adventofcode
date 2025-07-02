@@ -89,9 +89,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day10.txt") match {
         case Success(lines) => {
-            val (part1, part2) = solve(lines)
-            println(s"Part One: $part1")
-            println(s"Part Two: $part2")
+            val (partOne, partTwo) = solve(lines)
+            println(s"Part One: $partOne")
+            println(s"Part Two: $partTwo")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

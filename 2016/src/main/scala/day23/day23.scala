@@ -4,8 +4,10 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Map
 
-def solve(input: Array[String], a: Int): Int = {
-    val prg = input.map(_.split(' '))
+def parseInput(input: Array[String]) = input.map(_.split(' ')).toList
+
+def solve(input: List[Array[String]], a: Int): Int = {
+    val prg = input.map(_.clone())
     var regs = Map("a" -> a)
     var ip = 0
 
@@ -22,7 +24,7 @@ def solve(input: Array[String], a: Int): Int = {
             case Array("tgl", x) => {
                 val ipDst = ip + getReg(x)
 
-                if ipDst >= 0 && ipDst < prg.length then {
+                if (ipDst >= 0 && ipDst < prg.length) {
                     prg(ipDst)(0) = prg(ipDst)(0) match {
                         case "cpy" => "jnz"
                         case "inc" => "dec"
@@ -42,8 +44,8 @@ def solve(input: Array[String], a: Int): Int = {
     return getReg("a")
 }
 
-def evaluatorOne(input: Array[String]): Long = solve(input, 7)
-def evaluatorTwo(input: Array[String]): Long = solve(input, 12)
+def evaluatorOne(input: List[Array[String]]): Long = solve(input, 7)
+def evaluatorTwo(input: List[Array[String]]): Long = solve(input, 12)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -51,12 +53,13 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day23.txt") match {
         case Success(lines) => {
-            val input = lines.toArray
-            input(5) = "cpy c a";
-            input(6) = "mul d a";
-            input(7) = "cpy 0 d";
-            input(8) = "cpy 0 c";
+            val newLines = lines.toArray
+            newLines(5) = "cpy c a"
+            newLines(6) = "mul d a"
+            newLines(7) = "cpy 0 d"
+            newLines(8) = "cpy 0 c"
             
+            val input = parseInput(newLines)
             println(s"Part One: ${evaluatorOne(input)}")
             println(s"Part Two: ${evaluatorTwo(input)}")
         }

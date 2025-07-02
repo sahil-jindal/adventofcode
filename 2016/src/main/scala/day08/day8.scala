@@ -16,16 +16,14 @@ def executeInstructions(instructions: List[String]): Grid = {
     for (instruction <- instructions) {
         instruction match {
             case rectPattern(a, b) => {
-                val rectWidth = a.toInt
-                val rectHeight = b.toInt
+                val (rectWidth, rectHeight) = (a.toInt, b.toInt)
                 
                 for (y <- 0 until rectHeight; x <- 0 until rectWidth) {
                     screen(y)(x) = true
                 }
             }
             case rotateRowPattern(a, b) => {
-                val row = a.toInt
-                val shift = b.toInt
+                val (row, shift) = (a.toInt, b.toInt)
                 val newRow = Array.ofDim[Boolean](width)
 
                 for (x <- 0 until width) {
@@ -35,8 +33,7 @@ def executeInstructions(instructions: List[String]): Grid = {
                 screen(row) = newRow
             }
             case rotateColumnPattern(a, b) => {
-                val col = a.toInt
-                val shift = b.toInt
+                val (col, shift) = (a.toInt, b.toInt)
                 val newCol = Array.ofDim[Boolean](height)
                 
                 for (y <- 0 until height) {
@@ -47,7 +44,7 @@ def executeInstructions(instructions: List[String]): Grid = {
                     screen(y)(col) = newCol(y)
                 }
             }
-            case _ => println(s"Unrecognized instruction: $instruction")
+            case _ => throw new Exception(s"Unrecognized instruction: $instruction")
         }
     }
 

@@ -9,63 +9,48 @@ case class Point(y: Int, x: Int) {
     def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
 }
 
-val firstKeyPad = List(
-    List('1', '2', '3'),
-    List('4', '5', '6'),
-    List('7', '8', '9')
-)
+val firstKeyPad = parseKeypad(List("123", "456", "789"))
+val secondKeyPad = parseKeypad(List("  1  ", " 234 ", "56789", " ABC ", "  D  "))
 
-val secondKeyPad = List(
-    List(' ', ' ', '1', ' ', ' '),
-    List(' ', '2', '3', '4', ' '),
-    List('5', '6', '7', '8', '9'),
-    List(' ', 'A', 'B', 'C', ' '),
-    List(' ', ' ', 'D', ' ', ' ')
-)
+def parseKeypad(input: List[String]): Map[Point, Char] = {
+    return (for {
+        (line, y) <- input.zipWithIndex
+        (ch, x) <- line.zipWithIndex
+        if ch != ' '
+    } yield Point(y, x) -> ch).toMap
+}
 
 def getDirections(dir: Char) = dir match {
     case 'U' => Direction(-1, 0)
     case 'R' => Direction(0, 1)
     case 'D' => Direction(1, 0)
     case 'L' => Direction(0, -1)
-    case _ => Direction(0, 0)
+    case _ => throw new Exception()
 }
 
-def boundaryConditionOne(y: Int, x: Int): Boolean = (x >= 0 && x <= 2) && (y >= 0 && y <= 2)
+def parseInput(input: List[String]) = input.map(_.map(getDirections).toList)
 
-def boundaryConditionTwo(y: Int, x: Int): Boolean = {
-    return (x >= 0 && x <= 4) && (y >= 0 && y <= 4) && secondKeyPad(y)(x) != ' '
-}
-
-def getCode(
-    currPoint: Point, directions: List[String], keyPad: List[List[Char]],
-    boundaryCondition: (Int, Int) => Boolean
-): String = {
+def getCode(paths: List[List[Direction]], keypad: Map[Point, Char]): String = {
+    var temp = keypad.collectFirst { case (k, v) if v == '5' => k }.get
     val code = new StringBuilder
-    var temp = currPoint
 
-    for (line <- directions) {
-        for (dir <- line) {
-            val newP = temp + getDirections(dir)
+    for (path <- paths) {
+        for (dir <- path) {
+            val newP = temp + dir
 
-            if boundaryCondition(newP.y, newP.x) then {
+            if (keypad.contains(newP)) {
                 temp = newP
             } 
         }
 
-        code.append(keyPad(temp.y)(temp.x))
+        code.append(keypad(temp))
     }
 
     code.toString
 }
 
-def evaluatorOne(directions: List[String]): String = {
-    return getCode(Point(1, 1), directions, firstKeyPad, boundaryConditionOne)
-}
-
-def evaluatorTwo(directions: List[String]): String = {
-    return getCode(Point(2, 0), directions, secondKeyPad, boundaryConditionTwo)
-}
+def evaluatorOne(paths: List[List[Direction]]): String = getCode(paths, firstKeyPad)
+def evaluatorTwo(paths: List[List[Direction]]): String = getCode(paths, secondKeyPad)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -73,8 +58,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day02.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

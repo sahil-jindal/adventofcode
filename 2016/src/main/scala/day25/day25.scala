@@ -23,4 +23,4 @@ package day25
 
 def solve(a: Int): String = (a + 2572).toBinaryString
 
-def hello(): Unit = println(s"Part One: ${solve(158)}")
+def hello(): Unit = println(s"Answer: ${solve(158)}")

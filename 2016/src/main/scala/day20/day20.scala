@@ -6,20 +6,21 @@ import scala.io.Source
 case class Range(start: Long, end: Long)
 
 def parseInput(input: List[String]) = input.map(line => {
-    val Array(start, end) = line.split("-")
-    Range(start.toLong, end.toLong)
+    val Array(start, end) = line.split("-").map(_.toLong)
+    Range(start, end)
 })
 
 def mergeRanges(ranges: List[Range]): List[Range] = {
     if (ranges.size < 2) return ranges
 
     val sortedRanges = ranges.sortBy(_.start)
+    val (current, remaining) = (sortedRanges.head, sortedRanges.tail)
     
-    return sortedRanges.tail.foldLeft(List(sortedRanges.head)) { (merged, current) =>
+    return remaining.foldLeft(List(current)) { (merged, current) =>
         val Range(lastStart, lastEnd) = merged.last
         val Range(currStart, currEnd) = current
 
-        if (currStart <= lastEnd + 1) then {
+        if (currStart <= lastEnd + 1) {
             merged.init :+ Range(lastStart, lastEnd max currEnd)
         } else {
             merged :+ current

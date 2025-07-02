@@ -8,16 +8,14 @@ def expand(input: String, start: Int, lim: Int, recursive: Boolean): Long = {
     var i = start
 
     while (i < lim) {
-        if input(i) == '(' then {
+        if (input(i) == '(') {
             val j = input.indexOf(')', i + 1)
-            val m = raw"(\d+)x(\d+)".r.findFirstMatchIn(input.substring(i + 1, j)).get
-            val length = m.group(1).toInt
-            val mul = m.group(2).toInt
+            val Seq(len, mul) = raw"(\d+)".r.findAllIn(input.substring(i + 1, j)).map(_.toInt).toSeq
             val totalLength = 
-                if recursive then expand(input, j + 1, j + length + 1, recursive) * mul.toLong 
-                else (length * mul).toLong 
+                if recursive then expand(input, j + 1, j + len + 1, recursive) * mul.toLong 
+                else (len * mul).toLong 
             res += totalLength
-            i = j + length + 1
+            i = j + len + 1
         } else {
             res += 1
             i += 1

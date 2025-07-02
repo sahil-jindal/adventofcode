@@ -2,13 +2,15 @@ package day11
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Set, Queue, Map, ListBuffer}
+import scala.collection.mutable.{ListBuffer, Queue, Set, Map => MutableMap}
 
 case class Pair(g: Int, c: Int)
 case class State(elevator: Int, elements: List[Pair])
 
-def parseInput(input: List[String]): Map[String, Pair] = {
-    val elementMap = Map.empty[String, Pair].withDefaultValue(Pair(0, 0))
+type Building = Map[String, Pair]
+
+def parseInput(input: List[String]): Building = {
+    val elementMap = MutableMap.empty[String, Pair].withDefaultValue(Pair(0, 0))
 
     for ((line, idx) <- input.zipWithIndex) {
         val floor = idx + 1
@@ -20,7 +22,7 @@ def parseInput(input: List[String]): Map[String, Pair] = {
         for (element <- microchips) { elementMap(element) = Pair(elementMap(element).g, floor) }
     }
     
-    return elementMap
+    return elementMap.toMap
 }
 
 def isValid(elements: List[Pair]): Boolean = {
@@ -60,7 +62,7 @@ def nextStates(current: State): List[State] = {
     }
 }
 
-def isGoal(state: State): Boolean = state.elements.forall(it => it.g == 4 && it.c == 4)
+def isGoal(state: State) = state.elements.forall(it => it.g == 4 && it.c == 4)
 
 def bfs(initial: State): Int = {
     val queue = Queue((initial, 0))
@@ -79,18 +81,16 @@ def bfs(initial: State): Int = {
         }
     }
     
-    return -1
+    throw new Exception("No solution found!")
 }
 
-def solver(input: List[String]): Unit = {
-    val initialElements = parseInput(input)
+def evaluatorOne(initialElements: Building): Int = {
+    return bfs(State(1, initialElements.values.toList))
+}
     
-    println(s"Part One: ${bfs(State(1, initialElements.values.toList))}")
-    
-    initialElements("elerium") = Pair(1, 1)
-    initialElements("dilithium") = Pair(1, 1)
-    
-    println(s"Part Two: ${bfs(State(1, initialElements.values.toList))}")
+def evaluatorTwo(initialElements: Building): Int = {
+    val newElements = initialElements ++ Map("elerium" -> Pair(1, 1), "dilithium" -> Pair(1, 1))
+    return bfs(State(1, newElements.values.toList))
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -98,7 +98,13 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 
 def hello(): Unit = {
     readLinesFromFile("day11.txt") match {
-        case Success(lines) => solver(lines)
-        case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
+        case Success(lines) => {
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
+        }
+        case Failure(exception) => {
+            println(s"Error reading file: ${exception.getMessage}")
+        }
     }
 }

@@ -2,14 +2,16 @@ package day24
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Map, Set, PriorityQueue}
+import scala.collection.mutable.{PriorityQueue, Map => MutableMap, Set => MutableSet}
 
 case class Point(y: Int, x: Int)
 case class State(cost: Int, pos: Int, visited: Int)
 
+type Graph = Map[(Int, Int), Int]
+
 def parseInput(grid: List[String]): (Map[Int, Point], Set[Point]) = {
-    val locations = Map.empty[Int, Point]
-    val walls = Set.empty[Point]
+    val locations = MutableMap.empty[Int, Point]
+    val walls = MutableSet.empty[Point]
     
     for (y <- grid.indices; x <- grid(y).indices) {
         grid(y)(x) match {
@@ -19,7 +21,7 @@ def parseInput(grid: List[String]): (Map[Int, Point], Set[Point]) = {
         }
     }
     
-    return (locations, walls)
+    return (locations.toMap, walls.toSet)
 }
 
 def getNeighbours(pos: Point) = Seq(
@@ -37,15 +39,17 @@ def aStar(start: Point, goal: Point, walls: Set[Point]): Int = {
     }
         
     val pq = PriorityQueue((0, start))(using Ordering.by(evaluation).reverse)
-    val visited = Set.empty[Point]
+    val seen = MutableSet.empty[Point]
 
     while (pq.nonEmpty) {
         val (costSoFar, current) = pq.dequeue()
+
         if (current == goal) return costSoFar
-        if (!visited.contains(current)) {
-            visited += current
+
+        if (!seen.contains(current)) {
+            seen.add(current)
             for (neighbor <- getNeighbours(current)) {
-                if (!walls.contains(neighbor) && !visited.contains(neighbor)) {
+                if (!walls.contains(neighbor) && !seen.contains(neighbor)) {
                     pq.enqueue((costSoFar + 1, neighbor))
                 }
             }
@@ -56,28 +60,28 @@ def aStar(start: Point, goal: Point, walls: Set[Point]): Int = {
 }
 
 // Precompute shortest distances between all numbered locations
-def precomputeDistances(locations: Map[Int, Point], walls: Set[Point]): Map[(Int, Int), Int] = {
+def precomputeDistances(locations: Map[Int, Point], walls: Set[Point]): Graph = {
     val keys = locations.keys.toList
-    val result = Map.empty[(Int, Int), Int]
+    val result = MutableMap.empty[(Int, Int), Int]
     
     for { i <- keys; j <- keys if i != j } result((i, j)) = aStar(locations(i), locations(j), walls)
     
-    return result
+    return result.toMap
 }
 
 // A* for solving TSP using state-space search
-def tspAStar(start: Int, numLocations: Int, dist: Map[(Int, Int), Int], returnToStart: Boolean): Int = {
+def tspAStar(numLocations: Int, dist: Graph, returnToStart: Boolean): Int = {
     val pq = PriorityQueue.empty(using Ordering.by[State, Int](_.cost).reverse)
-    val best = Map.empty[(Int, Int), Int].withDefaultValue(Int.MaxValue)
+    val best = MutableMap.empty[(Int, Int), Int].withDefaultValue(Int.MaxValue)
     var minCost = Int.MaxValue
 
-    pq.enqueue(State(0, start, 1 << start))
+    pq.enqueue(State(0, 0, 1))
 
     while (pq.nonEmpty) {
         val State(cost, pos, visited) = pq.dequeue()
         
         if (visited == (1 << numLocations) - 1) {
-            val finalCost = if (returnToStart) cost + dist((pos, start)) else cost
+            val finalCost = if (returnToStart) cost + dist((pos, 0)) else cost
             minCost = math.min(minCost, finalCost)
         } else {
             for (next <- 0 until numLocations if (visited & (1 << next)) == 0) {
@@ -95,8 +99,8 @@ def tspAStar(start: Int, numLocations: Int, dist: Map[(Int, Int), Int], returnTo
     return minCost
 }
 
-def evaluatorOne(noOfLocations: Int, dist: Map[(Int, Int), Int]): Int = tspAStar(0, noOfLocations, dist, false)
-def evaluatorTwo(noOfLocations: Int, dist: Map[(Int, Int), Int]): Int = tspAStar(0, noOfLocations, dist, true)
+def evaluatorOne(noOfLocations: Int, dist: Graph): Int = tspAStar(noOfLocations, dist, false)
+def evaluatorTwo(noOfLocations: Int, dist: Graph): Int = tspAStar(noOfLocations, dist, true)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

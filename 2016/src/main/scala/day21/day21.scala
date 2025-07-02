@@ -94,7 +94,7 @@ def evaluatorOne(instructions: List[String]): String = {
 }
 
 def evaluatorTwo(instructions: List[String]): String = {
-    return "abcdefgh".permutations.find(it => executeInstructions(it, instructions) == "fbgdceah").get
+    return "abcdefgh".permutations.find(executeInstructions(_, instructions) == "fbgdceah").get
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

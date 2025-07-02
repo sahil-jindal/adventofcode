@@ -13,7 +13,7 @@ def findTriplet(hash: String): Option[Char] = {
 }
 
 def hasQuintuplet(hash: String, c: Char): Boolean = {
-    return hash.sliding(5).exists(s => s.forall(_ == c))
+    return hash.sliding(5).exists(_.forall(_ == c))
 }
 
 def compute(prefix: String, requiredKeys: Int, stretched: Boolean): Int = {
@@ -40,7 +40,7 @@ def compute(prefix: String, requiredKeys: Int, stretched: Boolean): Int = {
         val hash = getHash(i)
         val result = findTriplet(hash)
 
-        if(result.isDefined) {
+        if (result.isDefined) {
             val found = (1 to 1000).exists { j =>
                 val jHash = getHash(i + j)
                 hasQuintuplet(jHash, result.get)

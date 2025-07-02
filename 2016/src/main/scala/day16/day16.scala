@@ -4,8 +4,8 @@ import scala.collection.mutable.ArrayBuffer
 
 def parseInput(input: String) = input.map(_ == '1').toList
 
-def generateRandomData(seed: String, disk: Int): List[Boolean] = {
-    var temp = ArrayBuffer.from(parseInput(seed))
+def generateRandomData(input: List[Boolean], disk: Int): List[Boolean] = {
+    var temp = ArrayBuffer.from(input)
 
     while (temp.length < disk) {
         val reversedFlipped = temp.reverse.map(!_).toList
@@ -25,11 +25,12 @@ def generateCheckSum(data: List[Boolean]): String = {
     return temp.map { if _ then '1' else '0' }.mkString
 }
 
-def evaluatorOne(input: String): String = generateCheckSum(generateRandomData(input, 272))
-def evaluatorTwo(input: String): String = generateCheckSum(generateRandomData(input, 35651584))
+def evaluatorOne(input: List[Boolean]): String = generateCheckSum(generateRandomData(input, 272))
+def evaluatorTwo(input: List[Boolean]): String = generateCheckSum(generateRandomData(input, 35651584))
 
 def hello(): Unit = {
     val inputLine = "10001001100000001"
-    println(s"Part One: ${{evaluatorOne(inputLine)}}")
-    println(s"Part Two: ${{evaluatorTwo(inputLine)}}")
+    val input = parseInput(inputLine)
+    println(s"Part One: ${{evaluatorOne(input)}}")
+    println(s"Part Two: ${{evaluatorTwo(input)}}")
 }
