@@ -1,47 +1,32 @@
 package day19
 
-case class Elf(id: Int, var prev: Elf = null, var next: Elf = null)
+// Part One: Standard Josephus problem (k = 2).
+// The winner is given by: 2 * (n - 2^⌊log2 n⌋) + 1
 
-def createElves(count: Int): List[Elf] = {
-    val elves = List.tabulate(count)(i => Elf(i + 1))
+def evaluatorOne(n: Int): Int = {
+    return 2 * (n - Integer.highestOneBit(n)) + 1
+}
+
+// Part Two: Eliminate the elf directly across (k varies).
+// Known closed-form solution using powers of 3:
+// Let p = 3^⌊log3 n⌋. Then:
+//   if n == p, result = n
+//   else if n - p <= p, result = n - p
+//   else result = 2*n - 3*p
+
+def evaluatorTwo(n: Int): Int = {
+    var p = 1
     
-    for i <- elves.indices do {
-        elves(i).prev = elves((i - 1 + count) % count)
-        elves(i).next = elves((i + 1) % count)
-    }
+    while (p * 3 <= n) { p *= 3 }
     
-    return elves
+    if (n == p) return n
+    if (n - p <= p) return n - p
+    
+    return 2 * n - 3 * p
 }
 
-def solve(elf: Elf, elfVictim: Elf, elfCount: Int, nextVictim: (Elf, Int) => Elf): Int = {
-    var currentElf = elf
-    var victim = elfVictim
-    var count = elfCount
-
-    while count > 1 do {
-        victim.prev.next = victim.next
-        victim.next.prev = victim.prev
-        currentElf = currentElf.next
-        count -= 1
-        victim = nextVictim(victim, count)
-    }
-
-    return currentElf.id
-}
-
-def evaluatorOne(elves: List[Elf]): Int = {   
-    return solve(elves.head, elves(1), elves.length, (elfVictim, _) => elfVictim.next.next)
-}
-
-def evaluatorTwo(elves: List[Elf]): Int = {
-    return solve(elves.head, elves(elves.length / 2), elves.length, (elfVictim, count) =>
-        if count % 2 == 1 then elfVictim.next else elfVictim.next.next
-    )
-}
- 
 def hello(): Unit = {
     val inputLine = 3005290
-    val elves = createElves(inputLine)
-    println(s"Part One: ${evaluatorOne(elves)}")
-    println(s"Part Two: ${evaluatorTwo(elves)}")
+    println(s"Part One: ${evaluatorOne(inputLine)}")
+    println(s"Part Two: ${evaluatorTwo(inputLine)}")
 }
