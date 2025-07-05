@@ -2,36 +2,33 @@ package day08
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.Map
+import scala.collection.mutable.{Map => MutableMap}
 
-val comparators = Map[String, (Int, Int) => Boolean](
-    (">=", (x, y) => x >= y), ("<=", (x, y) => x <= y),
-    ("==", (x, y) => x == y), ("!=", (x, y) => x != y),
-    (">",  (x, y) => x > y), ("<",  (x, y) => x < y),
+case class Instruction(reg1: String, op: Int => Int, reg2: String, comp: Int => Boolean)
+
+val comparators = Map[String, Int => Int => Boolean](
+    (">=", y => x => x >= y), ("<=", y => x => x <= y),
+    ("==", y => x => x == y), ("!=", y => x => x != y),
+    (">",  y => x => x > y), ("<",  y => x => x < y),
 )
 
-val operations = Map[String, (Int, Int) => Int](
-    ("inc", (x, y) => x + y), ("dec", (x, y) => x - y)
+val operations = Map[String, Int => Int => Int](
+    ("inc", y => x => x + y), ("dec", y => x => x - y)
 )
 
-def solve(input: List[String]): (Int, Int) = {
-    val prg = input.map(_.split(' '))
-    var regs = Map.empty[String, Int].withDefaultValue(0)
+def parseInput(input: List[String]) = input.map(line => {
+    val Array(a, b, c, _, e, f, g) = line.split(' ')
+    Instruction(a, operations(b)(c.toInt), e, comparators(f)(g.toInt))
+})
+
+def solve(prg: List[Instruction]): (Int, Int) = {
+    val regs = MutableMap.empty[String, Int].withDefaultValue(0)
     var maxEver = Int.MinValue
 
-    for instruction <- prg do {
-        val op = operations(instruction(1))
-        val comp = comparators(instruction(5))
-
-        val reg1 = instruction(0)
-        val num1 = instruction(2).toInt
-
-        val reg2 = regs(instruction(4))
-        val num2 = instruction(6).toInt
-
-        if(comp(reg2, num2)) then {
-            regs(reg1) = op(regs(reg1), num1)
-            maxEver = Math.max(maxEver, regs(reg1))
+    for (Instruction(a, op, b, comp) <- prg) {
+        if (comp(regs(b))) {
+            regs(a) = op(regs(a))
+            maxEver = Math.max(maxEver, regs(a))
         }   
     }
     
@@ -44,7 +41,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day08.txt") match {
         case Success(lines) => {
-            val (partOne, partTwo) = solve(lines)
+            val (partOne, partTwo) = solve(parseInput(lines))
             println(s"Part One: $partOne")
             println(s"Part Two: $partTwo")
         }
