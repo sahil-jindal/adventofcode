@@ -3,29 +3,34 @@ package day15
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def generator(start: Long, mul: Long): Iterator[Long] = {
-    return Iterator.iterate(start)(state => (state * mul) % 2147483647)
+case class Generator(start: Long, generateNumber: Long => Long) {
+    def numbers = Iterator.iterate(start)(generateNumber)
 }
 
-def parseGenerators(input: List[String]): (Iterator[Long], Iterator[Long]) = {
-    val startA = input(0).stripPrefix("Generator A starts with ").toLong
-    val startB = input(1).stripPrefix("Generator B starts with ").toLong
-    return (generator(startA, 16807), generator(startB, 48271))
+type Pair = (Generator, Generator)
+
+def parseGenerator(line: String, mul: Long) = {
+    val start = raw"Generator \w starts with (\d+)".r.findFirstMatchIn(line).get.group(1).toLong
+    Generator(start, state => (state * mul) % 2147483647) 
+}
+
+def parseInput(input: List[String]): Pair = {
+    return (parseGenerator(input(0), 16807), parseGenerator(input(1), 48271))
 }
 
 def countMatches(genA: Iterator[Long], genB: Iterator[Long], iterations: Int): Int = {
-    return genA.zip(genB).take(iterations).count { case (a, b) => (a & 0xFFFF) == (b & 0xFFFF) }
+    return (genA zip genB).take(iterations).count { case (a, b) => (a & 0xFFFF) == (b & 0xFFFF) }
 }
 
-def evaluatorOne(input: List[String]): Long = {
-    val (genA, genB) = parseGenerators(input)
-    return countMatches(genA, genB, 40000000)
+def evaluatorOne(input: Pair): Long = {
+    val (genA, genB) = input
+    return countMatches(genA.numbers, genB.numbers, 40000000)
 }
 
-def evaluatorTwo(input: List[String]): Long = {
-    val (genA, genB) = parseGenerators(input)
-    val filteredA = genA.filter(_ % 4 == 0)
-    val filteredB = genB.filter(_ % 8 == 0)
+def evaluatorTwo(input: Pair): Long = {
+    val (genA, genB) = input
+    val filteredA = genA.numbers.filter(_ % 4 == 0)
+    val filteredB = genB.numbers.filter(_ % 8 == 0)
     return countMatches(filteredA, filteredB, 5000000)
 }
 
@@ -35,8 +40,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day15.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
