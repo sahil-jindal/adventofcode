@@ -3,7 +3,7 @@ package day09
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def process(input: String): (Int, Int) = {
+def solver(input: String): (Int, Int) = {
     var inGarbage = false
     var ignoreNext = false
     var depth = 0
@@ -41,9 +41,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day09.txt") match {
         case Success(lines) => {
-            val (score, garbage) = process(lines.head)
-            println(s"Part One: $score")
-            println(s"Part Two: $garbage")
+            val (partOne, partTwo) = solver(lines.head)
+            println(s"Part One: $partOne")
+            println(s"Part Two: $partTwo")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

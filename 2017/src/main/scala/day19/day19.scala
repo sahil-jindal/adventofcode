@@ -12,23 +12,26 @@ case class Point(y: Int, x: Int) {
     def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
 }
 
-def onPath(map: List[String], p: Point): Boolean = {
-    val (w, h) = (map(0).length, map.length)
-    return (0 until w).contains(p.x) && (0 until h).contains(p.y) && map(p.y)(p.x) != ' '
+def parseInput(input: List[String]): Map[Point, Char] = {
+    return (for {
+        (line, y) <- input.zipWithIndex
+        (ch, x) <- line.zipWithIndex
+        if ch != ' '
+    } yield Point(y, x) -> ch).toMap
 }
 
-def followPath(map: List[String]): (String, Int) = {
-    var pos = Point(0, map(0).indexOf('|'))
+def solver(grid: Map[Point, Char]): (String, Int) = {
+    var pos = grid.collectFirst { case (k, v) if k.y == 0 && v == '|' => k }.get
     var dir = Direction(1, 0)
     
     val msg = new StringBuilder
     var steps = 0
 
-    while (onPath(map, pos)) {
-        map(pos.y)(pos.x) match {
+    while (grid.contains(pos)) {
+        grid(pos) match {
             case '+' => {
-                if (onPath(map, pos + dir.rotateLeft)) then { dir = dir.rotateLeft }
-                else if (onPath(map, pos + dir.rotateRight)) then { dir = dir.rotateRight }
+                if (grid.contains(pos + dir.rotateLeft)) { dir = dir.rotateLeft }
+                else if (grid.contains(pos + dir.rotateRight)) { dir = dir.rotateRight }
             }
             case ch if ch.isLetter => msg.append(ch)
             case _ => {}
@@ -47,9 +50,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day19.txt") match {
         case Success(lines) => {
-            val (msg, steps) = followPath(lines)
-            println(s"Part One: $msg")
-            println(s"Part Two: $steps")
+            val (partOne, partTwo) = solver(parseInput(lines))
+            println(s"Part One: $partOne")
+            println(s"Part Two: $partTwo")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

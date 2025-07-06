@@ -7,9 +7,9 @@ def knotHash(input: List[Int], rounds: Int): List[Int] = {
     val output = (0 until 256).toArray
     var (current, skip) = (0, 0)
 
-    for (_ <- 0 until rounds) do {
-        for (len <- input) do {
-            for (i <- 0 until len / 2) do {
+    for (_ <- 0 until rounds) {
+        for (len <- input) {
+            for (i <- 0 until len / 2) {
                 val from = (current + i) % output.length
                 val to = (current + len - 1 - i) % output.length
                 val temp = output(from)

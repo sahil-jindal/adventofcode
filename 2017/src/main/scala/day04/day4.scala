@@ -6,10 +6,7 @@ import scala.io.Source
 def parseInput(input: List[String]) = input.map(_.split(" ").toList)
 
 def isValidLineCount(input: List[List[String]], normalizer: String => String): Int = {
-    return input.count(it => {
-        val normalized = it.map(normalizer)
-        normalized.toSet.size == normalized.size
-    })
+    return input.map(_.map(normalizer)).count(it => it.toSet.size == it.size)
 }
 
 def evaluatorOne(input: List[List[String]]): Int = isValidLineCount(input, identity)

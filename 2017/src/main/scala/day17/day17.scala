@@ -1,9 +1,9 @@
 package day17
 
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.ArrayBuffer
 
 def evaluatorOne(step: Int): Int = {
-    val nums = ListBuffer(0)
+    val nums = ArrayBuffer(0)
     var pos = 0
 
     for (i <- 1 until 2018) {

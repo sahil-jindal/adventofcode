@@ -5,11 +5,9 @@ import scala.io.Source
 
 def parseInput(input: String) = input.map(_.asDigit).toList
 
-def solve(line: List[Int], rotated: Int): Int = {
-    val d = rotated % line.length
+def solve(line: List[Int], d: Int): Int = {
     val leftRotated = line.drop(d) ++ line.take(d)
-    val newLine = line zip leftRotated
-    return newLine.collect { case (a, b) if a == b => a }.sum
+    return (line zip leftRotated).collect { case (a, b) if a == b => a }.sum
 }
 
 def evaluatorOne(line: List[Int]) = solve(line, 1)

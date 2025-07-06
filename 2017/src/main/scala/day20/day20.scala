@@ -4,13 +4,11 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
 case class Vec3D(x: Int, y: Int, z: Int) {
-    def len: Int = x.abs + y.abs + z.abs
+    def len = x.abs + y.abs + z.abs
     def +(that: Vec3D) = Vec3D(x + that.x, y + that.y, z + that.z)
 }
 
 case class Particle(id: Int, pos: Vec3D, vel: Vec3D, acc: Vec3D) {
-    var destroyed: Boolean = false
-
     def step(): Particle = {
         val newVel = vel + acc
         val newPos = pos + newVel
@@ -50,16 +48,13 @@ case class Particle(id: Int, pos: Vec3D, vel: Vec3D, acc: Vec3D) {
     }
 }
 
-def parseVector(s: String): Vec3D = {
-    val Array(x, y, z) = s.split(",").map(_.trim.toInt)
-    return Vec3D(x, y, z)
-}
-
 def parseInput(input: List[String]): List[Particle] = {
-    val pattern = raw"p=<([^>]+)>, v=<([^>]+)>, a=<([^>]+)>".r
-
     return input.zipWithIndex.map { case (line, id) =>
-        val List(pVec, vVec, aVec) = pattern.findFirstMatchIn(line).get.subgroups.map(parseVector)
+        val Array(pVec, vVec, aVec) = line.split(", ").map(str => {
+            val Seq(x, y, z) = raw"(-?\d+)".r.findAllIn(str).map(_.toInt).toSeq
+            Vec3D(x, y, z)
+        })
+
         Particle(id, pVec, vVec, aVec)
     }
 }
@@ -69,36 +64,16 @@ def evaluatorOne(currParticles: List[Particle]): Int = currParticles.minBy(_.acc
 def evaluatorTwo(currParticles: List[Particle]): Int = {
     var particles = currParticles
 
-    val collisionTimes = (for {
+    val T = (for {
         p1 <- particles
         p2 <- particles 
         if p1.id != p2.id
         ct <- p1.collisionTime(p2)
-    } yield ct)
+    } yield ct).max
 
-    val T = collisionTimes.max
-    var t = 0
-
-    while (t <= T) {
-        val particlesByPos = particles.sortBy(p => (p.pos.x, p.pos.y, p.pos.z))
-        var particlePrev = particlesByPos(0)
-
-        for (i <- 1 until particlesByPos.length) {
-            val particle = particlesByPos(i)
-            if (particlePrev.pos.x == particle.pos.x &&
-                particlePrev.pos.y == particle.pos.y &&
-                particlePrev.pos.z == particle.pos.z)
-            {
-                particlePrev.destroyed = true
-                particle.destroyed = true
-            }
-            
-            particlePrev = particle
-        }
-
-        particles = particles.filterNot(_.destroyed).map(_.step())
-
-        t += 1
+    for (_ <- 0 to T) {
+        val positionFreq = particles.groupMapReduce(_.pos)(_ => 1)(_ + _)
+        particles = particles.filterNot(it => positionFreq(it.pos) > 1).map(_.step())
     }
     
     return particles.length

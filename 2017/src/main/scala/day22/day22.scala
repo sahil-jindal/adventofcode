@@ -18,29 +18,31 @@ case class Point(y: Int, x: Int) {
 
 case class Virus(currDirection: Direction, state: State)
 
-def iterate(input: List[String], iterations: Int, update: Virus => Virus): Int = {
-    val height = input.length
-    val width = input.head.length
-    val cells = Map.empty[Point, State]
+def parseInput(input: List[String]): List[Point] = {
+    return (for {
+        (line, y) <- input.zipWithIndex
+        (ch, x) <- line.zipWithIndex
+        if ch == '#'
+    } yield Point(y, x)).toList
+}
 
-    for (yT <- 0 until height; xT <- 0 until width; if input(yT)(xT) == '#') do {
-        cells += Point(yT, xT) -> State.Infected
-    }
+def iterate(input: List[Point], iterations: Int, update: Virus => Virus): Int = {
+    val cells = Map(input.map(_ -> State.Infected)*)
 
-    var pos = Point(height / 2, width / 2)
+    var pos = Point(input.map(_.y).max / 2, input.map(_.x).max / 2)
     var dir = Direction(-1, 0)
     var infections = 0
 
-    for(_ <- 0 until iterations) {
+    for (_ <- 0 until iterations) {
         var state = cells.getOrElse(pos, State.Clean)
         val newVirus = update(Virus(dir, state))
 
         state = newVirus.state
         dir = newVirus.currDirection
         
-        if(state == State.Infected) infections += 1
+        if (state == State.Infected) infections += 1
 
-        if(state == State.Clean) {
+        if (state == State.Clean) {
             cells -= pos
         } else {
             cells += pos -> state
@@ -52,9 +54,7 @@ def iterate(input: List[String], iterations: Int, update: Virus => Virus): Int =
     return infections
 }
 
-def evaluatorOne(input: List[String]) = iterate(input, 10000, it => {
-    val Virus(dir, state) = it
-
+def evaluatorOne(input: List[Point]) = iterate(input, 10000, { case Virus(dir, state) =>
     state match {
         case State.Clean => Virus(dir.rotateLeft, State.Infected)
         case State.Infected => Virus(dir.rotateRight, State.Clean)
@@ -62,9 +62,7 @@ def evaluatorOne(input: List[String]) = iterate(input, 10000, it => {
     }
 })
 
-def evaluatorTwo(input: List[String]) = iterate(input, 10000000, it => {
-    val Virus(dir, state) = it
-
+def evaluatorTwo(input: List[Point]) = iterate(input, 10000000, { case Virus(dir, state) =>
     state match {
         case State.Flagged => Virus(-dir, State.Clean)
         case State.Weakened => Virus(dir, State.Infected)
@@ -79,8 +77,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day22.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

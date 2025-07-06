@@ -2,10 +2,10 @@ package day06
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
+import scala.collection.mutable.Map
+import scala.util.boundary, boundary.break
 
-def parseInput(lines: String): Vector[Int] = {
-    return raw"(\d+)".r.findAllIn(lines).map(_.toInt).toVector
-}
+def parseInput(lines: String) = raw"(\d+)".r.findAllIn(lines).map(_.toInt).toVector
 
 def redistribute(banks: Vector[Int]): Vector[Int] = {
     val numBanks = banks.length
@@ -20,32 +20,24 @@ def redistribute(banks: Vector[Int]): Vector[Int] = {
 
     val indicesToIncrement = (0 until remainder).map { j => (start + j) % numBanks }
 
-    return indicesToIncrement.foldLeft(afterQuotient) { (current, idx) =>
+    return indicesToIncrement.foldLeft(afterQuotient) { case (current, idx) =>
         current.updated(idx, current(idx) + 1)
     }
 }
 
 def getStepCount(input: Vector[Int]): (Int, Int) = {
     var current = input
-    var seen = Map(current -> 0)
-    var steps = 0
-    var (part1, part2) = (0, 0)
+    val seen = Map(current -> 0)
 
-    while (true) {
-        steps += 1
-        current = redistribute(current)
-        
-        seen.get(current) match {
-            case Some(previousStep) =>
-                part1 = steps
-                part2 = steps - previousStep
-                return (part1, part2)
-            case None =>
-                seen += (current -> steps)
+    boundary {
+        for (steps <- Iterator.from(1)) {
+            current = redistribute(current)
+            if (seen.contains(current)) break((steps, steps - seen(current)))
+            seen(current) = steps
         }
-    }
     
-    return (0, 0) // Not reachable    
+        (0, 0) // Not reachable
+    }    
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

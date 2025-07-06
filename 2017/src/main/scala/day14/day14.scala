@@ -8,12 +8,11 @@ def knotHash(input: String): Seq[Int] = {
     val suffix = Seq(17, 31, 73, 47, 23)
     val chars = input.map(_.toInt) ++ suffix
     val output = (0 until 256).toArray
-    var current = 0
-    var skip = 0
+    var (current, skip) = (0, 0)
 
-    for (_ <- 0 until 64) do {
-        for (len <- chars) do {
-            for (i <- 0 until len / 2) do {
+    for (_ <- 0 until 64) {
+        for (len <- chars) {
+            for (i <- 0 until len / 2) {
                 val from = (current + i) % output.length
                 val to = (current + len - 1 - i) % output.length
                 val temp = output(from)

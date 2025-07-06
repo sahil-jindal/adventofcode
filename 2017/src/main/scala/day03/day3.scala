@@ -1,9 +1,24 @@
 package day03
 
 import scala.collection.mutable.Map
+import scala.util.boundary, boundary.break
 
-def getCoordinates(n: Int): (Int, Int) = {
-    if (n == 1) return (0, 0)
+case class Point(y: Int, x: Int) {
+    def abs = x.abs + y.abs
+}
+
+val startPoint = Point(0, 0)
+
+def getAllNeighbours(pos: Point): Seq[Point] = {
+    return (for {
+        dy <- -1 to 1
+        dx <- -1 to 1
+        if dy != 0 || dx != 0
+    } yield Point(pos.y + dy, pos.x + dx))
+}
+
+def getCoordinates(n: Int): Point = {
+    if (n == 1) return startPoint
 
     val ringNo = math.ceil((math.sqrt(n) - 1) / 2).toInt
     val start = (2 * ringNo - 1) * (2 * ringNo - 1)
@@ -12,42 +27,33 @@ def getCoordinates(n: Int): (Int, Int) = {
     val pos = offset % (2 * ringNo)
 
     return side match {
-        case 0 => (ringNo, -ringNo + 1 + pos)
-        case 1 => (ringNo - (pos + 1), ringNo)
-        case 2 => (-ringNo, ringNo - (pos + 1))
-        case _ => (-ringNo + (pos + 1), -ringNo)
+        case 0 => Point(-ringNo + (pos + 1), ringNo)
+        case 1 => Point( ringNo, ringNo - (pos + 1))
+        case 2 => Point( ringNo - (pos + 1), -ringNo)
+        case _ => Point(-ringNo, -ringNo + (pos + 1))
     }
 }
 
 def firstSumAbove(input: Int): Int = {
     if (input == 1) return 1
     
-    val grid = Map(((0, 0), 1))
-
-    var n = 2
+    val grid = Map(startPoint -> 1)
     
-    while (true) {
-        val (x, y) = getCoordinates(n)
-        var sum = 0
+    boundary {
+        for (n <- Iterator.from(2)) {
+            val pos = getCoordinates(n)
+            val sum = getAllNeighbours(pos).map(pos => grid.getOrElse(pos, 0)).sum
 
-        for (dx <- -1 to 1; dy <- -1 to 1 if !(dx == 0 && dy == 0)) {
-            sum += grid.getOrElse((x + dx, y + dy), 0)
+            if (sum > input) break(sum)
+
+            grid(pos) = sum
         }
-
-        if (sum > input) return sum
-        
-        grid((x, y)) = sum
-        n += 1
+    
+        -1 // Unreachable
     }
-
-    return -1 // Unreachable
 }
 
-def evaluatorOne(input: Int): Int = {
-    val (x, y) = getCoordinates(input)
-    return x.abs + y.abs
-}
-
+def evaluatorOne(input: Int): Int = getCoordinates(input).abs
 def evaluatorTwo(input: Int): Int = firstSumAbove(input)
 
 def hello(): Unit = {

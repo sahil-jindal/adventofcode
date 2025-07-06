@@ -4,68 +4,60 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Map => MutableMap}
 
-val currentValuePattern = raw"\s*If the current value is (\d+):".r
-val writePattern = raw"\s*- Write the value (\d+)\.".r
-val movePattern = raw"\s*- Move one slot to the (left|right)\.".r
-val continuePattern = raw"\s*- Continue with state (\w+)\.".r
+enum State { case ZERO, ONE }
 
-def evaluatorOne(input: List[String]): Int = {
-    val lines = input.filter(_.trim.nonEmpty).toList
+def groupLines(input: List[String]): List[List[String]] = {
+    return input.foldLeft(List(List.empty[String])) {
+        case (acc, "") => acc :+ List.empty[String]
+        case (acc, elem) => acc.init :+ (acc.last :+ elem)
+    }.filter(_.nonEmpty)
+}
+
+def parseBluePrint(group: List[String]) = {
+    val (first, rest) = (group.head, group.tail)
+    val state = first.trim().stripPrefix("In state ").stripSuffix(":").head
+
+    val stateTrans = MutableMap.empty[State, (State, Int, Char)]
+
+    for (lines <- rest.grouped(rest.size / 2)) {
+        val temp1 = lines(0).trim().stripPrefix("If the current value is ").stripSuffix(":").head
+        val currentValue = if temp1 == '0' then State.ZERO else State.ONE
+
+        val temp2 = lines(1).trim().stripPrefix("- Write the value ").stripSuffix(".").head
+        val writeValue = if temp2 == '0' then State.ZERO else State.ONE
     
+        val moveValue = lines(2).trim().stripPrefix("- Move one slot to the ").stripSuffix(".")
+        val direction = if moveValue == "left" then -1 else 1
+
+        val nextState = lines(3).trim().stripPrefix("- Continue with state ").stripSuffix(".").head
+
+        stateTrans(currentValue) = (writeValue, direction, nextState)
+    }
+
+    state -> stateTrans.toMap
+}
+
+def solver(input: List[String]): Int = {
     // Parse initial state and steps
-    val initialState = lines.head match {
-        case s"Begin in state $state." => state
-    }
+    val initialState = input(0).stripPrefix("Begin in state ").stripSuffix(".").head
+    val steps = input(1).stripPrefix("Perform a diagnostic checksum after ").stripSuffix(" steps.").toInt
     
-    val steps = lines(1) match {
-        case s"Perform a diagnostic checksum after $n steps." => n.toInt
-    }
-
     // Parse transitions
-    val transitions = MutableMap.empty[String, Map[Int, (Int, Int, String)]]
-    val linesIterator = lines.drop(2).iterator
-
-    while (linesIterator.hasNext) {
-        val stateLine = linesIterator.next().trim
-        val state = stateLine.split(" ")(2).stripSuffix(":")
-        var stateTrans = Map.empty[Int, (Int, Int, String)]
-
-        for (_ <- 0 until 2) {
-            val currentValueLine = linesIterator.next().trim
-            val currentValue = currentValuePattern.findFirstMatchIn(currentValueLine).get.group(1).toInt
-            
-            val writeLine = linesIterator.next().trim
-            val writeValue = writePattern.findFirstMatchIn(writeLine).get.group(1).toInt
-            
-            val moveLine = linesIterator.next().trim
-        
-            val direction = moveLine match {
-                case movePattern("left") => -1
-                case movePattern("right") => 1
-            }
-
-            val continueLine = linesIterator.next().trim
-            val nextState = continuePattern.findFirstMatchIn(continueLine).get.group(1)
-            
-            stateTrans += (currentValue -> (writeValue, direction, nextState))
-        }
-
-        transitions(state) = stateTrans
-    }
+    val transitions = groupLines(input.drop(3)).map(parseBluePrint).toMap
 
     // Simulation
-    val tape = MutableMap.empty[Int, Int]
+    val tape = MutableMap.empty[Int, State]
     var currentPos = 0
     var currentState = initialState
 
     for (_ <- 0 until steps) {
-        val currentValue = tape.getOrElse(currentPos, 0)
+        val currentValue = tape.getOrElse(currentPos, State.ZERO)
         val (writeValue, dir, nextState) = transitions(currentState)(currentValue)
 
-        if (writeValue == 0) {
-            tape.remove(currentPos)
+        if (writeValue == State.ZERO) {
+            tape -= currentPos
         } else {
-            tape(currentPos) = writeValue
+            tape += currentPos -> writeValue
         }
 
         currentPos += dir
@@ -80,7 +72,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 
 def hello(): Unit = {
     readLinesFromFile("day25.txt") match {
-        case Success(lines) => println(s"Part One: ${evaluatorOne(lines)}")
-        case Failure(exception) => println(s"File not found: ${exception.getMessage()}")
+        case Success(lines) => println(s"Answer: ${solver(lines)}")
+        case Failure(exception) => println(s"Error reading file: ${exception.getMessage()}")
     }
 }

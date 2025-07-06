@@ -2,32 +2,25 @@ package day12
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Set, Stack}
+import scala.collection.mutable.{Stack, Set => MutableSet}
 
-def parseInput(input: List[String]): Map[String, List[String]] = {
-    return input.map(line => {
-        val Array(first, second) = line.split(" <-> ")
-        first -> second.split(", ").toList
-    }).toMap
-}
+def parseInput(input: List[String]) = input.map(line => {
+    val Array(first, second) = line.split(" <-> ")
+    first -> second.split(", ").toList
+}).toMap
 
 def dfs(graph: Map[String, List[String]], start: String): Set[String] = {
-    val visited = Set.empty[String]
+    val visited = MutableSet.empty[String]
     val stack = Stack(start)
 
     while (stack.nonEmpty) {
         val node = stack.pop()
-        if (!visited.contains(node)) {
-            visited.add(node)
-            for (neighbor <- graph.getOrElse(node, List.empty)) {
-                if (!visited.contains(neighbor)) {
-                    stack.push(neighbor)
-                }
-            }
+        if (visited.add(node) && graph.contains(node)) {
+            stack.pushAll(graph(node).filterNot(visited.contains))
         }
     }
 
-    return visited
+    return visited.toSet
 }
 
 def evaluatorOne(graph: Map[String, List[String]]): Int = dfs(graph, "0").size

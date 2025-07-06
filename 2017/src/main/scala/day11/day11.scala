@@ -3,24 +3,25 @@ package day11
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def parseInput(input: String) = input.split(',').toList
-
-def wander(directions: List[String]): List[(Int, Int, Int)] = {
-    return directions.scanLeft((0, 0, 0)) {
-        case ((x, y, z), dir) => dir match {
-            case "n"  => (x, y + 1, z - 1)
-            case "s"  => (x, y - 1, z + 1)
-            case "ne" => (x + 1, y, z - 1)
-            case "sw" => (x - 1, y, z + 1)
-            case "se" => (x + 1, y - 1, z)
-            case "nw" => (x - 1, y + 1, z)
-            case _    => throw new IllegalArgumentException(dir)
-        }
-    }
+case class Vec3D(x: Int, y: Int, z: Int) {
+    def len = x.abs + y.abs + z.abs
+    def +(that: Vec3D) = Vec3D(x + that.x, y + that.y, z + that.z)
 }
 
-def distances(input: List[String]): List[Int] = {
-    return wander(input).map { case (x, y, z) => (x.abs + y.abs + z.abs) / 2 }
+def parseInput(input: String) = input.split(',').map(dir => {
+    dir match {
+        case "n"  => Vec3D(0, 1, -1)
+        case "s"  => Vec3D(0, -1, 1)
+        case "ne" => Vec3D(1, 0, -1)
+        case "sw" => Vec3D(-1, 0, 1)
+        case "se" => Vec3D(1, -1, 0)
+        case "nw" => Vec3D(-1, 1, 0)
+        case _    => throw new Exception(dir)
+    }
+})
+
+def distances(distances: Array[Vec3D]): Array[Int] = {
+    return distances.scanLeft(Vec3D(0, 0, 0))(_ + _).map(_.len / 2)
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

@@ -9,38 +9,37 @@ case class Spin(size: Int) extends Move
 case class Exchange(a: Int, b: Int) extends Move
 case class Partner(a: Char, b: Char) extends Move
 
-def parseInput(input: String) = input.split(',').map(move => {
-    move(0) match {
-        case 's' => Spin(move.tail.toInt)
+def parseInput(input: String) = input.split(',').map(dance => {
+    val (moves, rest) = (dance.head, dance.tail)
+
+    moves match {
+        case 's' => Spin(rest.toInt)
         case 'x' => {
-            val parts = move.tail.split('/')
-            Exchange(parts(0).toInt, parts(1).toInt)
+            val Array(a, b) = rest.split('/').map(_.toInt)
+            Exchange(a, b)
         }
         case 'p' => {
-            val parts = move.tail.split('/')
-            Partner(parts(0).head, parts(1).head)
+            val Array(a, b) = rest.split('/').map(_.head)
+            Partner(a, b)
         }
-        case _ => throw new IllegalArgumentException(s"Unknown move: $move")
+        case _ => throw new Exception(s"Unknown move: $moves")
     }
 }).toList
 
-def applySpin(s: String, x: Int): String = {
-    val splitPos = s.length - x
-    return s.substring(splitPos) + s.substring(0, splitPos)
+def applySpin(str: String, num: Int): String = {
+    return str.takeRight(num) + str.dropRight(num)
 }
 
-def applyExchange(s: String, a: Int, b: Int): String = {
-    val arr = s.toCharArray
+def applyExchange(str: String, a: Int, b: Int): String = {
+    val arr = str.toCharArray
     val temp = arr(a)
     arr(a) = arr(b)
     arr(b) = temp
     return new String(arr)
 }
 
-def applyPartner(s: String, a: Char, b: Char): String = {
-    val idxA = s.indexOf(a)
-    val idxB = s.indexOf(b)
-    return applyExchange(s, idxA, idxB)
+def applyPartner(str: String, a: Char, b: Char): String = {
+    return applyExchange(str, str.indexOf(a), str.indexOf(b))
 }
 
 def applyMoves(initial: String, moves: List[Move]): String = {
