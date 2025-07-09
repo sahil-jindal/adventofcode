@@ -4,7 +4,7 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Map => MutableMap}
 
-class Mtx(val size: Int) {
+case class Mtx(size: Int) {
     require(size % 2 == 0 || size % 3 == 0)
 
     private val flags = Array.ofDim[Boolean](size, size)
@@ -92,8 +92,8 @@ object Mtx {
     }
 }
 
-class RuleSet(rules2: Map[Int, Mtx], rules3: Map[Int, Mtx]) {
-    def apply(mtx: Mtx): Mtx = Mtx.join(mtx.split().map {
+case class RuleSet(rules2: Map[Int, Mtx], rules3: Map[Int, Mtx]) {
+    def apply(mtx: Mtx) = Mtx.join(mtx.split().collect {
         case child if child.size == 2 => rules2(child.codeNumber)
         case child if child.size == 3 => rules3(child.codeNumber)
     })
