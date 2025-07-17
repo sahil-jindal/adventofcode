@@ -14,6 +14,7 @@ case class Direction(dy: Int, dx: Int) {
 }
 
 case class Point(y: Int, x: Int) {
+    override def toString() = s"$x,$y"
     def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
 }
 
@@ -47,11 +48,10 @@ def parseInput(input: List[String]): (Map[Point, Char], List[Cart]) = {
     return (trackMap.toMap, carts.toList)
 }
 
-def solver(input: List[String]): Unit = {
+def solver(input: List[String]): (String, String) = {
     var (trackMap, carts) = parseInput(input)
 
     var firstCollision: Option[Point] = None
-    var partOneSolved = false
 
     while (carts.size > 1) {
         val sortedCarts = carts.sortBy(cart => (cart.pos.y, cart.pos.x))
@@ -91,19 +91,10 @@ def solver(input: List[String]): Unit = {
             }
         }
         
-        carts = carts.filter(!_.crashed)
-
-        if (firstCollision.isDefined && !partOneSolved) {
-            val pos = firstCollision.get
-            println(s"Part One: ${pos.x},${pos.y}")
-            partOneSolved = true
-        }
+        carts = carts.filterNot(_.crashed)
     }
 
-    if (carts.size == 1) {
-        val pos = carts.head.pos
-        println(s"Part Two: ${pos.x},${pos.y}")
-    }
+    (firstCollision.get.toString(), carts.head.pos.toString())
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -111,7 +102,13 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 
 def hello(): Unit = {
     readLinesFromFile("day13.txt") match {
-        case Success(lines) => solver(lines)
-        case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
+        case Success(lines) => {
+            val (partOne, partTwo) = solver(lines)
+            println(s"Part One: $partOne")
+            println(s"Part Two: $partTwo")
+        }
+        case Failure(exception) => {
+            println(s"Error reading file: ${exception.getMessage}")
+        }
     }
 }
