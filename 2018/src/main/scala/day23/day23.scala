@@ -6,6 +6,7 @@ import scala.collection.mutable.PriorityQueue
 import scala.math.BigInt
 
 case class Vec3D(x: Int, y: Int, z: Int) {
+    def len = x.abs + y.abs + z.abs
     def manhattan(other: Vec3D): Int = (x - other.x).abs + (y - other.y).abs + (z - other.z).abs
 }
 
@@ -28,7 +29,7 @@ case class Box(min: Vec3D, size: Vec3D) {
 
     def sizeValue = BigInt(size.x) * BigInt(size.y) * BigInt(size.z)
 
-    def dist: Int = corners.map(pt => pt.x.abs + pt.y.abs + pt.z.abs).min
+    def dist: Int = corners.map(_.len).min
 
     def divide: Seq[Box] = {
         val (sx, sy, sz) = (size.x / 2, size.y / 2, size.z / 2)
@@ -48,27 +49,26 @@ case class Box(min: Vec3D, size: Vec3D) {
 }
 
 def parseInput(input: List[String]) = input.map(line => {
-    val nums = raw"(-?\d+)".r.findAllIn(line).map(_.toInt).toList
-    Drone(Vec3D(nums(0), nums(1), nums(2)), nums(3))
+    val Seq(x, y, z, r) = raw"(-?\d+)".r.findAllIn(line).map(_.toInt).toSeq
+    Drone(Vec3D(x, y, z), r)
 })
 
 def evaluatorOne(drones: List[Drone]): Int = {
-    val maxDrone = drones.maxBy(_.r)
-    return drones.count(_.pos.manhattan(maxDrone.pos) <= maxDrone.r)
+    val Drone(maxPos, maxR) = drones.maxBy(_.r)
+    return drones.count(_.pos.manhattan(maxPos) <= maxR)
 }
 
 def evaluatorTwo(drones: List[Drone]): Int = {
-    val (xs, ys, zs) = (drones.map(_.pos.x), drones.map(_.pos.y), drones.map(_.pos.z))
+    val positions = drones.map(_.pos)
+    val (xs, ys, zs) = (positions.map(_.x), positions.map(_.y), positions.map(_.z))
     val (minX, minY, minZ) = (xs.min, ys.min, zs.min)
     val (maxX, maxY, maxZ) = (xs.max, ys.max, zs.max)
 
     val box = Box(Vec3D(minX, minY, minZ), Vec3D(maxX - minX + 1, maxY - minY + 1, maxZ - minZ + 1))
 
-    val pq = PriorityQueue.empty(using Ordering.by[(Box, List[Drone]), (Int, Int)] { 
+    val pq = PriorityQueue((box, drones))(using Ordering.by[(Box, List[Drone]), (Int, Int)] { 
         case (box, drones) => (drones.size, -box.dist) 
     })
-
-    pq.enqueue((box, drones))
 
     while (pq.nonEmpty) {
         val (currBox, currDrones) = pq.dequeue()

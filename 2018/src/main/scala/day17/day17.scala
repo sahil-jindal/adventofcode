@@ -48,35 +48,28 @@ def fillRecursive(mtx: Array[Array[Char]], x: Int, y: Int): Unit = {
     }
 }
 
-def fill(input: List[String]): Array[Char] = {
-    val (width, height) = (2000, 2000)
-    val mtx = Array.fill(height, width)('.')
+def solver(input: List[String]): Map[Char, Int] = {
+    val mtx = Array.fill(2000, 2000)('.')
 
     for (line <- input) {
-        val nums = raw"(\d+)".r.findAllIn(line).map(_.toInt).toArray
+        val Seq(a, b, c) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toSeq
         
-        for (i <- nums(1) to nums(2)) {
-            if (line.startsWith("x")) mtx(i)(nums(0)) = '#' 
-            else mtx(nums(0))(i) = '#'
+        for (i <- b to c) {
+            if (line.startsWith("x")) mtx(i)(a) = '#' 
+            else mtx(a)(i) = '#'
         }
     }
     
     fillRecursive(mtx, 500, 0)
-
-    var (minY, maxY) = (Int.MaxValue, Int.MinValue)
     
-    for ((row, y) <- mtx.zipWithIndex) {
-        if (row.exists(_ == '#')) {
-            minY = math.min(minY, y)
-            maxY = math.max(maxY, y)
-        }
-    }
+    val minY = mtx.indexWhere(_.exists(_ == '#'))
+    val maxY = mtx.lastIndexWhere(_.exists(_ == '#'))
     
-    return mtx.slice(minY, maxY + 1).flatten
+    return mtx.slice(minY, maxY + 1).flatten.groupMapReduce(identity)(_ => 1)(_ + _)
 }
 
-def evaluatorOne(input: List[Char]): Int = input.count(it => it == '~' || it == '|')
-def evaluatorTwo(input: List[Char]): Int = input.count(it => it == '~')
+def evaluatorOne(frequencies: Map[Char, Int]): Int = frequencies('~') + frequencies('|')
+def evaluatorTwo(frequencies: Map[Char, Int]): Int = frequencies('~')
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -84,9 +77,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day17.txt") match {
         case Success(lines) => {
-            val lastScene = fill(lines).toList
-            println(s"Part One: ${evaluatorOne(lastScene)}")
-            println(s"Part Two: ${evaluatorTwo(lastScene)}")
+            val input = solver(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

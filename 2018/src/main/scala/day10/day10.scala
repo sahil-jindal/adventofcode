@@ -22,8 +22,8 @@ def parseInput(input: List[String]) = input.map(line => {
 })
 
 def getBounds(points: List[Point]): Plane = {
-    val xs = points.map(_.pos.x)
-    val ys = points.map(_.pos.y)
+    val positions = points.map(_.pos)
+    val (ys, xs) = (positions.map(_.y), positions.map(_.x))
     return Plane(xs.min, ys.min, xs.max - xs.min, ys.max - ys.min)
 }
 

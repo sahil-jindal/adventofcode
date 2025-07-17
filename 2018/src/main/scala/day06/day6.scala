@@ -3,13 +3,16 @@ package day06
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Map, Set}
+import scala.collection.immutable.Range.Inclusive
 
 case class Point(y: Int, x: Int) {
     def manhattan(other: Point): Int = (x - other.x).abs + (y - other.y).abs
 }
 
-case class Plane(minX: Int, maxX: Int, minY: Int, maxY: Int) {
-    def grid = for {y <- minY to maxY; x <- minX to maxX} yield Point(y, x)
+case class Plane(xRange: Inclusive, yRange: Inclusive) {
+    def onLeftOrRight(pos: Point) = (pos.x == xRange.start || pos.x == xRange.end) && yRange.contains(pos.y)
+    def onTopOrBottom(pos: Point) = (pos.y == yRange.start || pos.y == yRange.end) && xRange.contains(pos.x)
+    def grid = for {y <- yRange; x <- xRange} yield Point(y, x)
 }
 
 def parseInput(input: List[String]): (Plane, List[Point]) = {
@@ -18,10 +21,8 @@ def parseInput(input: List[String]): (Plane, List[Point]) = {
         Point(y, x)
     })
 
-    val xs = points.map(_.x)
-    val ys = points.map(_.y)
-
-    return (Plane(xs.min, xs.max, ys.min, ys.max), points)
+    val (ys, xs) = (points.map(_.y), points.map(_.x))
+    return (Plane(xs.min to xs.max, ys.min to ys.max), points)
 }
 
 def findClosest(point: Point, points: List[Point]): Option[Int] = {
@@ -43,21 +44,20 @@ def evaluatorOne(plane: Plane, points: List[Point]): Int = {
     for (point <- plane.grid) {
         val found = findClosest(point, points)
 
-        if(found.isDefined) {
+        if (found.isDefined) {
             val index = found.get
             closestPointCounts(index) += 1
-            if (point.x == plane.minX || point.x == plane.maxX || 
-                point.y == plane.minY || point.y == plane.maxY) {
+            if (plane.onLeftOrRight(point) || plane.onTopOrBottom(point)) {
                 infinitePoints.add(index)
             }
         }
     }
 
-    return closestPointCounts.collect { case (i, value) if !infinitePoints.contains(i) => value }.max
+    return closestPointCounts.view.filterKeys(idx => !infinitePoints.contains(idx)).values.max
 }
 
-def evaluatorTwo(plane: Plane, points: List[Point]): Int = plane.grid.count { point =>
-    points.map(point.manhattan).sum < 10000
+def evaluatorTwo(plane: Plane, points: List[Point]): Int = { 
+    return plane.grid.count(point => points.map(point.manhattan).sum < 10000)
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

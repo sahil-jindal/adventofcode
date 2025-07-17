@@ -2,7 +2,7 @@ package day20
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Queue, Stack, Set}
+import scala.collection.mutable.{Stack, Queue, Set}
 
 case class Point(y: Int, x: Int) {
     def move(dy: Int, dx: Int) = Point(y + dy, x + dx)
@@ -36,14 +36,12 @@ def solver(input: String): (Int, Int) = {
     while (queue.nonEmpty) {
         val (pos, d) = queue.dequeue()
         
-        if (!seen.contains(pos)) {
+        if (seen.add(pos) && grid.contains(pos)) {
             dMax = math.max(dMax, d)
             
             if (d >= 1000) distantRooms += 1
 
-            seen.add(pos)
-
-            for (nextPos <- grid.getOrElse(pos, Seq.empty)) {
+            for (nextPos <- grid(pos)) {
                 queue.enqueue((nextPos, d + 1))
             }
         }
@@ -58,9 +56,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day20.txt") match {
         case Success(lines) => {
-            val (dMax, distantRooms) = solver(lines.head)
-            println(s"Part One: $dMax")
-            println(s"Part Two: $distantRooms")
+            val (partOne, partTwo) = solver(lines.head)
+            println(s"Part One: $partOne")
+            println(s"Part Two: $partTwo")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

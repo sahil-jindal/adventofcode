@@ -4,32 +4,32 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
 case class Node(children: Seq[Node], metadata: Seq[Int])
+case class Pair(child: Node, remaining: Seq[Int])
 
 def parseInput(input: String) = input.split(" ").map(_.toInt).toSeq
  
-def parseNode(input: Seq[Int]): (Node, Seq[Int]) = {
-    val numChildren = input(0)
-    val numMetadata = input(1)
-    var remaining = input.drop(2)
+def parseNode(input: Seq[Int]): Pair = {
+    var (header, remaining) = input.splitAt(2)
+    val Seq(numChildren, numMetadata) = header
  
     val children = for (_ <- 1 to numChildren) yield {
-        val (child, nextRem) = parseNode(remaining)
+        val Pair(child, nextRem) = parseNode(remaining)
         remaining = nextRem
         child
     }
     
     val (metadata, next) = remaining.splitAt(numMetadata)
     
-    return (Node(children, metadata), next)
+    return Pair(Node(children, metadata), next)
 }
  
-def sumMetadata(node: Node): Int = {
-    return node.metadata.sum + node.children.map(sumMetadata).sum
+def evaluatorOne(node: Node): Int = {
+    return node.metadata.sum + node.children.map(evaluatorOne).sum
 }
 
-def calculateNodeValue(node: Node): Int = node match {
+def evaluatorTwo(node: Node): Int = node match {
     case Node(Nil, metadata) => metadata.sum
-    case Node(children, metadata) => metadata.flatMap(i => children.lift(i - 1).map(calculateNodeValue)).sum
+    case Node(children, metadata) => metadata.flatMap(i => children.lift(i - 1).map(evaluatorTwo)).sum
 }
  
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -38,9 +38,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day08.txt") match {
         case Success(lines) => {
-            val (node, _) = parseNode(parseInput(lines.head))
-            println(s"Part One: ${sumMetadata(node)}")
-            println(s"Part Two: ${calculateNodeValue(node)}")
+            val node = parseNode(parseInput(lines.head)).child
+            println(s"Part One: ${evaluatorOne(node)}")
+            println(s"Part Two: ${evaluatorTwo(node)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

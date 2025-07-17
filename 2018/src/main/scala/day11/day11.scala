@@ -3,7 +3,7 @@ package day11
 def preCompute(gridSerialNumber: Int): Array[Array[Int]] = {
     val gridOriginal = Array.ofDim[Int](300, 300)
 
-    for(y <- 1 to 300; x <- 1 to 300) do {
+    for (y <- 1 to 300; x <- 1 to 300) {
         var rackId = x + 10
         var powerLevel = rackId * y
         powerLevel += gridSerialNumber
@@ -18,10 +18,7 @@ def preCompute(gridSerialNumber: Int): Array[Array[Int]] = {
 }
 
 def solver(gridOriginal: Array[Array[Int]], D: Int): (Int, Int, Int) = {
-    var maxTotalPower = Int.MinValue
-    var yMax = Int.MinValue
-    var xMax = Int.MinValue
-    var dMax = Int.MinValue
+    var List(maxTotalPower, xMax, yMax, dMax) = List.fill(4)(Int.MinValue)
 
     var grid = Array.ofDim[Int](300, 300)
 

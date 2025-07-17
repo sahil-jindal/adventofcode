@@ -11,12 +11,12 @@ def parseInput(input: List[String]) = input.map(line => {
     Rectangle(a, b, c, d, e)
 })
 
-def decorate(input: List[Rectangle]): (Int, Int) = {
+def solver(input: List[Rectangle]): (Int, Int) = {
     val mtx = Array.fill(1000, 1000)(0)
     val ids = Set.empty[Int]
     var overlapArea = 0
 
-    input.foreach { case Rectangle(claimId, startX, startY, w, h) =>
+    for (Rectangle(claimId, startX, startY, w, h) <- input) {
         ids.add(claimId)
 
         for(i <- startX until (startX + w); j <- startY until (startY + h)) {
@@ -42,9 +42,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day03.txt") match {
         case Success(lines) => {
-            val (overlapArea, id) = decorate(parseInput(lines))
-            println(s"Part One: $overlapArea")
-            println(s"Part Two: $id")
+            val (partOne, partTwo) = solver(parseInput(lines))
+            println(s"Part One: $partOne")
+            println(s"Part Two: $partTwo")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

@@ -5,7 +5,8 @@ import scala.io.Source
 import scala.collection.mutable.{Map => MutableMap}
 import scala.util.boundary, boundary.break
 
-case class TestCase(regsBefore: List[Int], regsAfter: List[Int], stm: Array[Int])
+case class TestCase(regsBefore: List[Int], stm: List[Int], regsAfter: List[Int])
+case class Pair(testCases: List[TestCase], prg: List[List[Int]])
 
 def groupLines(input: List[String]): List[List[String]] = {
     return input.foldLeft(List(List.empty[String])) {
@@ -16,43 +17,43 @@ def groupLines(input: List[String]): List[List[String]] = {
 
 def ints(input: String) = raw"(\d+)".r.findAllIn(input).map(_.toInt).toList
 
-def parseInput(input: List[String]): (List[TestCase], List[Array[Int]]) = {
+def parseInput(input: List[String]): Pair = {
     val blocks = groupLines(input)
 
     val testCases = blocks.init.map(group => {
-        val regsBefore = ints(group(0))
-        val stm = ints(group(1)).toArray
-        val regsAfter = ints(group(2))
-        TestCase(regsBefore, regsAfter, stm)
+        val List(regsBefore, stm, regsAfter) = group.map(ints)
+        TestCase(regsBefore, stm, regsAfter)
     })
 
-    val prg = blocks.last.map(line => ints(line).toArray)
+    val prg = blocks.last.map(ints)
 
-    return (testCases, prg)
+    return Pair(testCases, prg)
 }
 
-def step(regs: List[Int], stm: Array[Int]): List[Int] = {
-    val newValue = stm(0) match {
-        case 0 => regs(stm(1)) + regs(stm(2))
-        case 1 => regs(stm(1)) + stm(2)
-        case 2 => regs(stm(1)) * regs(stm(2))
-        case 3 => regs(stm(1)) * stm(2)
-        case 4 => regs(stm(1)) & regs(stm(2))
-        case 5 => regs(stm(1)) & stm(2)
-        case 6 => regs(stm(1)) | regs(stm(2))
-        case 7 => regs(stm(1)) | stm(2)
-        case 8 => regs(stm(1))
-        case 9 => stm(1)
-        case 10 => if (stm(1) > regs(stm(2))) 1 else 0
-        case 11 => if (regs(stm(1)) > stm(2)) 1 else 0
-        case 12 => if (regs(stm(1)) > regs(stm(2))) 1 else 0
-        case 13 => if (stm(1) == regs(stm(2))) 1 else 0
-        case 14 => if (regs(stm(1)) == stm(2)) 1 else 0
-        case 15 => if (regs(stm(1)) == regs(stm(2))) 1 else 0
+def step(regs: List[Int], stm: List[Int]): List[Int] = {
+    val List(a, b, c, d) = stm
+
+    val newValue = a match {
+        case 0 => regs(b) + regs(c)
+        case 1 => regs(b) + c
+        case 2 => regs(b) * regs(c)
+        case 3 => regs(b) * c
+        case 4 => regs(b) & regs(c)
+        case 5 => regs(b) & c
+        case 6 => regs(b) | regs(c)
+        case 7 => regs(b) | c
+        case 8 => regs(b)
+        case 9 => b
+        case 10 => if (b > regs(c)) 1 else 0
+        case 11 => if (regs(b) > c) 1 else 0
+        case 12 => if (regs(b) > regs(c)) 1 else 0
+        case 13 => if (b == regs(c)) 1 else 0
+        case 14 => if (regs(b) == c) 1 else 0
+        case 15 => if (regs(b) == regs(c)) 1 else 0
         case _ => throw new IllegalArgumentException()
     }
 
-    return regs.updated(stm(3), newValue)
+    return regs.updated(d, newValue)
 }
 
 def workOutMapping(mapping: Map[Int, List[Int]]): Map[Int, Int] = {
@@ -66,10 +67,10 @@ def workOutMapping(mapping: Map[Int, List[Int]]): Map[Int, Int] = {
         boundary {
             for (i <- constraints(op) if !used(i)) {
                 used(i) = true
-                res(op) = i
+                res += op -> i
                 val x = helper(constraints)
                 if (x.nonEmpty) break(x)
-                res.remove(op)
+                res -= op
                 used(i) = false
             }
 
@@ -80,39 +81,29 @@ def workOutMapping(mapping: Map[Int, List[Int]]): Map[Int, Int] = {
     return helper(mapping)
 }
 
-def evaluatorOne(input: List[String]): Int = {
-    val (testCases, _) = parseInput(input)
-    
-    return testCases.count { testCase =>
-        (0 until 16).count { i =>
-            testCase.stm(0) = i
-            step(testCase.regsBefore, testCase.stm).sameElements(testCase.regsAfter)
-        } >= 3
+def evaluatorOne(input: Pair): Int = {
+    return input.testCases.count { case TestCase(regsBefore, stm, regsAfter) =>
+        (0 until 16).count { i => step(regsBefore, stm.updated(0, i)).sameElements(regsAfter) } >= 3
     }
 }
 
-def evaluatorTwo(input: List[String]): Int = {
-    val constraints = (0 until 16).map(_ -> (0 until 16).toList).toMap
-    val (testCases, prg) = parseInput(input)
+def evaluatorTwo(input: Pair): Int = {
+    val constraints = MutableMap((0 until 16).map(_ -> (0 until 16).toList)*)
+    val Pair(testCases, prg) = input
     
-    val updatedConstraints = testCases.foldLeft(constraints) { (cons, testCase) =>
-        val op = testCase.stm(0)
-        
-        val newMapping = cons(op).filter { i =>
-            testCase.stm(0) = i
-            step(testCase.regsBefore, testCase.stm).sameElements(testCase.regsAfter)
+    for (TestCase(regsBefore, stm, regsAfter) <- testCases) {
+        constraints(stm(0)) = constraints(stm(0)).filter { 
+            i => step(regsBefore, stm.updated(0, i)).sameElements(regsAfter) 
         }
-        
-        cons.updated(op, newMapping)
     }
 
-    val mapping = workOutMapping(updatedConstraints)
+    val mapping = workOutMapping(constraints.toMap)
     
     var regs = List.fill(4)(0)
     
-    for (stm <- prg) {
-        stm(0) = mapping(stm(0))
-        regs = step(regs, stm)
+    for (stm <- prg) { 
+        val newStm = stm.updated(0, mapping(stm(0)))
+        regs = step(regs, newStm) 
     }
 
     return regs(0)
@@ -124,8 +115,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day16.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

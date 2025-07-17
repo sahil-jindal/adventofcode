@@ -18,8 +18,7 @@ def react(polymer: String): String = {
 def evaluatorOne(polymer: String): Int = react(polymer).length
 
 def evaluatorTwo(polymer: String): Int = ('a' to 'z').map { ch =>
-    val filteredPolymer = polymer.filterNot(_.toLower == ch)
-    react(filteredPolymer).length
+    react(polymer.filterNot(_.toLower == ch)).length
 }.min
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

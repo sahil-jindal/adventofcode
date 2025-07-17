@@ -4,43 +4,44 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.util.control.Breaks._
 
-case class State(left: Long, pots: String)
+case class State(left: Long, pots: List[Boolean])
+case class Pair(state: State, rules: Map[List[Boolean], Boolean])
 
-def parseInput(input: List[String]): (State, Map[String, String]) = {
-    val state = State(0, input.head.stripPrefix("initial state: "))
+def checkPots(input: String) = input.map(_ == '#').toList
+
+def parseInput(input: List[String]): Pair = {
+    val pots = checkPots(input.head.stripPrefix("initial state: "))
     
     val rules = input.drop(2).map(line => {
-        val Array(key, value) = line.split(" => ")
-        key -> value
+        val Array(key, value) = line.split(" => ").map(checkPots)
+        key -> value.head
     }).toMap
     
-    return (state, rules)
+    return Pair(State(0, pots), rules)
 }
 
-def step(state: State, rules: Map[String, String]): State = {
-    val pots = "....." + state.pots + "....."
+def step(state: State, rules: Map[List[Boolean], Boolean]): State = {
+    val margin = List.fill(5)(false)
+    val pots = margin ::: state.pots ::: margin
     
-    val newPots = pots.sliding(5).map(pot => rules.getOrElse(pot, ".")).mkString
+    val newPots = pots.sliding(5).map(pot => rules.getOrElse(pot, false)).toList
 
-    val firstFlower = newPots.indexOf('#')
-    val newLeft = firstFlower + state.left - 3
-
-    val trimmedPots = newPots.drop(firstFlower).reverse.dropWhile(_ == '.').reverse
+    val firstFlower = newPots.indexOf(true)
+    val lastFlower = newPots.lastIndexOf(true)
     
-    return State(newLeft, trimmedPots)
+    return State(firstFlower + state.left - 3, newPots.slice(firstFlower, lastFlower + 1))
 }
 
-def iterate(input: List[String], iterations: Long): Long = {
-    var (state, rules) = parseInput(input)
+def iterate(input: Pair, iterations: Long): Long = {
+    var Pair(state, rules) = input
     var remainingIterations = iterations
-    var dLeftPos = 0L
 
     breakable {
         while (remainingIterations > 0) {
             val prevState = state
             state = step(state, rules)
             remainingIterations -= 1
-            dLeftPos = state.left - prevState.left
+            val dLeftPos = state.left - prevState.left
             
             if (state.pots == prevState.pots) {
                 state = state.copy(left = state.left + remainingIterations * dLeftPos)
@@ -49,11 +50,11 @@ def iterate(input: List[String], iterations: Long): Long = {
         }
     }
     
-    return state.pots.zipWithIndex.collect { case ('#', i) => i + state.left }.sum
+    return state.pots.zipWithIndex.collect { case (true, i) => i + state.left }.sum
 }
 
-def evaluatorOne(input: List[String]): Long = iterate(input, 20)
-def evaluatorTwo(input: List[String]): Long = iterate(input, 50000000000L)
+def evaluatorOne(input: Pair): Long = iterate(input, 20)
+def evaluatorTwo(input: Pair): Long = iterate(input, 50000000000L)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -61,8 +62,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day12.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

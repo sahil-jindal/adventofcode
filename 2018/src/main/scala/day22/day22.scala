@@ -11,8 +11,8 @@ enum RegionType { case Rocky, Wet, Narrow }
 enum Tool { case Nothing, Torch, ClimbingGear }
 
 def parseInput(input: List[String]): (Point, Point => RegionType) = {
-    val depth = raw"(\d+)".r.findAllIn(input(0)).mkString.toInt
-    val Array(targetX, targetY) = raw"(\d+)".r.findAllIn(input(1)).map(_.toInt).toArray
+    val depth = input(0).stripPrefix("depth: ").toInt
+    val Array(targetX, targetY) = input(1).stripPrefix("target: ").split(",").map(_.toInt)
     val erosionLevelCache = Map.empty[Point, Int]
     val modulo = 20183
 
@@ -73,8 +73,7 @@ def evaluatorTwo(input: List[String]): Int = {
     while (pq.nonEmpty) {
         val (pos, tool, t) = pq.dequeue()
         if (pos == target && tool == Tool.Torch) return t
-        if (!seen.contains((pos, tool))) {
-            seen += ((pos, tool))
+        if (seen.add((pos, tool))) {
             for ((newPos, newTool, dt) <- neighbours(pos, tool)) {
                 pq.enqueue((newPos, newTool, t + dt))
             }
