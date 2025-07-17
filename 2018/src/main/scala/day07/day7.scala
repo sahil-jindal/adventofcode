@@ -2,68 +2,93 @@ package day07
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Map, Set}
+import scala.collection.mutable.{Map, Set, PriorityQueue}
 
-def parseInput(input: List[String]): Map[Char, Set[Char]] = {
-    val dict = Map.empty[Char, Set[Char]]
+case class Worker(var task: Option[Char], var remaining: Int)
+
+val parseRegex = raw"Step (\w) must be finished before step (\w) can begin.".r
+
+def parseInput(input: List[String]) = {
+    // Build reverse dependency graph and in-degree
+    val reverseGraph = Map.empty[Char, Set[Char]]
+    val inDegree = Map.empty[Char, Int].withDefaultValue(0)
 
     for (line <- input) {
-        val parts = line.split(" ")
-        val part = parts(7).head
-        val partDependsOn = parts(1).head
-        dict.getOrElseUpdate(part, Set.empty) += partDependsOn
-        dict.getOrElseUpdate(partDependsOn, Set.empty)
+        val List(from, to) = parseRegex.findFirstMatchIn(line).get.subgroups.map(_.head)
+
+        reverseGraph.getOrElseUpdate(from, Set.empty) += to
+        reverseGraph.getOrElseUpdate(to, Set.empty)
+
+        inDegree(to) += 1
+        inDegree.getOrElseUpdate(from, 0)
     }
 
-    return dict
+    (reverseGraph.toMap, inDegree)
 }
 
 def evaluatorOne(input: List[String]): String = {
-    val sb = new StringBuilder
-    val graph = parseInput(input)
+    val (reverseGraph, inDegree) = parseInput(input)
 
-    while (graph.nonEmpty) {
-        val minKey = graph.keys.filter(k => graph(k).isEmpty).min
-        sb.append(minKey)
-        graph.remove(minKey)
-        graph.keys.foreach(k => graph(k) -= minKey)
+    val available = PriorityQueue.empty(using Ordering.Char.reverse)
+
+    for ((node, deg) <- inDegree if deg == 0) available.enqueue(node)
+
+    val result = new StringBuilder
+
+    while (available.nonEmpty) {
+        val current = available.dequeue()
+        result.append(current)
+
+        for (neighbor <- reverseGraph(current)) {
+            inDegree(neighbor) -= 1
+            if (inDegree(neighbor) == 0) {
+                available.enqueue(neighbor)
+            }
+        }
     }
 
-    return sb.toString
+    return result.toString()
 }
 
 def evaluatorTwo(input: List[String]): Int = {
-    var time = 0
-    val graph = parseInput(input)
+    val (reverseGraph, inDegree) = parseInput(input)
 
-    val works = Array.fill(5)(0)
-    val items = Array.fill(5)(' ')
+    val available = PriorityQueue.empty(using Ordering.Char.reverse)
 
-    while (graph.nonEmpty || works.exists(_ > 0)) {
-        for (i <- works.indices if graph.nonEmpty && works(i) == 0) {
-            val found = graph.keys.filter(k => graph(k).isEmpty).minOption
-            
-            if (found.isDefined) {
-                val minKey = found.get
-                works(i) = 60 + minKey - 'A' + 1
-                items(i) = minKey
-                graph.remove(minKey)
-            }
+    for ((node, deg) <- inDegree if deg == 0) available.enqueue(node)
+
+    val workers = Array.fill(5)(Worker(None, 0))
+
+    var timeElapsed = 0
+
+    while (available.nonEmpty || workers.exists(_.task.isDefined)) {
+        for (worker <- workers if worker.task.isEmpty && available.nonEmpty) {
+            val task = available.dequeue()
+            worker.task = Some(task)
+            worker.remaining = 60 + (task - 'A' + 1)
         }
 
-        time += 1
+        timeElapsed += 1
 
-        for (i <- works.indices) {
-            if (works(i) > 0) {
-                works(i) -= 1
-                if (works(i) == 0) {
-                    graph.keys.foreach(k => graph(k) -= items(i))
+        for (worker <- workers if worker.task.isDefined) {
+            worker.remaining -= 1
+
+            if (worker.remaining == 0) {
+                val finished = worker.task.get
+
+                for (neighbor <- reverseGraph(finished)) {
+                    inDegree(neighbor) -= 1
+                    if (inDegree(neighbor) == 0) {
+                        available.enqueue(neighbor)
+                    }
                 }
+
+                worker.task = None
             }
         }
     }
 
-    return time
+    return timeElapsed
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
