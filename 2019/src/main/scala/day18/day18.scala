@@ -6,23 +6,23 @@ import scala.collection.mutable.{Queue, Map => MutableMap, Set => MutableSet}
 
 case class Point(y: Int, x: Int)
 
-def getNeighbours(pos: Point) = Seq(
+def getNeighbours(pos: Point) = List(
     pos.copy(x = pos.x - 1),
     pos.copy(x = pos.x + 1),
     pos.copy(y = pos.y - 1),
     pos.copy(y = pos.y + 1)
 )
 
-case class Maze(private val maze: Seq[String]) extends Seq[String] {
+case class Maze(private val maze: IndexedSeq[String]) extends IndexedSeq[String] {
     private val height = maze.size
     private val width = maze.head.length
 
-    def getStartPositions: Seq[Point] = {
-        return for {
+    def getStartPositions: List[Point] = {
+        return (for {
             (row, y) <- maze.zipWithIndex
             (c, x) <- row.zipWithIndex 
             if c == '@'
-        } yield Point(y, x)
+        } yield Point(y, x)).toList
     }
 
     def getKeyPositions: Map[Char, Point] = {
@@ -42,7 +42,7 @@ case class Maze(private val maze: Seq[String]) extends Seq[String] {
     override def iterator: Iterator[String] = maze.iterator
 }
 
-def solver(starts: Seq[Point], maze: Maze, allKeys: Set[Char]): Int = {
+def solver(starts: List[Point], maze: Maze, allKeys: Set[Char]): Int = {
     val keyMask = allKeys.zipWithIndex.map { case (c, idx) => c -> (1 << idx) }.toMap
 
     def bfsFrom(start: Point): Map[Char, (Int, Int)] = {
@@ -76,7 +76,7 @@ def solver(starts: Seq[Point], maze: Maze, allKeys: Set[Char]): Int = {
     val graph = sources.view.mapValues(it => bfsFrom(it).map { case (k, (d, r)) => (k, d, r) }.toList).toMap
 
     val targetMask = (1 << allKeys.size) - 1
-    val memo = MutableMap.empty[(Seq[String], Int), Int]
+    val memo = MutableMap.empty[(List[String], Int), Int]
 
     def dfs(positions: List[String], collected: Int): Int = {
         if (collected == targetMask) return 0
@@ -95,7 +95,7 @@ def solver(starts: Seq[Point], maze: Maze, allKeys: Set[Char]): Int = {
 }
 
 def evaluatorOne(input: List[String]): Int = {
-    val maze = new Maze(input)
+    val maze = new Maze(input.toIndexedSeq)
     val start = maze.getStartPositions
     return solver(start, maze, maze.getKeyPositions.keys.toSet)
 }
@@ -109,7 +109,7 @@ def evaluatorTwo(input: List[String]): Int = {
     modifiedInput(midY) = modifiedInput(midY).patch(midX - 1, "###", 3)
     modifiedInput(midY + 1) = modifiedInput(midY + 1).patch(midX - 1, "@#@", 3)
 
-    val maze = new Maze(modifiedInput.toList)
+    val maze = new Maze(modifiedInput.toIndexedSeq)
     val starts = maze.getStartPositions
 
     require(starts.size == 4, "Expected 4 start positions")

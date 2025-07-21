@@ -1,35 +1,35 @@
 package day04
 
-import scala.util.matching.Regex
+import scala.collection.immutable.Range.Inclusive
 
-def split(st: String) = new Iterator[String] {
-    private var index = 0
+def split(str: String) = new Iterator[Int] {
+    private var idx = 0
 
-    override def hasNext: Boolean = index < st.length
+    override def hasNext = idx < str.length
 
-    override def next(): String = {
-        val pattern = new Regex("[" + st(index) + "]+")
-        val sequence = pattern.findFirstIn(st.substring(index)).getOrElse("")
-        index += sequence.length
-        sequence
+    override def next(): Int = {
+        val ch = str(idx)
+        val len = str.substring(idx).takeWhile(_ == ch).length
+        idx += len
+        len
     }
 }
 
-def ok(password: String, tripletsAllowed: Boolean): Boolean = {
-    if (password.sliding(2).exists { it => it(0) > it(1) }) return false
-    return split(password).exists { it => it.length >= 2 && (tripletsAllowed || it.length == 2) }
+def sortedString(str: String) = (str.init zip str.tail).forall { case (a, b) => a <= b }
+
+def partOneOkay(password: String) = split(password).exists(_ >= 2)
+def partTwoOkay(password: String) = split(password).exists(_ == 2)
+
+def solver(numRange: Inclusive, okayString: String => Boolean): Int = {
+    return numRange.map(_.toString).filter(sortedString).count(okayString)
 }
 
-def solve(input: String, tripletsAllowed: Boolean): Int = {
-    val Array(start, end) = input.split("-").map(_.toInt)
-    return (start to end).count(n => ok(n.toString, tripletsAllowed))
-}
-
-def evaluatorOne(input: String): Int = solve(input, true)
-def evaluatorTwo(input: String): Int = solve(input, false)
+def evaluatorOne(input: Inclusive): Int = solver(input, partOneOkay)
+def evaluatorTwo(input: Inclusive): Int = solver(input, partTwoOkay)
 
 def main(): Unit = {
     val inputLine = "145852-616942"
-    println(s"Part One: ${evaluatorOne(inputLine)}")
-    println(s"Part Two: ${evaluatorTwo(inputLine)}")
+    val Array(start, end) = inputLine.split("-").map(_.toInt)
+    println(s"Part One: ${evaluatorOne(start to end)}")
+    println(s"Part Two: ${evaluatorTwo(start to end)}")
 }

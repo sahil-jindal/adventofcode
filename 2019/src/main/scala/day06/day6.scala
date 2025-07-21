@@ -2,7 +2,6 @@ package day06
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.ListBuffer
 
 type ChildToParent = Map[String, String]
 
@@ -12,16 +11,7 @@ def parseTree(input: List[String]) = input.map(line => {
 }).toMap
 
 def getAncestors(trees: ChildToParent, node: String): List[String] = {
-    val res = ListBuffer.empty[String]
-    var parent = trees.get(node)
-
-    while (parent.isDefined) {
-        val value = parent.get
-        res += value
-        parent = trees.get(value)
-    }
-
-    return res.toList
+    return Iterator.iterate(Option(node))(_.flatMap(trees.get)).takeWhile(_.isDefined).drop(1).map(_.get).toList
 }
 
 def evaluatorOne(trees: ChildToParent): Int = {

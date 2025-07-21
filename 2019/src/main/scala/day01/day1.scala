@@ -10,15 +10,7 @@ def helper(weights: List[Int]) = weights.map(_ / 3 - 2).filter(_ > 0)
 def evaluatorOne(weights: List[Int]): Int = helper(weights).sum
 
 def evaluatorTwo(weights: List[Int]): Int = {
-    var fuels = helper(weights)
-    var total = 0
-
-    while fuels.nonEmpty do {
-        total += fuels.sum
-        fuels = helper(fuels)
-    }
-
-    return total
+    return Iterator.iterate(weights)(helper).takeWhile(_.nonEmpty).drop(1).flatten.sum
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

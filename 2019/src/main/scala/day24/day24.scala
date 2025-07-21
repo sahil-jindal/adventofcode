@@ -18,8 +18,8 @@ def hasBug(biodiversity: Int, y: Int, x: Int): Boolean = ((biodiversity >> (y*5 
 
 def setBug(biodiversity: Int, y: Int, x: Int): Int = biodiversity | (1 << (y*5 + x))
 
-def step(oldLevelsT: List[Int], neighbours: Position => Seq[Position]): List[Int] = {
-    val oldLevels = List(0) ++ oldLevelsT ++ List(0)
+def step(oldLevelsT: List[Int], neighbours: Position => List[Position]): List[Int] = {
+    val oldLevels = 0 +: oldLevelsT :+ 0
     val newLevels = ListBuffer.empty[Int]
 
     for (ilevel <- oldLevels.indices) {
@@ -51,22 +51,22 @@ def step(oldLevelsT: List[Int], neighbours: Position => Seq[Position]): List[Int
     return newLevels.toList
 }
 
-def getNeighbours(pos: Position) = Seq(
+def getNeighbours(pos: Position) = List(
     pos.copy(x = pos.x - 1),
     pos.copy(x = pos.x + 1),
     pos.copy(y = pos.y - 1),
     pos.copy(y = pos.y + 1)
 )
 
-def flatNeighbours(pos: Position): Seq[Position] = {
+def flatNeighbours(pos: Position): List[Position] = {
     return getNeighbours(pos).filter(p => (0 to 4).contains(p.x) && (0 to 4).contains(p.y))
 }
 
-def recursiveNeighbours(pos: Position): Seq[Position] = {
+def recursiveNeighbours(pos: Position): List[Position] = {
     var Position(ilevel, y, x) = pos
     val result = ListBuffer.empty[Position]
 
-    for ((dy, dx) <- Seq((0, 1), (0, -1), (-1, 0), (1, 0))) {
+    for ((dy, dx) <- List((0, 1), (0, -1), (-1, 0), (1, 0))) {
         var posMin = Point(y + dy, x + dx)
         var posMax = Point(y + dy, x + dx)
         var ilevelT = ilevel
@@ -104,11 +104,11 @@ def recursiveNeighbours(pos: Position): Seq[Position] = {
         } yield Position(ilevelT, yT, xT))
     }
 
-    return result.toSeq
+    return result.toList
 }
 
-def evaluatorOne(input: List[String]): Int = {
-    var levels = parseInput(input)
+def evaluatorOne(levelsInit: List[Int]): Int = {
+    var levels = levelsInit
     val seen = Set.empty[Int]
     var biodiversity = levels(0)
 
@@ -121,8 +121,8 @@ def evaluatorOne(input: List[String]): Int = {
     return biodiversity
 }
 
-def evaluatorTwo(input: List[String]): Int = {
-    var levels = parseInput(input)
+def evaluatorTwo(levelsInit: List[Int]): Int = {
+    var levels = levelsInit
 
     for (_ <- 1 to 200) { levels = step(levels, recursiveNeighbours) }
 
@@ -139,8 +139,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day24.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

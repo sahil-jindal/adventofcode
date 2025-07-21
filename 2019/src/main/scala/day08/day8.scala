@@ -3,16 +3,14 @@ package day08
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def parseInput(input: String): List[Seq[Int]] = input.map(_.asDigit).grouped(6 * 25).toList
+def parseInput(input: String) = input.map(_.asDigit).grouped(6 * 25).toList
 
-def evaluatorOne(layers: List[Seq[Int]]): Int = {
-    val layer = layers.minBy(_.count(_ == 0))
-    val ones = layer.count(_ == 1)
-    val twos = layer.count(_ == 2)
-    return ones * twos
+def evaluatorOne(layers: List[IndexedSeq[Int]]): Int = {
+    val frequencies = layers.minBy(_.count(_ == 0)).groupMapReduce(identity)(_ => 1)(_ + _)
+    return frequencies(1) * frequencies(2)
 }
 
-def evaluatorTwo(layers: List[Seq[Int]]): String = {
+def evaluatorTwo(layers: List[IndexedSeq[Int]]): String = {
     val img = Array.fill(6 * 25)(' ')
 
     for (layer <- layers.reverse; i <- img.indices) {

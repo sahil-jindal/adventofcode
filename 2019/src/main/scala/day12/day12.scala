@@ -12,7 +12,7 @@ case class Vec3D(x: Int, y: Int, z: Int) {
 }
 
 case class Planet(var pos: Vec3D, var vel: Vec3D) {
-    def move = pos += vel
+    def move() = pos += vel
 }
 
 def step(planets: List[Planet]): List[Planet] = {
@@ -20,7 +20,7 @@ def step(planets: List[Planet]): List[Planet] = {
         planetA.vel += (planetB.pos - planetA.pos).sign
     }
 
-    planets.foreach(_.move)
+    planets.foreach(_.move())
 
     return planets
 }

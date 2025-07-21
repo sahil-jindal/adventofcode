@@ -7,16 +7,16 @@ import scala.collection.mutable.{Queue, Set, Map => MutableMap}
 case class Pos2(y: Int, x: Int)
 case class Pos3(y: Int, x: Int, level: Int)
 case class PosD(y: Int, x: Int, dlevel: Int)
+case class Quadruple(mx: List[Array[Char]], portals: Map[Pos2, PosD], start: Pos3, end: Pos3)
 
-def explore(mx: List[Array[Char]]): (Map[Pos2, PosD], Pos3, Pos3) = {
+def explore(mx: List[Array[Char]]): Quadruple = {
     val portals = MutableMap.empty[Pos2, PosD]
     val temp = MutableMap.empty[String, Pos2]
 
-    val height = mx.length
-    val width = mx(0).length
+    val (height, width) = (mx.length, mx(0).length)
 
     for (y <- 0 until height - 1; x <- 0 until width - 1) {
-        for ((dy, dx) <- Seq((0, 1), (1, 0))) {
+        for ((dy, dx) <- List((0, 1), (1, 0))) {
             val st = s"${mx(y)(x)}${mx(y + dy)(x + dx)}"
 
             if (st.forall(_.isLetter)) {
@@ -40,23 +40,26 @@ def explore(mx: List[Array[Char]]): (Map[Pos2, PosD], Pos3, Pos3) = {
         }
     }
 
-    return (portals.toMap, Pos3(temp("AA").y, temp("AA").x, 0), Pos3(temp("ZZ").y, temp("ZZ").x, 0))
+    return Quadruple(mx, portals.toMap, Pos3(temp("AA").y, temp("AA").x, 0), Pos3(temp("ZZ").y, temp("ZZ").x, 0))
 }
 
-def getNeighbours(pos: Pos3) = Seq(
+def parseInput(input: List[String]): Quadruple = {
+    val maxWidth = input.map(_.length).max
+    val mx = input.map(_.padTo(maxWidth, ' ').toArray)
+    return explore(mx)
+}
+
+def getNeighbours(pos: Pos3) = List(
     pos.copy(x = pos.x - 1),
     pos.copy(x = pos.x + 1),
     pos.copy(y = pos.y - 1),
     pos.copy(y = pos.y + 1)
 )
 
-def solve(input: List[String], partTwo: Boolean): Int = {
-    val maxWidth = input.map(_.length).max
-    val mx = input.map(_.padTo(maxWidth, ' ').toArray)
+def solve(input: Quadruple, partTwo: Boolean): Int = {
+    val Quadruple(mx, portals, start, end) = input
 
-    val (portals, start, end) = explore(mx)
-
-    def neighbours(pos: Pos3): Seq[Pos3] = {
+    def neighbours(pos: Pos3): List[Pos3] = {
         var result = getNeighbours(pos)
 
         val portalPos = Pos2(pos.y, pos.x)
@@ -97,8 +100,8 @@ def solve(input: List[String], partTwo: Boolean): Int = {
     throw new Exception("No path found")
 }
 
-def evaluatorOne(input: List[String]): Int = solve(input, false)
-def evaluatorTwo(input: List[String]): Int = solve(input, true)
+def evaluatorOne(input: Quadruple): Int = solve(input, false)
+def evaluatorTwo(input: Quadruple): Int = solve(input, true)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -106,8 +109,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day20.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

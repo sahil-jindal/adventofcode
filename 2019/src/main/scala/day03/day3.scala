@@ -7,53 +7,48 @@ import scala.collection.mutable.{Map => MutableMap}
 case class Direction(dy: Int, dx: Int)
 
 case class Point(y: Int, x: Int) {
+    def abs = x.abs + y.abs
     def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
 }
 
-case class Group(y: Int, x: Int, distance1: Int, distance2: Int)
+case class Pair(pos: Point, distance: Int)
+
+type WirePath = Map[Point, Int]
+
+def getDirections(dir: Char) = dir match {
+    case 'U' => Direction(-1, 0)
+    case 'R' => Direction(0, 1)
+    case 'D' => Direction(1, 0)
+    case 'L' => Direction(0, -1)
+    case _ => throw new Exception()
+}
 
 def parseInput(input: List[String]) = input.map(line => {
-    line.split(",").map(it => (it.head, it.tail.toInt)).toList
+    line.split(",").map(it => (getDirections(it.head), it.tail.toInt)).toList
 })
 
-def trace(path: List[(Char, Int)]): Map[Point, Int] = {
-    val res = MutableMap.empty[Point, Int]
-    var current = Point(0, 0)
-    var distance = 0
+def trace(path: List[(Direction, Int)]): WirePath = {
+    val directions = path.flatMap { case (dir, amount) => List.fill(amount)(dir) }
+    val points = directions.scanLeft(Point(0, 0))(_ + _)
+    
+    val result = MutableMap.empty[Point, Int]
 
-    for ((ch, amount) <- path) {
-        val dir = ch match {
-            case 'U' => Direction(-1, 0)
-            case 'D' => Direction(1, 0)
-            case 'L' => Direction(0, -1)
-            case 'R' => Direction(0, 1)
-            case _ => throw Exception() 
-        }
-
-        for (_ <- 0 until amount) {
-            current += dir
-            distance += 1
-
-            if (!res.contains(current)) {
-                res.put(current, distance)
-            }
+    for ((pos, dist) <- points.zipWithIndex.tail) {
+        if (!result.contains(pos)) {
+            result += pos -> dist
         }
     }
-
-    return res.toMap
+    
+    return result.toMap
 }
 
-def solve(paths: List[String], distance: Group => Int): Int = {
-    val List(path1, path2) = parseInput(paths)
-    val trace1 = trace(path1)
-    val trace2 = trace(path2)
-
-    val commonKeys = trace1.keySet & trace2.keySet
-    return commonKeys.map(it => distance(Group(it.y, it.x, trace1(it), trace2(it)))).min
+def solve(traces: List[WirePath], distance: Pair => Int): Int = {
+    val List(trace1, trace2) = traces
+    return (trace1.keySet & trace2.keySet).map(it => distance(Pair(it, trace1(it) + trace2(it)))).min
 }
 
-def evaluatorOne(input: List[String]) = solve(input, it => it.x.abs + it.y.abs)
-def evaluatorTwo(input: List[String]) = solve(input, it => it.distance1 + it.distance2)
+def evaluatorOne(input: List[WirePath]) = solve(input, it => it.pos.abs)
+def evaluatorTwo(input: List[WirePath]) = solve(input, it => it.distance)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -61,8 +56,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day03.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val traces = parseInput(lines).map(trace)
+            println(s"Part One: ${evaluatorOne(traces)}")
+            println(s"Part Two: ${evaluatorTwo(traces)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
