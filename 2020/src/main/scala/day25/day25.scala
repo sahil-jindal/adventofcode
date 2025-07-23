@@ -3,7 +3,7 @@ package day25
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def solve(input: List[String]): Long = {
+def solver(input: List[String]): Long = {
     val List(doorKey, cardKey) = input.map(_.toLong)
 
     val mod = 20201227L
@@ -32,7 +32,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 
 def hello(): Unit = {
     readLinesFromFile("day25.txt") match {
-        case Success(lines) => println(s"Part One: ${solve(lines)}")
+        case Success(lines) => println(s"Answer: ${solver(lines)}")
         case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
     }
 }

@@ -1,24 +1,21 @@
 package day15
 
-def numberAt(input: String, count: Int): Int = {
-    val numbers = input.split(",").map(_.toInt)
+import scala.collection.mutable.{Map => MutableMap}
 
+def numberAt(numbers: List[Int], count: Int): Int = {
     assert(numbers.length <= count)
 
-    val lastSeen = Array.fill(count)(-1)
-    var number = numbers(0)
+    val lastSeen = MutableMap.from(numbers.init.zipWithIndex.map {
+        case (number, idx) => number -> (idx + 1)
+    })
 
-    for (round <- numbers.indices) {
-        val nextNumber = numbers(round)
-        lastSeen(number) = round
-        number = nextNumber
-    }
+    var number = numbers.last
 
     for (round <- numbers.length until count) {
         val nextNumber = 
-            if (lastSeen(number) == -1) 0
-            else round - lastSeen(number)
-      
+            if (!lastSeen.contains(number)) 0
+            else round - lastSeen(number)      
+        
         lastSeen(number) = round
         number = nextNumber
     }
@@ -26,11 +23,12 @@ def numberAt(input: String, count: Int): Int = {
     return number
 }
 
-def evaluatorOne(input: String): Int = numberAt(input, 2020)
-def evaluatorTwo(input: String): Int = numberAt(input, 30000000)
+def evaluatorOne(input: List[Int]): Int = numberAt(input, 2020)
+def evaluatorTwo(input: List[Int]): Int = numberAt(input, 30000000)
 
 def hello(): Unit = {
     val inputLine = "2,0,1,9,5,19"
-    println(s"Part One: ${evaluatorOne(inputLine)}")
-    println(s"Part Two: ${evaluatorTwo(inputLine)}")
+    val numbers = inputLine.split(",").map(_.toInt).toList
+    println(s"Part One: ${evaluatorOne(numbers)}")
+    println(s"Part Two: ${evaluatorTwo(numbers)}")
 }

@@ -22,25 +22,25 @@ def groupCommands(input: List[String]): List[List[String]] = {
 
 def parseInput(input: List[String]): List[ProgramSegment] = {
     return groupCommands(input).map(group => {
-        val mask = group.head.split(" = ")(1)
+        val mask = group.head.stripPrefix("mask = ")
 
         val commands = group.tail.map(line => {
-            val nums = raw"(\d+)".r.findAllIn(line).map(_.toInt).toList
-            Command(nums(0), nums(1).toLong)
+            val List(a, b) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toList
+            Command(a, b.toLong)
         })
 
         ProgramSegment(mask, commands)
     })
 }
 
-def addresses(baseAddr: Long, mask: String): Seq[Long] = {
-    return mask.zipWithIndex.foldLeft(Seq(0L)) { case (prefixes, (ch, i)) =>
+def addresses(baseAddr: Long, mask: String): List[Long] = {
+    return mask.zipWithIndex.foldLeft(List(0L)) { case (prefixes, (ch, i)) =>
         val bit = (baseAddr >> (35 - i)) & 1
 
         ch match {
             case '0' => prefixes.map(prefix => (prefix << 1) + bit)
             case '1' => prefixes.map(prefix => (prefix << 1) + 1)
-            case  _  => prefixes.flatMap(prefix => Seq((prefix << 1), (prefix << 1) + 1))
+            case  _  => prefixes.flatMap(prefix => List((prefix << 1), (prefix << 1) + 1))
         }
     }    
 }

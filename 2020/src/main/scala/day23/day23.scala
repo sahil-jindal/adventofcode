@@ -1,8 +1,6 @@
 package day23
 
-def solve(input: String, maxLabel: Int, rotate: Int): LazyList[Long] = {
-    val digits = input.map(_.asDigit)
-
+def solve(digits: IndexedSeq[Int], maxLabel: Int, rotate: Int): LazyList[Long] = {
     val next = (1 to maxLabel + 1).toArray
     next(0) = -1
 
@@ -10,9 +8,9 @@ def solve(input: String, maxLabel: Int, rotate: Int): LazyList[Long] = {
         next(digits(i)) = digits((i + 1) % digits.size)
     }
 
-    if (maxLabel > input.size) {
+    if (maxLabel > digits.size) {
         next(maxLabel) = next(digits.last)
-        next(digits.last) = input.size + 1
+        next(digits.last) = digits.size + 1
     }
 
     var current = digits.head
@@ -34,14 +32,15 @@ def solve(input: String, maxLabel: Int, rotate: Int): LazyList[Long] = {
         current = next(current)
     }
 
-    return LazyList.iterate(next(1))(next).dropRight(1).map(_.toLong)
+    return LazyList.iterate(next(1))(next).map(_.toLong)
 }
 
-def evaluatorOne(input: String): String = solve(input, 9, 100).take(8).mkString("")
-def evaluatorTwo(input: String): Long = solve(input, 1000000, 10000000).take(2).product
+def evaluatorOne(digits: IndexedSeq[Int]): String = solve(digits, 9, 100).take(8).mkString
+def evaluatorTwo(digits: IndexedSeq[Int]): Long = solve(digits, 1000000, 10000000).take(2).product
 
 def hello(): Unit = {
     val inputLine = "418976235"
-    println(s"Part One: ${evaluatorOne(inputLine)}")
-    println(s"Part Two: ${evaluatorTwo(inputLine)}")
+    val digits = inputLine.map(_.asDigit)
+    println(s"Part One: ${evaluatorOne(digits)}")
+    println(s"Part Two: ${evaluatorTwo(digits)}")
 }

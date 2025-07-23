@@ -20,8 +20,9 @@ def parseInput(input: List[String]): Problem = {
     val blocks = groupLines(input)
 
     val fields = blocks.head.map(line => {
-        val List(s1, e1, s2, e2) = parseNumbers(line)
-        Field(line.split(":").head, n => { (n >= s1 && n <= e1) || (n >= s2 && n <= e2) })
+        val Array(fieldName, ranges) = line.split(":", 2)
+        val List(s1, e1, s2, e2) = parseNumbers(ranges)
+        Field(fieldName, n => { (n >= s1 && n <= e1) || (n >= s2 && n <= e2) })
     })
 
     val tickets = blocks.tail.flatMap(_.tail.map(parseNumbers))
@@ -29,26 +30,26 @@ def parseInput(input: List[String]): Problem = {
     return Problem(fields, tickets)
 }
 
-def fieldCandidates(fields: Seq[Field], values: Int*): Seq[Field] = {
+def fieldCandidates(fields: List[Field], values: Int*): List[Field] = {
     return fields.filter(field => values.forall(field.isValid))
 }
 
 def evaluatorOne(problem: Problem): Int = {
-    return problem.tickets.flatten.filterNot(fieldCandidates(problem.fields, _).nonEmpty).sum
+    return problem.tickets.flatten.filter(fieldCandidates(problem.fields, _).isEmpty).sum
 }
 
 def evaluatorTwo(problem: Problem): Long = {
     val tickets = problem.tickets.filter(_.forall(fieldCandidates(problem.fields, _).nonEmpty))
 
-    val fields = Set(problem.fields*)
-    val columns = Set((0 until fields.size)*)
+    val fields = Set.from(problem.fields)
+    val columns = Set.from((0 until fields.size))
 
     var res = 1L
 
-    while columns.nonEmpty do {
+    while (columns.nonEmpty) {
         for (column <- columns) {
             val valuesInColumn = tickets.map(_(column))
-            val candidates = fieldCandidates(fields.toSeq, valuesInColumn*)
+            val candidates = fieldCandidates(fields.toList, valuesInColumn*)
             if (candidates.length == 1) {
                 val field = candidates.head
                 fields -= field

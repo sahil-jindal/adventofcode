@@ -5,16 +5,14 @@ import scala.io.Source
 
 def parseInput(input: List[String]) = input.map(_.toLong)
 
-def findFirstInvalidNumber(numbers: List[Long], preambleSize: Int): Option[Long] = {
-    return numbers.sliding(preambleSize + 1).collectFirst { 
+def findFirstInvalidNumber(nums: List[Long], preambleSize: Int): Option[Long] = {
+    return nums.sliding(preambleSize + 1).collectFirst { 
         case (preamble :+ target) if preamble.combinations(2).forall(_.sum != target) => target  
     }
 }
 
-def findEncryptionWeakness(numbers: List[Long], target: Long): Option[Long] = {
-    return (2 to numbers.length).iterator.flatMap(numbers.sliding).collectFirst {
-        case contiguousSet if contiguousSet.sum == target => contiguousSet.min + contiguousSet.max
-    }
+def findEncryptionWeakness(nums: List[Long], target: Long): Option[Long] = {
+    return (2 to nums.length).iterator.flatMap(nums.sliding).find(_.sum == target).map(it => it.min + it.max)
 }
 
 def solver(input: List[Long]): (Long, Long) = {

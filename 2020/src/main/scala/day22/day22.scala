@@ -4,19 +4,19 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Set, Queue}
 
-def parseInput(input: List[String]): (Queue[Int], Queue[Int]) = {
+def parseInput(input: List[String]): (List[Int], List[Int]) = {
     val idx = input.indexWhere(_.trim.isEmpty)
     val playerOne = input.take(idx)
     val playerTwo = input.drop(idx + 1)
-    return (Queue(playerOne.tail.map(_.toInt)*), Queue(playerTwo.tail.map(_.toInt)*))
+    return (playerOne.tail.map(_.toInt), playerTwo.tail.map(_.toInt))
 }
 
-def answer(deckOne: Queue[Int], deckTwo: Queue[Int]): Int = {
-    return deckOne.concat(deckTwo).reverse.zipWithIndex.map { case (c, i) => c * (i + 1) }.sum
+def answer(deckOne: List[Int], deckTwo: List[Int]): Int = {
+    return (deckOne ++ deckTwo).reverse.zipWithIndex.map { case (c, i) => c * (i + 1) }.sum
 }
 
-def evaluatorOne(input: List[String]): Int = {
-    val (deckOne, deckTwo) = parseInput(input)
+def evaluatorOne(playerOne: List[Int], playerTwo: List[Int]): Int = {
+    val (deckOne, deckTwo) = (Queue.from(playerOne), Queue.from(playerTwo))
 
     while (deckOne.nonEmpty && deckTwo.nonEmpty) {
         val (cardOne, cardTwo) = (deckOne.dequeue(), deckTwo.dequeue())
@@ -32,48 +32,48 @@ def evaluatorOne(input: List[String]): Int = {
         }
     }
 
-    return answer(deckOne, deckTwo)
+    return answer(deckOne.toList, deckTwo.toList)
 }
 
-def evaluatorTwo(input: List[String]): Int = {
-    def game(deckOne: Queue[Int], deckTwo: Queue[Int]): Boolean = {
-        val seen = Set.empty[String]
+def game(deckOne: Queue[Int], deckTwo: Queue[Int]): Boolean = {
+    val seen = Set.empty[String]
 
-        while (deckOne.nonEmpty && deckTwo.nonEmpty) {
-            val hash = s"${deckOne.mkString(",")};${deckTwo.mkString(",")}"
+    while (deckOne.nonEmpty && deckTwo.nonEmpty) {
+        val hash = s"${deckOne.mkString(",")};${deckTwo.mkString(",")}"
 
-            if (seen.contains(hash)) {
-                return true
-            }
-
-            seen.add(hash)
-
-            val (cardOne, cardTwo) = (deckOne.dequeue(), deckTwo.dequeue())
-
-            val playerOneWins = 
-                if deckOne.size >= cardOne && deckTwo.size >= cardTwo then {
-                    game(deckOne.take(cardOne), deckTwo.take(cardTwo))
-                } else {
-                    cardOne > cardTwo
-                }
-
-            if (playerOneWins) {
-                deckOne.enqueue(cardOne)
-                deckOne.enqueue(cardTwo)
-            } else {
-                deckTwo.enqueue(cardTwo)
-                deckTwo.enqueue(cardOne)
-            }
+        if (seen.contains(hash)) {
+            return true
         }
 
-        return deckOne.nonEmpty
+        seen.add(hash)
+
+        val (cardOne, cardTwo) = (deckOne.dequeue(), deckTwo.dequeue())
+
+        val playerOneWins = 
+            if deckOne.size >= cardOne && deckTwo.size >= cardTwo then {
+                game(deckOne.take(cardOne), deckTwo.take(cardTwo))
+            } else {
+                cardOne > cardTwo
+            }
+
+        if (playerOneWins) {
+            deckOne.enqueue(cardOne)
+            deckOne.enqueue(cardTwo)
+        } else {
+            deckTwo.enqueue(cardTwo)
+            deckTwo.enqueue(cardOne)
+        }
     }
 
-    val (deckOne, deckTwo) = parseInput(input)
+    return deckOne.nonEmpty
+}
+
+def evaluatorTwo(playerOne: List[Int], playerTwo: List[Int]): Int = {
+    val (deckOne, deckTwo) = (Queue.from(playerOne), Queue.from(playerTwo))
 
     game(deckOne, deckTwo)
 
-    return answer(deckOne, deckTwo)
+    return answer(deckOne.toList, deckTwo.toList)
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -82,8 +82,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day22.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val (playerOne, playerTwo) = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(playerOne, playerTwo)}")
+            println(s"Part Two: ${evaluatorTwo(playerOne, playerTwo)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

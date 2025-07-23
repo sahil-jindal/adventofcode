@@ -16,16 +16,14 @@ case class Point(y: Int, x: Int) {
 }
 
 case class State(pos: Point, dir: Direction)
+case class Pair(action: Char, arg: Int)
 
-def moveShip(input: List[String], partOne: Boolean): Int = {
-    val initialState = State(
-        pos = Point(0, 0),
-        dir = if (partOne) Direction(0, 1) else Direction(1, 10)
-    )
+def parseInput(input: List[String]) = input.map(line => Pair(line.head, line.tail.toInt))
 
-    val pairs = input.map(line => (line.head, line.tail.toInt))
+def moveShip(pairs: List[Pair], partOne: Boolean): Int = {
+    val initialState = State(pos = Point(0, 0), dir = if (partOne) Direction(0, 1) else Direction(1, 10))
     
-    val finalState = pairs.foldLeft(initialState) { case (state, (action, arg)) =>
+    val finalState = pairs.foldLeft(initialState) { case (state, Pair(action, arg)) =>
         (action, arg) match {
             case ('N', value) if partOne => state.copy(pos = state.pos + Direction(value, 0))
             case ('N', value)            => state.copy(dir = state.dir + Direction(value, 0))
@@ -46,8 +44,8 @@ def moveShip(input: List[String], partOne: Boolean): Int = {
     return finalState.pos.x.abs + finalState.pos.y.abs
 }
 
-def evaluatorOne(input: List[String]): Int = moveShip(input, true)
-def evaluatorTwo(input: List[String]): Int = moveShip(input, false)
+def evaluatorOne(input: List[Pair]): Int = moveShip(input, true)
+def evaluatorTwo(input: List[Pair]): Int = moveShip(input, false)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -55,8 +53,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day12.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

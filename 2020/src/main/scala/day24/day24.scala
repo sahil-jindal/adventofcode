@@ -20,12 +20,9 @@ def walk(line: String): Tile = {
     var remaining = line
     
     while (remaining.nonEmpty) {
-        for ((ch, dir) <- HexDirections) {
-            if (remaining.startsWith(ch)) {
-                remaining = remaining.drop(ch.length)
-                pos += dir
-            }
-        }
+        val (ch, dir) = HexDirections.view.filterKeys(remaining.startsWith).head
+        remaining = remaining.drop(ch.length)
+        pos += dir
     }
 
     return pos
@@ -46,14 +43,7 @@ def flip(blackTiles: Set[Tile]): Set[Tile] = {
 }
 
 def evaluatorOne(input: Set[Tile]): Int = input.size
-    
-def evaluatorTwo(input: Set[Tile]): Int = {
-    var tiles = input
-    
-    for (_ <- 1 to 100) { tiles = flip(tiles) }
-    
-    return tiles.size
-}
+def evaluatorTwo(input: Set[Tile]): Int = Iterator.iterate(input)(flip).drop(100).next().size
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

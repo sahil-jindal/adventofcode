@@ -40,8 +40,7 @@ case class Tile(id: Long, grid: List[Array[Char]]) {
     // Generate all possible orientations of the tile
     def allOrientations: List[Tile] = {
         val rotations = Iterator.iterate(this, 4)(_.rotate).toList
-        val flipped = flipHorizontal
-        return rotations ++ Iterator.iterate(flipped, 4)(_.rotate).toList
+        return rotations ++ rotations.map(_.flipHorizontal)
     }
   
     // Get the tile content without borders

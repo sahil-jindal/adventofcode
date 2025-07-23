@@ -5,27 +5,25 @@ import scala.io.Source
 
 sealed trait Rule
 case class Literal(char: Char) extends Rule
-case class Alternative(options: Seq[Seq[Int]]) extends Rule
+case class Alternative(options: List[List[Int]]) extends Rule
 
-def parseInput(input: List[String]): (Map[Int, Rule], List[String]) = {
-    val idx = input.indexWhere(_.trim.isEmpty)
-    val grammar = input.take(idx)
-    val lines = input.drop(idx + 1)
+case class Pair(rules: Map[Int, Rule], messages: List[String])
 
-    val rules = grammar.map(line => {
-        val Array(idStr, ruleStr) = line.split(": ")
-        val id = idStr.toInt
-      
-        val rule = if (ruleStr.contains("\"")) {
-            Literal(ruleStr.charAt(1))
-        } else {
-            Alternative(ruleStr.split(" \\| ").map(_.trim.split(" ").map(_.toInt).toSeq).toSeq)
-        }
-      
-        (id, rule)
-    }).toMap
+def parseRules(line: String) = {
+    val Array(idStr, ruleStr) = line.split(": ")
     
-    return (rules, lines)
+    val rule = if (ruleStr.contains("\"")) {
+        Literal(ruleStr.charAt(1))
+    } else {
+        Alternative(ruleStr.split(" \\| ").map(_.trim.split(" ").map(_.toInt).toList).toList)
+    }
+    
+    idStr.toInt -> rule
+}
+
+def parseInput(input: List[String]): Pair = {
+    val idx = input.indexWhere(_.trim.isEmpty)
+    return Pair(input.take(idx).map(parseRules).toMap, input.drop(idx + 1))
 }
 
 def buildRegex(rules: Map[Int, Rule], id: Int, partTwo: Boolean): String = {
@@ -33,15 +31,16 @@ def buildRegex(rules: Map[Int, Rule], id: Int, partTwo: Boolean): String = {
         if (id == 8) {
             // rule 8: 42 | 42 8  => 42+
             return s"(${buildRegex(rules, 42, true)})+"
-        } else if (id == 11) {
+        } 
+        
+        if (id == 11) {
             // rule 11: 42 31 | 42 11 31
             // This creates a rule that matches 42{n}31{n} for n from 1 to 5
             // We can't express this with regular expressions perfectly, but we can approximate
             val r42 = buildRegex(rules, 42, true)
             val r31 = buildRegex(rules, 31, true)
         
-            val options = (1 to 5).map(n => s"(${r42}){$n}(${r31}){$n}")
-            return options.mkString("(", "|", ")")
+            return (1 to 5).map(n => s"(${r42}){$n}(${r31}){$n}").mkString("(", "|", ")")
         }
     }
     
@@ -51,14 +50,14 @@ def buildRegex(rules: Map[Int, Rule], id: Int, partTwo: Boolean): String = {
     }
 }
 
-def countValidMessages(input: List[String], partTwo: Boolean): Int = {
-    val (rules, messages) = parseInput(input)
+def countValidMessages(input: Pair, partTwo: Boolean): Int = {
+    val Pair(rules, messages) = input
     val regex = raw"^${buildRegex(rules, 0, partTwo)}$$".r
     return messages.count(msg => regex.pattern.matcher(msg).matches())
 }
 
-def evaluatorOne(input: List[String]): Int = countValidMessages(input, false)
-def evaluatorTwo(input: List[String]): Int = countValidMessages(input, true)
+def evaluatorOne(input: Pair): Int = countValidMessages(input, false)
+def evaluatorTwo(input: Pair): Int = countValidMessages(input, true)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -66,8 +65,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day19.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
