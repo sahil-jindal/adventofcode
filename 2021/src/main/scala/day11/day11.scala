@@ -24,14 +24,13 @@ def neighbours(pos: Point): Seq[Point] = {
 }
 
 def step(grid: Grid): (Grid, Int) = {
-    val updatedMap = MutableMap(grid.view.mapValues(_ + 1).toSeq*)
-    val queue = Queue(updatedMap.collect { case (p, e) if e > 9 => p }.toSeq*)
+    val updatedMap = MutableMap.from(grid.view.mapValues(_ + 1))
+    val queue = Queue.from(updatedMap.collect { case (p, e) if e > 9 => p })
     val flashed = Set.empty[Point]
 
     while (queue.nonEmpty) {
         val pos = queue.dequeue()
-        if (!flashed.contains(pos)) {
-            flashed += pos
+        if (flashed.add(pos)) {
             for (n <- neighbours(pos) if updatedMap.contains(n)) {
                 updatedMap(n) += 1
                 if (updatedMap(n) == 10) queue.enqueue(n)

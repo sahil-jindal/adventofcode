@@ -6,7 +6,7 @@ import scala.collection.mutable.ListBuffer
 
 case class Packet(version: Int, ptype: Int, payload: Long, packets: List[Packet])
 
-case class BitSequenceReader(private val bits: Seq[Boolean]) {
+case class BitSequenceReader(private val bits: IndexedSeq[Boolean]) {
     private var ptr = 0
 
     def nonEmpty: Boolean = ptr < bits.length
@@ -18,9 +18,9 @@ case class BitSequenceReader(private val bits: Seq[Boolean]) {
     }
 
     def readInt(bitCount: Int): Int = {
-        val subBits = bits.slice(ptr, ptr + bitCount).map(if _ then 1 else 0).mkString("")
+        val subBits = bits.slice(ptr, ptr + bitCount)
         ptr += bitCount
-        return Integer.parseInt(subBits, 2)
+        return subBits.reverse.zipWithIndex.collect { case (true, i) => 1 << i }.sum
     }
 }
 
@@ -58,12 +58,12 @@ def getPacket(reader: BitSequenceReader): Packet = {
     return Packet(version, ptype, payload, packets.toList)
 }
 
-def getTotalVersion(packet: Packet): Int = {
-    return packet.version + packet.packets.map(getTotalVersion).sum
+def evaluatorOne(packet: Packet): Int = {
+    return packet.version + packet.packets.map(evaluatorOne).sum
 }
 
-def evaluate(packet: Packet): Long = {
-    val parts = packet.packets.map(evaluate)
+def evaluatorTwo(packet: Packet): Long = {
+    val parts = packet.packets.map(evaluatorTwo)
 
     return packet.ptype match {
         case 0 => parts.sum
@@ -76,9 +76,6 @@ def evaluate(packet: Packet): Long = {
         case 7 => if parts(0) == parts(1) then 1 else 0
     }
 }
-
-def evaluatorOne(input: Packet): Int = getTotalVersion(input)
-def evaluatorTwo(input: Packet): Long = evaluate(input)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

@@ -5,8 +5,8 @@ import scala.io.Source
 
 case class Point(y: Int, x: Int)
 
-def foldX(d: Set[Point], x: Int) = d.map(p => if p.x > x then p.copy(x = 2*x - p.x) else p)
-def foldY(d: Set[Point], y: Int) = d.map(p => if p.y > y then p.copy(y = 2*y - p.y) else p)
+def foldX(pts: Set[Point], x: Int) = pts.map(p => if p.x > x then p.copy(x = 2*x - p.x) else p)
+def foldY(pts: Set[Point], y: Int) = pts.map(p => if p.y > y then p.copy(y = 2*y - p.y) else p)
 
 def getHolds(input: List[String]): List[Set[Point]] = {
     val idx = input.indexWhere(_.trim.isEmpty)
@@ -14,32 +14,28 @@ def getHolds(input: List[String]): List[Set[Point]] = {
     val second = input.drop(idx + 1)
 
     val points = first.map(line => {
-        val Array(x, y) = line.split(",")
-        Point(y.toInt, x.toInt)
+        val Array(x, y) = line.split(",").map(_.toInt)
+        Point(y, x)
     }).toSet
 
     val res = second.scanLeft(points) { case (points, line) => 
-        val Array(first, second) = line.split("=")
+        val Array(axis, number) = line.stripPrefix("fold along ").split("=")
 
-        if (first.endsWith("x")) {
-            foldX(points, second.toInt)
+        if (axis == "x") {
+            foldX(points, number.toInt)
         } else {
-            foldY(points, second.toInt)
+            foldY(points, number.toInt)
         }
     }
 
     return res.tail
 }
 
-def toString(d: Set[Point]): String = {
-    val height = d.map(_.y).max
-    val width = d.map(_.x).max
-
+def makeMessage(points: Set[Point]): String = {
+    val (height, width) = (points.map(_.y).max, points.map(_.x).max)
     val grid = Array.fill(height + 1, width + 1)(' ')
 
-    for (y <- grid.indices; x <- grid(y).indices) {
-        if d.contains(Point(y, x)) then grid(y)(x) = '#'
-    } 
+    points.foreach { case Point(y, x) => grid(y)(x) = '#' } 
     
     return grid.map(_.mkString).mkString("\n")
 }
@@ -52,7 +48,7 @@ def hello(): Unit = {
         case Success(lines) => {
             val res = getHolds(lines)
             println(s"Part One: ${res.head.size}")
-            println(s"Part Two:\n${toString(res.last)}")
+            println(s"Part Two:\n${makeMessage(res.last)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

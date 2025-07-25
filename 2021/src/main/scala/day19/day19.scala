@@ -17,26 +17,26 @@ case class Scanner(center: Vec3D, rotation: Int, beaconsInLocal: List[Vec3D]) {
     def translate(t: Vec3D): Scanner = copy(center = center + t)
 
     def transform(coord: Vec3D): Vec3D = {
-        var Vec3D(x, y, z) = coord
+        var t = coord
         
         (rotation % 6) match {
             case 0 => // (x, y, z)
-            case 1 => x = -x; z = -z
-            case 2 => val temp = x; x = y; y = -temp
-            case 3 => val temp = x; x = -y; y = temp
-            case 4 => val temp = x; x = z; z = -temp
-            case 5 => val temp = x; x = -z; z = temp
+            case 1 => t = Vec3D(-t.x,  t.y, -t.z)
+            case 2 => t = Vec3D( t.y, -t.x,  t.z)
+            case 3 => t = Vec3D(-t.y,  t.x,  t.z)
+            case 4 => t = Vec3D( t.z,  t.y, -t.x)
+            case 5 => t = Vec3D(-t.z,  t.y,  t.x)
         }
 
         // Rotate around x-axis
         ((rotation / 6) % 4) match {
             case 0 => // (x, y, z)
-            case 1 => val temp = y; y = -z; z = temp
-            case 2 => y = -y; z = -z
-            case 3 => val temp = y; y = z; z = -temp
+            case 1 => t = Vec3D(t.x, -t.z,  t.y)
+            case 2 => t = Vec3D(t.x, -t.y, -t.z)
+            case 3 => t = Vec3D(t.x,  t.z, -t.y)
         }
 
-        Vec3D(center.x + x, center.y + y, center.z + z)
+        center + t
     }
 
     def getbeaconsInWorld() = beaconsInLocal.map(transform)
@@ -52,8 +52,8 @@ def groupLines(input: List[String]): List[List[String]] = {
 def parseInput(input: List[String]): List[Scanner] = {
     return groupLines(input).map(block => {
         val beacons = block.tail.map(line => {
-            val parts = line.split(",").map(_.toInt)
-            Vec3D(parts(0), parts(1), parts(2))
+            val Array(x, y, z) = line.split(",").map(_.toInt)
+            Vec3D(x, y, z)
         })
 
         Scanner(Vec3D(0, 0, 0), 0, beacons)

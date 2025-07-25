@@ -5,6 +5,7 @@ import scala.io.Source
 import scala.collection.mutable.{Map => MutableMap}
 
 case class Point(y: Int, x: Int)
+case class Pair(algo: String, image: Map[Point, Boolean])
 
 def getImage(map: List[String]): Map[Point, Boolean] = {
     return (for {
@@ -13,6 +14,8 @@ def getImage(map: List[String]): Map[Point, Boolean] = {
     } yield Point(y, x) -> (ch == '#')).toMap
 }
 
+def parseInput(input: List[String]) = Pair(input.head, getImage(input.drop(2)))
+
 def neighbours(pos: Point): Seq[Point] = {
     return (for {
         dy <- -1 to 1
@@ -20,9 +23,8 @@ def neighbours(pos: Point): Seq[Point] = {
     } yield Point(pos.y + dy, pos.x + dx))
 }
 
-def enhanced(input: List[String], n: Int): Int = {
-    val algo = input.head
-    var image = getImage(input.drop(2))
+def enhanced(input: Pair, n: Int): Int = {
+    var Pair(algo, image) = input
 
     var (minY, maxY) = (0, image.keys.map(_.y).max)
     var (minX, maxX) = (0, image.keys.map(_.x).max)
@@ -53,8 +55,8 @@ def enhanced(input: List[String], n: Int): Int = {
     return image.values.count(identity)
 }
 
-def evaluatorOne(input: List[String]): Int = enhanced(input, 2)
-def evaluatorTwo(input: List[String]): Int = enhanced(input, 50)
+def evaluatorOne(input: Pair): Int = enhanced(input, 2)
+def evaluatorTwo(input: Pair): Int = enhanced(input, 50)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -62,8 +64,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day20.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

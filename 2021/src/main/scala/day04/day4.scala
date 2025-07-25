@@ -6,25 +6,24 @@ import scala.collection.mutable.{ListBuffer, ArrayBuffer}
 
 case class Cell(number: String, var marked: Boolean = false)
 
-case class BingoBoard(private val cells: List[Cell]) {
+case class BingoBoard(private val cells: List[List[Cell]]) {
+    require(cells.size == 5 && cells.forall(_.size == 5))
+
     var score: Int = 0
 
-    private def cellsInRow(i: Int) = (0 until 5).map(j => cells(i * 5 + j))
-    private def cellsInCol(j: Int) = (0 until 5).map(i => cells(i * 5 + j))
-
     def addNumber(number: String): Unit = {
-        val index = cells.indexWhere(_.number == number)
+        val index = cells.flatten.indexWhere(_.number == number)
 
         if (index < 0) return
         
-        cells(index).marked = true
+        cells(index / 5)(index % 5).marked = true
 
-        val gameEnded = (0 until 5).exists(i => {
-            cellsInRow(i).forall(_.marked) || cellsInCol(i).forall(_.marked)
-        })
+        val gameEnded = (cells zip cells.transpose).exists { 
+            case (row, col) => row.forall(_.marked) || col.forall(_.marked) 
+        }
         
         if (gameEnded) {
-            val unmarkedSum = cells.collect { case Cell(number, marked) if !marked => number.toInt }.sum
+            val unmarkedSum = cells.flatten.collect { case Cell(number, marked) if !marked => number.toInt }.sum
             score = number.toInt * unmarkedSum
         }
     }
@@ -40,9 +39,9 @@ def groupLines(input: List[String]): List[List[String]] = {
 def boardsInOrderOfCompletion(input: List[String]): List[Int] = {
     val numbers = input.head.split(",")
     
-    val boards = ArrayBuffer(groupLines(input.drop(2)).map(group => {
-        BingoBoard(group.flatMap(_.split(" ").filter(_.nonEmpty)).map(Cell(_)))
-    })*)
+    val boards = ArrayBuffer.from(groupLines(input.drop(2)).map(group => {
+        BingoBoard(group.map(line => raw"(\d+)".r.findAllIn(line).map(Cell(_)).toList))
+    }))
 
     val result = ListBuffer.empty[Int]
 

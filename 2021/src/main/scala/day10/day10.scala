@@ -3,7 +3,7 @@ package day10
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Stack
-import scala.util.boundary, boundary.break;
+import scala.util.boundary, boundary.break
 
 def getScore(line: String, getSyntaxErrorScore: Boolean): Long = {
     val stack = Stack(line.head)
@@ -30,9 +30,9 @@ def getScores(input: List[String], getSyntaxErrorScore: Boolean): Seq[Long] = {
     return input.map(getScore(_, getSyntaxErrorScore)).filter(_ > 0)
 }
 
-def evaluatorOne(input: List[String]): Any = getScores(input, true).sum
+def evaluatorOne(input: List[String]): Long = getScores(input, true).sum
 
-def evaluatorTwo(input: List[String]): Any = {
+def evaluatorTwo(input: List[String]): Long = {
     val scores = getScores(input, false).sorted
     return scores(scores.size / 2)
 }

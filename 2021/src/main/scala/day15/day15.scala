@@ -23,23 +23,16 @@ def getNeighbours(pos: Point) = Seq(
 )
 
 def solve(riskMap: Grid): Int = {
-    val topLeft = Point(0, 0)
-    val maxY = riskMap.keys.map(_.y).max
-    val maxX = riskMap.keys.map(_.x).max
-    val bottomRight = Point(maxY, maxX)
+    val points = riskMap.keySet
+    val (topLeft, bottomRight) = (Point(0, 0), Point(points.map(_.y).max, points.map(_.x).max))
 
-    val pq = PriorityQueue.empty(using Ordering.by[(Point, Int), Int](_._2).reverse)
-    val totalRiskMap = MutableMap.empty[Point, Int]
-
-    totalRiskMap(topLeft) = 0
-    pq.enqueue((topLeft, 0))
+    val pq = PriorityQueue((topLeft, 0))(using Ordering.by[(Point, Int), Int](_._2).reverse)
+    val totalRiskMap = MutableMap(topLeft -> 0)
 
     while (pq.nonEmpty) {
         val (p, _) = pq.dequeue()
 
-        if (p == bottomRight) {
-            return totalRiskMap(p)
-        }
+        if (p == bottomRight) return totalRiskMap(p)
 
         for (n <- getNeighbours(p) if riskMap.contains(n)) {
             val totalRiskThroughP = totalRiskMap(p) + riskMap(n)
@@ -53,16 +46,16 @@ def solve(riskMap: Grid): Int = {
     return totalRiskMap(bottomRight)
 }
 
-def scaleUp(map: Grid): Grid = {
-    val width = map.keys.map(_.x).max + 1
-    val height = map.keys.map(_.y).max + 1
+def scaleUp(riskMap: Grid): Grid = {
+    val points = riskMap.keySet
+    val (height, width) = (points.map(_.y).max + 1, points.map(_.x).max + 1)
 
     return (for {
         y <- 0 until 5*height
         x <- 0 until 5*width
         tileY = y % height
         tileX = x % width
-        tileRiskLevel = map(Point(tileY, tileX))
+        tileRiskLevel = riskMap(Point(tileY, tileX))
         tileDistance = (y / height) + (x / width)
         riskLevel = (tileRiskLevel + tileDistance - 1) % 9 + 1
     } yield Point(y, x) -> riskLevel).toMap

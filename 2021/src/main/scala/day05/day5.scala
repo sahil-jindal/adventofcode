@@ -17,17 +17,17 @@ def parseInput(input: List[String]) = input.map(line => {
     Segment(Vec2D(sx, sy), Vec2D(ex, ey))
 })
 
-def getLines(input: List[Segment], skipDiagonals: Boolean): Seq[Seq[Vec2D]] = {
+def getLines(input: List[Segment], skipDiagonals: Boolean): List[List[Vec2D]] = {
     return (for {
         Segment(start, end) <- input
         dispmnt = end - start
         dir = dispmnt.sign
         length = 1 + math.max(dispmnt.x.abs, dispmnt.y.abs)
         if !skipDiagonals || dir.x == 0 || dir.y == 0
-    } yield (0 until length).map(start + dir * _))
+    } yield List.tabulate(length)(start + dir * _)).toList
 }
 
-def getIntersections(lines: Seq[Seq[Vec2D]]): Int = {
+def getIntersections(lines: List[List[Vec2D]]): Int = {
     return lines.flatten.groupMapReduce(identity)(_ => 1)(_ + _).values.count(_ > 1)
 }
 
