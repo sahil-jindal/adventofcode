@@ -12,8 +12,8 @@ case class Point(pos: Vec2D, vel: Vec2D) {
     def move = copy(pos = pos + vel)
 }
 
-case class Plane(minX: Int, minY: Int, w: Int, h: Int) {
-    def area = w.toLong * h.toLong
+case class Plane(startY: Int, startX: Int, height: Int, width: Int) {
+    def area = height.toLong * width.toLong
 }
 
 def parseInput(input: List[String]) = input.map(line => {
@@ -24,7 +24,7 @@ def parseInput(input: List[String]) = input.map(line => {
 def getBounds(points: List[Point]): Plane = {
     val positions = points.map(_.pos)
     val (ys, xs) = (positions.map(_.y), positions.map(_.x))
-    return Plane(xs.min, ys.min, xs.max - xs.min, ys.max - ys.min)
+    return Plane(xs.min, ys.min, ys.max - ys.min, xs.max - xs.min)
 }
 
 @tailrec
@@ -38,16 +38,11 @@ def findMessage(points: List[Point], seconds: Int = 0): (List[Point], Int) = {
 }
 
 def makeMessage(points: List[Point]): String = {
-    val Plane(minX, minY, w, h) = getBounds(points)
+    val Plane(startY, startX, height, width) = getBounds(points)
     val pointSet = points.map(_.pos).toSet
-    val grid = Array.fill(h + 1, w + 1)(' ')
+    val grid = Array.fill(height + 1, width + 1)(' ')
     
-    for {
-        y <- 0 to h 
-        x <- 0 to w
-        pos = Vec2D(minY + y, minX + x) 
-        if pointSet.contains(pos)
-    } grid(y)(x) = '#'
+    pointSet.foreach(pos => grid(pos.y - startY)(pos.x - startX) = '#') 
         
     return grid.map(_.mkString).mkString("\n")
 }
