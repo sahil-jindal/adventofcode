@@ -27,7 +27,7 @@ def parseInput(input: List[String]) = input.map(line => {
     line.split(",").map(it => (getDirections(it.head), it.tail.toInt)).toList
 })
 
-def trace(path: List[(Direction, Int)]): WirePath = {
+def preComputeTrace(path: List[(Direction, Int)]): WirePath = {
     val directions = path.flatMap { case (dir, amount) => List.fill(amount)(dir) }
     val points = directions.scanLeft(Point(0, 0))(_ + _)
     
@@ -56,7 +56,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day03.txt") match {
         case Success(lines) => {
-            val traces = parseInput(lines).map(trace)
+            val traces = parseInput(lines).map(preComputeTrace)
             println(s"Part One: ${evaluatorOne(traces)}")
             println(s"Part Two: ${evaluatorTwo(traces)}")
         }
