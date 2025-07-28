@@ -2,7 +2,6 @@ package day08
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.ListBuffer
 
 case class Direction(dy: Int, dx: Int)
 
@@ -10,21 +9,13 @@ case class Point(y: Int, x: Int) {
     def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
 }
 
-val directions = Seq(Direction(-1, 0), Direction(1, 0), Direction(0, -1), Direction(0, 1))
+val directions = List(Direction(-1, 0), Direction(1, 0), Direction(0, -1), Direction(0, 1))
 
 case class Forest(trees: Map[Point, Int]) {
     type Tree = (Point, Int)
     
     private def treesInDirection(tree: Point, dir: Direction): List[Int] = {
-        val res = ListBuffer.empty[Int]
-        var pos = tree + dir
-
-        while (trees.contains(pos)) {
-            res += trees(pos)
-            pos += dir
-        }
-
-        return res.toList
+        return Iterator.iterate(tree)(_ + dir).takeWhile(trees.contains).drop(1).map(trees).toList
     }
 
     private def smallerTrees(tree: Tree, dir: Direction): List[Int] = {

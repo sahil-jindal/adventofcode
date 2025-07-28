@@ -13,20 +13,20 @@ case class Rect(x: Int, y: Int, width: Int, height: Int) {
     val right = x + width - 1
     val bottom = y + height - 1
 
-    def corners = Seq(
+    def corners = List(
         Pos(left, top),
         Pos(right, top),
         Pos(left, bottom),
         Pos(right, bottom)
     )
 
-    def split(): Seq[Rect] = {
+    def split(): List[Rect] = {
         val w0 = width / 2
         val w1 = width - w0
         val h0 = height / 2
         val h1 = height - h0
 
-        return Seq(
+        return List(
             Rect(left, top, w0, h0),
             Rect(left + w0, top, w1, h0),
             Rect(left, top + h0, w0, h1),
@@ -46,13 +46,13 @@ def parseInput(input: List[String]) = input.map(line => {
     Pair(Pos(sx, sy), Pos(bx, by))
 })
 
-def getUncoveredAreas(pairing: List[Pair], rect: Rect): Seq[Rect] = {
-    if (rect.width <= 0 || rect.height <= 0) return Seq.empty[Rect]
+def getUncoveredAreas(pairing: List[Pair], rect: Rect): List[Rect] = {
+    if (rect.width <= 0 || rect.height <= 0) return List.empty[Rect]
 
     val coveredByCorners = pairing.exists(pair => rect.corners.forall(pair.inRange))
-    if (coveredByCorners) return Seq.empty[Rect]
+    if (coveredByCorners) return List.empty[Rect]
 
-    if (rect.width == 1 && rect.height == 1) return Seq(rect)
+    if (rect.width == 1 && rect.height == 1) return List(rect)
 
     return rect.split().flatMap(getUncoveredAreas(pairing, _))
 }

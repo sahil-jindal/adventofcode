@@ -14,11 +14,12 @@ case class Point(y: Int, x: Int) {
 }
 
 case class State(block: Char, coord: Point, dir: Int)
-case class Pair(block: Char, noOfRotations: Int)
+case class PairOne(msg: List[String], commands: List[Cmd])
+case class PairTwo(block: Char, noOfRotations: Int)
 
 val blockSize = 50
 
-def parseInput(input: List[String]) = {
+def parseInput(input: List[String]): PairOne = {
     val map = input.dropRight(2)
 
     val commands = raw"(\d+)|L|R".r.findAllIn(input.last).map {
@@ -27,10 +28,10 @@ def parseInput(input: List[String]) = {
         case num => Forward(num.toInt)
     }.toList
 
-    (map, commands)  
+    PairOne(map, commands)  
 }
 
-def step(topology: Map[Char, List[Pair]], state: State): State = {
+def step(topology: Map[Char, List[PairTwo]], state: State): State = {
     def wrapsAround(coord: Point): Boolean = {
         coord.x < 0 || coord.x >= blockSize || 
         coord.y < 0 || coord.y >= blockSize
@@ -94,8 +95,8 @@ def toGlobal(state: State) = {
     }
 }
 
-def solve(input: List[String], topology: Map[Char, List[Pair]]): Int = {
-    var (map, cmds) = parseInput(input)
+def solve(input: PairOne, topology: Map[Char, List[PairTwo]]): Int = {
+    val PairOne(map, cmds) = input
     var state = new State('A', new Point(0, 0), 0)
 
     for (cmd <- cmds) {
@@ -147,25 +148,25 @@ def solve(input: List[String], topology: Map[Char, List[Pair]]): Int = {
     This mapping was generated from a paper model.
 */
 
-def evaluatorOne(input: List[String]): Int = solve(
+def evaluatorOne(input: PairOne): Int = solve(
     input, Map(
-        'A' -> List(Pair('B', 0), Pair('C', 0), Pair('B', 0), Pair('E', 0)),
-        'B' -> List(Pair('A', 0), Pair('B', 0), Pair('A', 0), Pair('B', 0)),
-        'C' -> List(Pair('C', 0), Pair('E', 0), Pair('C', 0), Pair('A', 0)),
-        'D' -> List(Pair('E', 0), Pair('F', 0), Pair('E', 0), Pair('F', 0)),
-        'E' -> List(Pair('D', 0), Pair('A', 0), Pair('D', 0), Pair('C', 0)),
-        'F' -> List(Pair('F', 0), Pair('D', 0), Pair('F', 0), Pair('D', 0))
+        'A' -> List(PairTwo('B', 0), PairTwo('C', 0), PairTwo('B', 0), PairTwo('E', 0)),
+        'B' -> List(PairTwo('A', 0), PairTwo('B', 0), PairTwo('A', 0), PairTwo('B', 0)),
+        'C' -> List(PairTwo('C', 0), PairTwo('E', 0), PairTwo('C', 0), PairTwo('A', 0)),
+        'D' -> List(PairTwo('E', 0), PairTwo('F', 0), PairTwo('E', 0), PairTwo('F', 0)),
+        'E' -> List(PairTwo('D', 0), PairTwo('A', 0), PairTwo('D', 0), PairTwo('C', 0)),
+        'F' -> List(PairTwo('F', 0), PairTwo('D', 0), PairTwo('F', 0), PairTwo('D', 0))
     )
 )
 
-def evaluatorTwo(input: List[String]): Int = solve(
+def evaluatorTwo(input: PairOne): Int = solve(
     input, Map(
-        'A' -> List(Pair('B', 0), Pair('C', 0), Pair('D', 2), Pair('F', 1)),
-        'B' -> List(Pair('E', 2), Pair('C', 1), Pair('A', 0), Pair('F', 0)),
-        'C' -> List(Pair('B', 3), Pair('E', 0), Pair('D', 3), Pair('A', 0)),
-        'D' -> List(Pair('E', 0), Pair('F', 0), Pair('A', 2), Pair('C', 1)),
-        'E' -> List(Pair('B', 2), Pair('F', 1), Pair('D', 0), Pair('C', 0)),
-        'F' -> List(Pair('E', 3), Pair('B', 0), Pair('A', 3), Pair('D', 0))
+        'A' -> List(PairTwo('B', 0), PairTwo('C', 0), PairTwo('D', 2), PairTwo('F', 1)),
+        'B' -> List(PairTwo('E', 2), PairTwo('C', 1), PairTwo('A', 0), PairTwo('F', 0)),
+        'C' -> List(PairTwo('B', 3), PairTwo('E', 0), PairTwo('D', 3), PairTwo('A', 0)),
+        'D' -> List(PairTwo('E', 0), PairTwo('F', 0), PairTwo('A', 2), PairTwo('C', 1)),
+        'E' -> List(PairTwo('B', 2), PairTwo('F', 1), PairTwo('D', 0), PairTwo('C', 0)),
+        'F' -> List(PairTwo('E', 3), PairTwo('B', 0), PairTwo('A', 3), PairTwo('D', 0))
     )
 )
 
@@ -175,8 +176,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day22.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

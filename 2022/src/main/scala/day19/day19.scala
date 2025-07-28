@@ -15,13 +15,9 @@ case class Material(ore: Int, clay: Int, obsidian: Int, geode: Int) {
 case class Robot(id: Int, cost: Material, producing: Material)
 case class State(remainingTime: Int, available: Material, producing: Material, dontBuild: Int)
 
-case class Blueprint(id: Int, robots: Seq[Robot]) {
-    val maxCost = Material(
-        robots.map(_.cost.ore).max,
-        robots.map(_.cost.clay).max,
-        robots.map(_.cost.obsidian).max,
-        Int.MaxValue
-    )
+case class Blueprint(id: Int, robots: List[Robot]) {
+    val costs = robots.map(_.cost)
+    val maxCost = Material(costs.map(_.ore).max, costs.map(_.clay).max, costs.map(_.obsidian).max, Int.MaxValue)
 }
 
 val Ore = Material(1, 0, 0, 0)
@@ -31,13 +27,13 @@ val Nothing = Material(0, 0, 0, 0)
 val Obsidian = Material(0, 0, 1, 0)
 
 def parseInput(input: List[String]) = input.map(line => {
-    val nums = raw"(\d+)".r.findAllIn(line).map(_.toInt).toArray
+    val Seq(id, a, b, c, d, e, f) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toSeq
     
-    Blueprint(nums(0), Seq(
-        Robot(1, Ore * nums(1), Ore),
-        Robot(2, Ore * nums(2), Clay),
-        Robot(4, Ore * nums(3) + Clay * nums(4), Obsidian),
-        Robot(8, Ore * nums(5) + Obsidian * nums(6), Geode)
+    Blueprint(id, List(
+        Robot(1, Ore * a, Ore),
+        Robot(2, Ore * b, Clay),
+        Robot(4, Ore * c + Clay * d, Obsidian),
+        Robot(8, Ore * e + Obsidian * f, Geode)
     ))
 })
 
@@ -52,10 +48,8 @@ def maxGeodes(blueprint: Blueprint, timeLimit: Int): Int = {
         (state.producing + robot.producing) <= blueprint.maxCost
     } 
 
-    val pq = PriorityQueue.empty(using Ordering.by[State, Int](potentialGeodeCount))
+    val pq = PriorityQueue(State(timeLimit, Nothing, Ore, 0))(using Ordering.by(potentialGeodeCount))
     val seen = Set.empty[State]
-
-    pq.enqueue(State(timeLimit, Nothing, Ore, 0))
 
     var max = 0
 
@@ -64,8 +58,7 @@ def maxGeodes(blueprint: Blueprint, timeLimit: Int): Int = {
 
         if (potentialGeodeCount(state) < max) return max
 
-        if (!seen.contains(state)) {
-            seen += state
+        if (seen.add(state)) {
 
             if (state.remainingTime == 0) {
                 max = math.max(max, state.available.geode)

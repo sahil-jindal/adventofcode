@@ -74,11 +74,8 @@ def evaluatorOne(context: Context): String = {
 }
 
 def evaluatorTwo(context: Context): String = {
-    var expr = createExpression(context, true).asInstanceOf[Eq]
-    
-    while (!expr.left.isInstanceOf[Var]) { expr = solve(expr) }
-    
-    return expr.right.toString()
+    val expr = createExpression(context, true).asInstanceOf[Eq]
+    return Iterator.iterate(expr)(solve).dropWhile(!_.left.isInstanceOf[Var]).next().right.toString()
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

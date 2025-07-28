@@ -42,8 +42,8 @@ case class Tunnel(jets: String, linesToStore: Int) {
         return mat.lift(pos.y).getOrElse("#########".toCharArray).lift(pos.x).getOrElse(' ')
     }
 
-    private def area(mat: List[String]): Seq[Pos] = {
-        return (for { y <- mat.indices; x <- mat(0).indices } yield Pos(y, x))
+    private def area(mat: List[String]): IndexedSeq[Pos] = {
+        return (for { y <- mat.indices; x <- mat(y).indices } yield Pos(y, x))
     }
 
     private def hit(rock: List[String], pos: Pos): Boolean = {
@@ -57,7 +57,7 @@ case class Tunnel(jets: String, linesToStore: Int) {
             }
         }
 
-        lines = lines.dropWhile(!_.contains('#'))
+        lines = lines.dropWhile(!_.exists(_ == '#'))
 
         val excessCount = math.max(0, lines.size - linesToStore)
         lines = lines.dropRight(excessCount)

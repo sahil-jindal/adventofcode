@@ -19,14 +19,14 @@ object PacketOrdering extends Ordering[JsValue] {
 
         val arrayA = nodeA match {
             case JsArray(values) => values
-            case JsNumber(n)     => Seq(JsNumber(n))
-            case _               => Seq.empty
+            case JsNumber(n)     => List(JsNumber(n))
+            case _               => List.empty
         }
 
         val arrayB = nodeB match {
             case JsArray(values) => values
-            case JsNumber(n)     => Seq(JsNumber(n))
-            case _               => Seq.empty
+            case JsNumber(n)     => List(JsNumber(n))
+            case _               => List.empty
         }
 
         return (arrayA zip arrayB)

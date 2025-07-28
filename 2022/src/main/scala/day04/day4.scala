@@ -2,21 +2,21 @@ package day04
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
+import scala.collection.immutable.Range.Inclusive
 
-case class Range(start: Int, end: Int)
-case class Pair(first: Range, second: Range)
+case class Pair(first: Inclusive, second: Inclusive)
 
 def parseInput(input: List[String]) = input.map(line => {
     val Seq(sf, ef, ss, es) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toSeq
-    Pair(Range(sf, ef), Range(ss, es))
+    Pair(sf to ef, ss to es)
 })
 
-def duplicateWorkCount(input: List[Pair], rangeCheck: (Range, Range) => Boolean): Int = {
+def duplicateWorkCount(input: List[Pair], rangeCheck: (Inclusive, Inclusive) => Boolean): Int = {
     return input.count { case Pair(first, second) => rangeCheck(first, second) || rangeCheck(second, first) }
 }
 
-def contains(r1: Range, r2: Range): Boolean = r1.start <= r2.start && r2.end <= r1.end 
-def overlaps(r1: Range, r2: Range): Boolean = r2.start <= r1.end && r1.start <= r2.end
+def contains(r1: Inclusive, r2: Inclusive): Boolean = r1.start <= r2.start && r2.end <= r1.end 
+def overlaps(r1: Inclusive, r2: Inclusive): Boolean = r2.start <= r1.end && r1.start <= r2.end
 
 def evaluatorOne(input: List[Pair]): Int = duplicateWorkCount(input, contains)
 def evaluatorTwo(input: List[Pair]): Int = duplicateWorkCount(input, overlaps)

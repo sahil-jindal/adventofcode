@@ -21,9 +21,7 @@ def groupLines(input: List[String]): List[List[String]] = {
 }
 
 def parseMonkey(input: List[String]): Monkey = {
-    val startingItems = input(1).trim().stripPrefix("Starting items: ").split(", ").map(_.toLong)
-    val items = Queue(startingItems*)
-
+    val items = Queue.from(input(1).trim().stripPrefix("Starting items: ").split(", ").map(_.toLong))
     val Array(operand, b) = input(2).trim().stripPrefix("Operation: new = old ").split(" ")
 
     var operation: Long => Long = identity

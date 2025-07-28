@@ -32,7 +32,7 @@ def mix(numsWithIdxInit: List[Data]): List[Data] = {
 def getGrooveCoordinates(numsWithIdx: List[Data]): Long = {
     val nums = numsWithIdx.map(_.value)
     val idx = nums.indexWhere(_ == 0)
-    return Seq(1000, 2000, 3000).map(it => nums((idx + it) % nums.size)).sum
+    return List(1000, 2000, 3000).map(it => nums((idx + it) % nums.size)).sum
 }
 
 def evaluatorOne(input: List[Data]): Long = getGrooveCoordinates(mix(input))

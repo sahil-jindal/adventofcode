@@ -18,13 +18,13 @@ def getCaloriesPerElf(input: List[String]): List[Int] = {
 def evaluatorOne(elvesFood: List[Int]): Int = elvesFood.max
 
 def evaluatorTwo(elvesFood: List[Int]): Int = {
-    // Min-heap (smallest element at the top)
-    val pq = PriorityQueue.empty(using Ordering.Int.reverse)
+    val (initial, remaining) = elvesFood.splitAt(3)
 
-    for (num <- elvesFood) {
-        if (pq.size < 3) {
-            pq.enqueue(num)
-        } else if (num > pq.head) {
+    // Min-heap (smallest element at the top)
+    val pq = PriorityQueue.from(initial)(using Ordering.Int.reverse)
+
+    for (num <- remaining) {
+        if (num > pq.head) {
             pq.dequeue()
             pq.enqueue(num)
         }

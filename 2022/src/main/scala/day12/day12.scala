@@ -23,7 +23,7 @@ def parseInput(input: List[String]): Map[Coord, Symbol] = {
     } yield Coord(x, y) -> Symbol(ch)).toMap
 }
 
-def neighbours(coord: Coord) = Seq(
+def neighbours(coord: Coord) = List(
     coord.copy(lat = coord.lat + 1),
     coord.copy(lat = coord.lat - 1),
     coord.copy(lon = coord.lon + 1),
@@ -36,21 +36,19 @@ def getElevation(symbol: Symbol) = symbol.value match {
     case _ => Elevation(symbol.value) 
 }
 
-def getPois(input: List[String]): List[Poi] = {
-    val map = parseInput(input)
-    val goal = map.keys.find(point => map(point) == goalSymbol).get
+def getPois(grid: Map[Coord, Symbol]): List[Poi] = {
+    val goal = grid.collectFirst { case (k, v) if v == goalSymbol => k }.get
 
     val poiByCoord = MutableMap(goal -> Poi(goalSymbol, getElevation(goalSymbol), 0))
-
     val pq = Queue(goal)
 
     while (pq.nonEmpty) {
         val thisCoord = pq.dequeue()
         val thisPoi = poiByCoord(thisCoord)
-        val adjacent = neighbours(thisCoord).filter(map.contains)
+        val adjacent = neighbours(thisCoord).filter(grid.contains)
 
-        for (nextCoord <- adjacent; if !poiByCoord.contains(nextCoord)) {
-            val nextSymbol = map(nextCoord)
+        for (nextCoord <- adjacent.filterNot(poiByCoord.contains)) {
+            val nextSymbol = grid(nextCoord)
             val nextElevation = getElevation(nextSymbol)
 
             if (thisPoi.elevation.value - nextElevation.value <= 1) {
@@ -72,7 +70,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day12.txt") match {
         case Success(lines) => {
-            val input = getPois(lines)
+            val input = getPois(parseInput(lines))
             println(s"Part One: ${evaluatorOne(input)}")
             println(s"Part Two: ${evaluatorTwo(input)}")
         }

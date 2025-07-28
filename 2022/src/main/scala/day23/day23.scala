@@ -21,8 +21,8 @@ val NE = N + E
 val SE = S + E
 val SW = S + W
 
-val directions = Seq(NW, N, NE, E, SE, S, SW, W)
-val extendDir = Map(N -> Seq(NW, N, NE), E -> Seq(NE, E, SE), S -> Seq(SW, S, SE), W -> Seq(NW, W, SW))
+val directions = List(NW, N, NE, E, SE, S, SW, W)
+val extendDir = Map(N -> List(NW, N, NE), E -> List(NE, E, SE), S -> List(SW, S, SE), W -> List(NW, W, SW))
 
 def parseInput(input: List[String]): Set[Point] = {
     return (for {
@@ -33,11 +33,11 @@ def parseInput(input: List[String]): Set[Point] = {
 }
 
 def simulate(elvesInit: Set[Point]): List[Set[Point]] = {
-    val elves = MutableSet(elvesInit.toSeq*)
+    val elves = MutableSet.from(elvesInit)
     val result = ListBuffer.empty[Set[Point]]
 
-    val lookAround = Iterator.continually(Seq(
-        Seq(N, S, W, E), Seq(S, W, E, N), Seq(W, E, N, S), Seq(E, N, S, W)
+    val lookAround = Iterator.continually(List(
+        List(N, S, W, E), List(S, W, E, N), List(W, E, N, S), List(E, N, S, W)
     )).flatten
 
     var fixpoint = false
@@ -59,8 +59,8 @@ def simulate(elvesInit: Set[Point]): List[Set[Point]] = {
         
         for ((to, from) <- proposals) {
             if (from.size == 1) {
-                elves.remove(from.head)
-                elves.add(to)
+                elves -= from.head
+                elves += to
                 fixpoint = false
             }
         }
@@ -73,17 +73,13 @@ def simulate(elvesInit: Set[Point]): List[Set[Point]] = {
 
 def area(elves: Set[Point]): Int = {
     // smallest enclosing rectangle
-    val xs = elves.map(_.x)
-    val ys = elves.map(_.y)
+    val (ys, xs) = (elves.map(_.y), elves.map(_.x))
 
     val width = xs.max - xs.min + 1
     val height = ys.max - ys.min + 1
 
     return width * height - elves.size
 }
-
-def evaluatorOne(input: List[Set[Point]]): Int = area(input(9))
-def evaluatorTwo(input: List[Set[Point]]): Int = input.size
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -92,8 +88,8 @@ def hello(): Unit = {
     readLinesFromFile("day23.txt") match {
         case Success(lines) => {
             val input = simulate(parseInput(lines))
-            println(s"Part One: ${evaluatorOne(input)}")
-            println(s"Part Two: ${evaluatorTwo(input)}")
+            println(s"Part One: ${area(input(9))}")
+            println(s"Part Two: ${input.size}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

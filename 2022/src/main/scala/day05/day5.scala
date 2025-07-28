@@ -12,7 +12,7 @@ def moveCrates(input: List[String], crateMover: Move => Unit): String = {
     val moveDefs = input.drop(idx + 1)
 
     val numStacks = stackDefs.last.split("\\s+").filter(_.nonEmpty).length
-    val stacks = List.fill(numStacks)(Stack.empty[Char])
+    val stacks = Array.ofDim[Stack[Char]](numStacks)
 
     for {
         line <- stackDefs.init.reverse

@@ -37,17 +37,19 @@ case class Maps(private val map: List[String]) {
     }
 }
 
-def parseInput(input: List[String]): (Pos, Pos, Maps) = {
+case class Triplet(entry: Pos, exit: Pos, maps: Maps)
+
+def parseInput(input: List[String]): Triplet = {
     val maps = Maps(input)
     val entry = Pos(0, 0, 1)
     val exit = Pos(Int.MaxValue, maps.height - 1, maps.width - 2)
-    return (entry, exit, maps)
+    return Triplet(entry, exit, maps)
 }
 
-def nextPositions(posInit: Pos, maps: Maps): Seq[Pos] = {
+def nextPositions(posInit: Pos, maps: Maps): List[Pos] = {
     val pos = posInit.copy(time = posInit.time + 1)
 
-    val neighbours = Seq(
+    val neighbours = List(
         pos,
         pos.copy(y = pos.y - 1),
         pos.copy(y = pos.y + 1),
@@ -79,8 +81,8 @@ def walkTo(start: Pos, goal: Pos, maps: Maps): Pos = {
     throw Exception("No solution found")
 }
 
-def solver(input: List[String]): (Int, Int) = {
-    val (entry, exit, maps) = parseInput(input)
+def solver(input: Triplet): (Int, Int) = {
+    val Triplet(entry, exit, maps) = input
     var pos = walkTo(entry, exit, maps)
     val partOne = pos.time
 
@@ -97,7 +99,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day24.txt") match {
         case Success(lines) => {
-            val (partOne, partTwo) = solver(lines)
+            val (partOne, partTwo) = solver(parseInput(lines))
             println(s"Part One: ${partOne}")
             println(s"Part Two: ${partTwo}")
         }
