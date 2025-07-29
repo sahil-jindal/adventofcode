@@ -16,7 +16,7 @@ def parseInput(input: List[String]): Set[Point] = {
 // the double % takes care of negative numbers
 def mod(n: Int, m: Int) = ((n % m) + m) % m
 
-def getNeighbours(pos: Point) = Seq(
+def getNeighbours(pos: Point) = List(
     pos.copy(x = pos.x - 1),
     pos.copy(x = pos.x + 1),
     pos.copy(y = pos.y - 1),

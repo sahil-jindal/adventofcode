@@ -32,11 +32,11 @@ def parseInput(input: List[String]): Grid = {
 // the 'exit' direction(s) of the given cell when entered by a beam moving in 'dir'
 // we have some special cases for mirrors and spliters, the rest keeps the direction
 def exits(cell: Char, dir: Direction) = cell match {
-    case '-' if dir.dx == 0 => Seq(Left, Right)
-    case '|' if dir.dy == 0 => Seq(Up, Down)
-    case '/' => Seq(dir.reflectNE)
-    case '\\' => Seq(dir.reflectNW)
-    case _ => Seq(dir)
+    case '-' if dir.dx == 0 => List(Left, Right)
+    case '|' if dir.dy == 0 => List(Up, Down)
+    case '/' => List(dir.reflectNE)
+    case '\\' => List(dir.reflectNW)
+    case _ => List(dir)
 }
 
 // follow the beam in the map and return the energized cell count. 
@@ -62,13 +62,13 @@ def energizedCells(map: Grid, beam: Beam): Int = {
 
 // go around the edges (top, right, bottom, left order) of the map
 // and return the inward pointing directions
-def startBeams(map: Grid): Seq[Beam] = {
+def startBeams(map: Grid): List[Beam] = {
     val br = map.keys.maxBy(pos => pos.y + pos.x)
 
-    val a = map.keys.collect { case pos if pos.x == 0 => Beam(pos, Down) }.toSeq
-    val b = map.keys.collect { case pos if pos.y == 0 => Beam(pos, Right) }.toSeq
-    val c = map.keys.collect { case pos if pos.y == br.y => Beam(pos, Up) }.toSeq
-    val d = map.keys.collect { case pos if pos.x == br.x => Beam(pos, Left) }.toSeq
+    val a = map.keys.collect { case pos if pos.x == 0 => Beam(pos, Down) }.toList
+    val b = map.keys.collect { case pos if pos.y == 0 => Beam(pos, Right) }.toList
+    val c = map.keys.collect { case pos if pos.y == br.y => Beam(pos, Up) }.toList
+    val d = map.keys.collect { case pos if pos.x == br.x => Beam(pos, Left) }.toList
     
     return a ++ b ++ c ++ d
 }

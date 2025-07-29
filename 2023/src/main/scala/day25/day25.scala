@@ -2,37 +2,17 @@ package day25
 
 import scala.util.{Try, Success, Failure, Using, Random}
 import scala.io.Source
-import scala.collection.mutable.{Map, Set}
+import scala.collection.mutable.Map
 import scala.util.control.Breaks._
 
 case class Group(size: Int, c1: Int, c2: Int)
 
-def parseEdges(input: List[String]): List[(String, String)] = {
-    val edgeSet = Set.empty[(String, String)]
-
-    for (line <- input) {
-        val parts = line.split(": ")
-        val u = parts(0)
-        val nodes = parts(1).split(" ")
-
-        for (v <- nodes) {
-            val (a, b) = if (u < v) (u, v) else (v, u)
-            edgeSet.add((a, b))
-        }
-    }
-
-    edgeSet.toList
-}
-
-class UnionFind(nodes: Set[String]) {
-    private val parent = Map.empty[String, String]
-    private val size = Map.empty[String, Int]
+case class UnionFind(nodes: Set[String]) {
+    private val parent = Map.from(nodes.map(it => it -> it))
+    private val size = Map.from(nodes.map(_ -> 1))
     private var componentCount = nodes.size
 
-    for (node <- nodes) {
-        parent(node) = node
-        size(node) = 1
-    }
+    def getComponentCount = componentCount
 
     def find(u: String): String = {
         if (parent(u) != u) {
@@ -58,14 +38,16 @@ class UnionFind(nodes: Set[String]) {
             componentCount -= 1
         }
     }
+}
 
-    def getComponentCount: Int = componentCount
-
-    def getComponentSize(node: String): Int = size(find(node))
+def parseEdge(line: String) = {
+    val parts = raw"\w{3}".r.findAllIn(line).toList
+    val (u, nodes) = (parts.head, parts.tail)
+    nodes.map(v => if (u.compareTo(v) < 0) then (u, v) else (v, u))
 }
 
 def findCut(edges: List[(String, String)], r: Random): Group = {
-    val allNodes = Set(edges.flatMap { case (u, v) => List(u, v) }.toSeq*)
+    val allNodes = edges.flatMap { case (u, v) => List(u, v) }.toSet
     val shuffledEdges = r.shuffle(edges)
     val uf = new UnionFind(allNodes)
 
@@ -78,13 +60,13 @@ def findCut(edges: List[(String, String)], r: Random): Group = {
 
     val cutSize = edges.count { case (u, v) => uf.find(u) != uf.find(v) }
 
-    val components = allNodes.groupMapReduce(uf.find)(_ => 1)(_ + _).values.toList
+    val List(c1, c2) = allNodes.groupMapReduce(uf.find)(_ => 1)(_ + _).values.toList
 
-    return Group(cutSize, components(0), components(1))
+    return Group(cutSize, c1, c2)
 }
 
 def solver(input: List[String]): Int = {
-    val edges = parseEdges(input)
+    val edges = input.flatMap(parseEdge).distinct
     val r = new Random()
 
     var g = findCut(edges, r)

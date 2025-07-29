@@ -2,22 +2,15 @@ package day09
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.ListBuffer
 
 def parseInput(input: List[String]): List[List[Int]] = { 
     return input.map(_.split(" ").map(_.toInt).toList)
 }
 
+def diffArray(numbers: List[Int]) = (numbers.init zip numbers.tail).map { case (a, b) => b - a }
+
 def extrapolateRight(numbers: List[Int]): Int = {
-    var current = numbers
-    val lastValues = ListBuffer(current.last)
-
-    while (current.exists(_ != 0)) {
-        current = (current.init zip current.tail).map { case (a, b) => b - a }
-        lastValues += current.last
-    }
-
-    return lastValues.sum
+    return Iterator.iterate(numbers)(diffArray).takeWhile(_.exists(_ != 0)).map(_.last).sum
 }
 
 def extrapolateLeft(numbers: List[Int]): Int = extrapolateRight(numbers.reverse)

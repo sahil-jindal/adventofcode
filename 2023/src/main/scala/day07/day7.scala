@@ -16,7 +16,7 @@ def solve(input: List[Pair], getPoints: String => (Int, Int)): Int = {
 }
 
 // Encode a list of numbers into a base 16 number
-def encode(digits: Seq[Int]): Int = {
+def encode(digits: IndexedSeq[Int]): Int = {
     require(digits.forall((0 until 16).contains))
 
     val digitChars = digits.map {

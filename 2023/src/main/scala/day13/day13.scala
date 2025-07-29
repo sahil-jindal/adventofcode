@@ -23,9 +23,7 @@ def parseGrid(input: List[String]): Set[Point] = {
     } yield Point(y, x)).toSet
 }
 
-def parseInput(input: List[String]): List[Set[Point]] = {
-    return groupLines(input).map(parseGrid)
-}
+def parseInput(input: List[String]) = groupLines(input).map(parseGrid)
 
 def findVerticalReflection(points: Set[Point], smudges: Int = 0): Int = {
     val maxX = points.map(_.x).max

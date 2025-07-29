@@ -8,8 +8,23 @@ case class Signal(sender: String, receiver: String, value: Boolean)
 case class Gate(inputs: List[String], handle: Signal => List[Signal])
 case class Group(kind: Char, name: String, outputs: List[String])
 
+type Machine = List[(Group, List[String])]
+
+def parseInput(input: List[String]): Machine = {
+    val descriptions = input.map(line => {
+        val words = raw"(\w+)".r.findAllIn(line).toList
+        Group(line.head, words.head, words.tail)
+    })
+
+    def inputs(name: String) = descriptions.collect {
+        case d if d.outputs.contains(name) => d.name
+    }
+
+    return descriptions.map(d => d -> inputs(d.name))
+}
+
 def nandGate(name: String, inputs: List[String], outputs: List[String]): Gate = {
-    val state = MutableMap(inputs.map(_ -> false)*)
+    val state = MutableMap.from(inputs.map(_ -> false))
 
     return Gate(inputs, signal => {
         state(signal.sender) = signal.value
@@ -35,23 +50,14 @@ def repeater(name: String, inputs: List[String], outputs: List[String]): Gate = 
     })
 }
 
-def parseGates(input: List[String]): Map[String, Gate] = {
-    val descriptions = input.map(line => {
-        val words = raw"(\w+)".r.findAllIn(line).toList
-        Group(line.head, words.head, words.tail)
-    })
-
-    def inputs(name: String) = descriptions.collect {
-        case d if d.outputs.contains(name) => d.name
-    }
-
-    return descriptions.map(d => {
-        d.name -> (d.kind match {
-            case '&' => nandGate(d.name, inputs(d.name), d.outputs)
-            case '%' => flipflop(d.name, inputs(d.name), d.outputs)
-            case _ => repeater(d.name, inputs(d.name), d.outputs)
+def parseGates(machine: Machine): Map[String, Gate] = {
+    return machine.map { case (Group(kind, name, outputs), inputs) =>
+        name -> (kind match {
+            case '&' => nandGate(name, inputs, outputs)
+            case '%' => flipflop(name, inputs, outputs)
+            case  _  => repeater(name, inputs, outputs)
         })
-    }).toMap
+    }.toMap
 }
 
 def trigger(gates: Map[String, Gate]): List[Signal] = {
@@ -68,19 +74,19 @@ def trigger(gates: Map[String, Gate]): List[Signal] = {
     return res.toList
 }
 
-def loopLength(input: List[String], output: String): Int = {
+def loopLength(input: Machine, output: String): Int = {
     val gates = parseGates(input)
     return Iterator.from(1).find(_ => trigger(gates).exists(s => s.sender == output && s.value)).get
 }
 
-def evaluatorOne(input: List[String]): Int = {
+def evaluatorOne(input: Machine): Int = {
     val gates = parseGates(input)
     val values = (for { _ <- 0 until 1000; signal <- trigger(gates)} yield signal.value)
     val group = values.groupMapReduce(identity)(_ => 1)(_ + _)
     return group(true) * group(false)
 }
 
-def evaluatorTwo(input: List[String]): Long = {
+def evaluatorTwo(input: Machine): Long = {
     val gates = parseGates(input)
     val nand = gates("rx").inputs.head
     val branches = gates(nand).inputs
@@ -93,7 +99,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day20.txt") match {
         case Success(lines) => {
-            val input = lines :+ "rx ->" // an extra rule for rx with no output
+            val input = parseInput(lines :+ "rx ->") // an extra rule for rx with no output
             println(s"Part One: ${evaluatorOne(input)}")
             println(s"Part Two: ${evaluatorTwo(input)}")
         }

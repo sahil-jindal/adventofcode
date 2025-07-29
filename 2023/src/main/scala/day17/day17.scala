@@ -25,7 +25,7 @@ def parseInput(input: List[String]): Grid = {
     } yield Point(y, x) -> ch.asDigit).toMap
 }
 
-def moves(c: Crucible, minStraight: Int, maxStraight: Int): Seq[Crucible] = {
+def moves(c: Crucible, minStraight: Int, maxStraight: Int): List[Crucible] = {
     val result = ListBuffer.empty[Crucible]
     
     // Continue straight if we haven't exceeded maxStraight
@@ -44,11 +44,11 @@ def moves(c: Crucible, minStraight: Int, maxStraight: Int): Seq[Crucible] = {
         result += Crucible(c.pos + rightDir, rightDir, 1)
     }
     
-    result.toSeq
+    return result.toList
 }
 
-def heatloss(map: Grid, minStraight: Int, maxStraight: Int): Int = {
-    val goal = map.keys.maxBy(pos => pos.y + pos.x)
+def heatloss(grid: Grid, minStraight: Int, maxStraight: Int): Int = {
+    val goal = grid.keys.maxBy(pos => pos.y + pos.x)
     
     val pq = PriorityQueue.empty(using Ordering.by[(Crucible, Int), Int](_._2).reverse)
     val seen = Set.empty[Crucible]
@@ -62,9 +62,8 @@ def heatloss(map: Grid, minStraight: Int, maxStraight: Int): Int = {
         if (crucible.pos == goal && crucible.straight >= minStraight) return heatloss
 
         for (next <- moves(crucible, minStraight, maxStraight)) {
-            if (map.contains(next.pos) && !seen.contains(next)) {
-                seen.add(next)
-                pq.enqueue((next, heatloss + map(next.pos)))
+            if (grid.contains(next.pos) && seen.add(next)) {
+                pq.enqueue((next, heatloss + grid(next.pos)))
             }
         }
     }

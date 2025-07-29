@@ -9,6 +9,8 @@ case class Range(start: Long, end: Long) {
     def overlaps(that: Range) = start <= that.end && that.start <= end 
 }
 
+case class Pair(numbers: List[Long], maps: List[Map[Range, Range]])
+
 def groupLines(input: List[String]): List[List[String]] = {
     return input.foldLeft(List(List.empty[String])) {
         case (acc, "") => acc :+ List.empty[String]
@@ -18,15 +20,17 @@ def groupLines(input: List[String]): List[List[String]] = {
 
 def parseNumbers(input: String) = raw"(\d+)".r.findAllIn(input).map(_.toLong).toList
 
-def parseMap(input: List[String]): Map[Range, Range] = {
-    return input.tail.map(line => {
-        val List(a, b, c) = parseNumbers(line)
-        Range(b, c + b - 1) -> Range(a, c + a - 1)
-    }).toMap
+def parseInput(input: List[String]): Pair = {
+    val maps = groupLines(input.drop(2)).map(_.tail.map(line => {
+        val List(sA, sB, len) = parseNumbers(line)
+        Range(sB, sB + len - 1) -> Range(sA, sA + len - 1)
+    }).toMap)
+
+    return Pair(parseNumbers(input.head), maps)
 }
 
 def project(inputRanges: List[Range], map: Map[Range, Range]): List[Range] = {
-    val input = Queue(inputRanges*)
+    val input = Queue.from(inputRanges)
     val output = ListBuffer.empty[Range]
 
     while (input.nonEmpty) {
@@ -61,11 +65,9 @@ def project(inputRanges: List[Range], map: Map[Range, Range]): List[Range] = {
     return output.toList
 }
 
-def solve(input: List[String], parseSeeds: List[Long] => List[Range]): Long = {
-    val seedRanges = parseSeeds(parseNumbers(input.head))
-    val maps = groupLines(input.drop(2)).map(parseMap)
-
-    return maps.foldLeft(seedRanges)(project).map(_.start).min
+def solve(input: Pair, parseSeeds: List[Long] => List[Range]): Long = {
+    val seedRanges = parseSeeds(input.numbers)
+    return input.maps.foldLeft(seedRanges)(project).map(_.start).min
 }
 
 def partOneRanges(numbers: List[Long]): List[Range] = numbers.map(n => Range(n, n))
@@ -74,8 +76,8 @@ def partTwoRanges(numbers: List[Long]): List[Range] = {
     return numbers.grouped(2).map(n => Range(n(0), n(0) + n(1) - 1)).toList
 }
 
-def evaluatorOne(input: List[String]): Long = solve(input, partOneRanges)
-def evaluatorTwo(input: List[String]): Long = solve(input, partTwoRanges)
+def evaluatorOne(input: Pair): Long = solve(input, partOneRanges)
+def evaluatorTwo(input: Pair): Long = solve(input, partTwoRanges)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -83,8 +85,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day05.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

@@ -3,30 +3,35 @@ package day08
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class PairOne(left: String, right: String)
-case class PairTwo(dirs: String, map: Edges)
+enum Cmd { case Left, Right }
 
-type Edges = Map[String, PairOne]
+case class Pair(dirs: IndexedSeq[Cmd], network: Map[String, Map[Cmd, String]])
 
-def parseInput(input: List[String]): PairTwo = {
-    val dirs = input.head
+def parseInput(input: List[String]): Pair = {
+    val dirs = input.head.map(ch => {
+        ch match {
+            case 'L' => Cmd.Left
+            case 'R' => Cmd.Right
+            case _ => throw new Exception()
+        }
+    })
 
-    val map = input.drop(2).map(line => {
+    val network = input.drop(2).map(line => {
         val Seq(key, left, right) = raw"(\w+)".r.findAllIn(line).toSeq
-        key -> PairOne(left, right)
+        key -> Map(Cmd.Left -> left, Cmd.Right -> right)
     }).toMap
 
-    return PairTwo(dirs, map)
+    return Pair(dirs, network)
 }
 
-def stepsToZ(currentInit: String, zMarker: String, dirsInit: String, map: Edges): Long = {
+def stepsToZ(input: Pair, currentInit: String, zMarker: String): Long = {
+    val Pair(dirsInit, network) = input
     val dirs = Iterator.continually(dirsInit).flatten
     var current = currentInit
     var i = 0L
 
     while (!current.endsWith(zMarker)) {
-        val dir = dirs.next()
-        current = if dir == 'L' then map(current).left else map(current).right
+        current = network(current)(dirs.next())
         i += 1
     }
 
@@ -36,13 +41,12 @@ def stepsToZ(currentInit: String, zMarker: String, dirsInit: String, map: Edges)
 def gcd(a: Long, b: Long): Long = if b == 0 then a else gcd(b, a % b)
 def lcm(a: Long, b: Long): Long = a * b / gcd(a, b)
 
-def solve(input: PairTwo, aMarker: String, zMarker: String): Long = {
-    val PairTwo(dirs, map) = input
-    return map.keys.collect { case w if w.endsWith(aMarker) => stepsToZ(w, zMarker, dirs, map) }.reduce(lcm)
+def solve(input: Pair, aMarker: String, zMarker: String): Long = {
+    return input.network.keys.filter(_.endsWith(aMarker)).map(stepsToZ(input, _, zMarker)).reduce(lcm)
 }
 
-def evaluatorOne(input: PairTwo): Long = solve(input, "AAA", "ZZZ")
-def evaluatorTwo(input: PairTwo): Long = solve(input, "A", "Z")
+def evaluatorOne(input: Pair): Long = solve(input, "AAA", "ZZZ")
+def evaluatorTwo(input: Pair): Long = solve(input, "A", "Z")
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
