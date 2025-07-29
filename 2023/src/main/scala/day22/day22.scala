@@ -9,8 +9,7 @@ case class Range(start: Int, end: Int) {
 }
 
 case class Block(x: Range, y: Range, z: Range) {
-    val top = z.end
-    val bottom = z.start
+    val (bottom, top) = (z.start, z.end)
     def intersectsXY(that: Block) = x.intersects(that.x) && y.intersects(that.y)
 }
 
@@ -20,7 +19,7 @@ case class Supports(
 )
 
 def parseInput(input: List[String]) = input.map(line => {
-    val Seq(sx, ex, sy, ey, sz, ez) = line.split(Array(',','~')).map(_.toInt).toSeq
+    val Seq(sx, sy, sz, ex, ey, ez) = line.split(Array(',','~')).map(_.toInt).toSeq
     Block(Range(sx, ex), Range(sy, ey), Range(sz, ez))
 })
 
@@ -47,34 +46,33 @@ def getSupports(blocks: List[Block]): Supports = {
     val blocksAbove = blocks.map(_ -> Set.empty[Block]).toMap
     val blocksBelow = blocks.map(_ -> Set.empty[Block]).toMap
     
-    for (blks <- blocks.combinations(2)) {
-        val zNeighbours = blks(1).bottom == 1 + blks(0).top
-        if (zNeighbours && blks(0).intersectsXY(blks(1))) {
-            blocksBelow(blks(1)).add(blks(0))
-            blocksAbove(blks(0)).add(blks(1))
+    for (List(blkA, blkB) <- blocks.combinations(2)) {
+        if (blkB.bottom == 1 + blkA.top && blkA.intersectsXY(blkB)) {
+            blocksBelow(blkB).add(blkA)
+            blocksAbove(blkA).add(blkB)
         }
     }
     
     return Supports(blocksAbove, blocksBelow)
 }
 
-def kaboom(input: List[String]): List[Int] = {
-    val blocks = fall(parseInput(input))
+def kaboom(blocksInit: List[Block]): List[Int] = {
+    val blocks = fall(blocksInit)
     val supports = getSupports(blocks)
 
     return blocks.map(disintegratedBlock => {
-        val q = Queue(disintegratedBlock)
+        val queue = Queue(disintegratedBlock)
         val falling = Set.empty[Block]
 
-        while (q.nonEmpty) {
-            val block = q.dequeue()
+        while (queue.nonEmpty) {
+            val block = queue.dequeue()
             falling.add(block)
 
             val blocksStartFailing = supports.blocksAbove(block).filter(blockT => 
                 supports.blocksBelow(blockT).subsetOf(falling)
             )
 
-            q.enqueueAll(blocksStartFailing)
+            queue.enqueueAll(blocksStartFailing)
         }
 
         falling.size - 1
@@ -90,7 +88,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day22.txt") match {
         case Success(lines) => {
-            val input = kaboom(lines)
+            val input = kaboom(parseInput(lines))
             println(s"Part One: ${evaluatorOne(input)}")
             println(s"Part Two: ${evaluatorTwo(input)}")
         }
