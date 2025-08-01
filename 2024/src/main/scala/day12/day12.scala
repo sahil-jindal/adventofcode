@@ -4,7 +4,9 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Queue, ListBuffer, Set => MutableSet}
 
-case class Direction(dy: Int, dx: Int)
+case class Direction(dy: Int, dx: Int) {
+    def +(that: Direction) = Direction(dy + that.dy, dx + that.dx)
+}
 
 case class Point(y: Int, x: Int) {
     def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
@@ -12,34 +14,37 @@ case class Point(y: Int, x: Int) {
 
 type Region = Set[Point]
 
-val U = Direction(-1, 0)
-val L = Direction(0, -1)
-val D = Direction(1, 0)
-val R = Direction(0, 1)
+val N = Direction(-1, 0)
+val W = Direction(0, -1)
+val S = Direction(1, 0)
+val E = Direction(0, 1)
+val NE = N + E
+val NW = N + W
+val SE = S + E
+val SW = S + W
 
 def getRegions(input: List[String]): List[Region] = {
-    val gardern = (for {
+    val garden = (for {
         (line, y) <- input.zipWithIndex
         (ch, x) <- line.zipWithIndex
     } yield Point(y, x) -> ch).toMap
 
     val res = ListBuffer.empty[Region]
-    val positions = MutableSet(gardern.keySet.toSeq*)
+    val positions = MutableSet.from(garden.keySet)
 
     while (positions.nonEmpty) {
         val pivot = positions.head
         val region = MutableSet(pivot)
 
         val q = Queue(pivot)
-        val plant = gardern(pivot)
+        val plant = garden(pivot)
 
         while (q.nonEmpty) {
             val point = q.dequeue()
             positions.remove(point)
 
-            for (dir <- Seq(U, R, D, L)) {
-                val neighbor = point + dir
-                if (!region.contains(neighbor) && gardern.getOrElse(neighbor, ' ') == plant) {
+            for (neighbor <- List(N, E, S, W).map(point + _).filter(garden.contains)) {
+                if (!region.contains(neighbor) && garden(neighbor) == plant) {
                     region.add(neighbor)
                     q.enqueue(neighbor)
                 }
@@ -57,25 +62,16 @@ def calculateFencePrice(regions: List[Region], measure: (Region, Point) => Int):
 }
 
 def findEdges(region: Region, pt: Point): Int = {    
-    return Seq(U, R, D, L).count(du => !region.contains(pt + du))
+    return List(N, E, S, W).count(du => !region.contains(pt + du))
 }
 
 def findCorners(region: Region, pt: Point): Int = {
     var res = 0
 
-    for ((du, dv) <- Seq((U, R), (R, D), (D, L), (L, U))) {
-        if (!region.contains(pt + du) &&
-            !region.contains(pt + dv)
-        ) {
-            res += 1
-        }
-
-        if (region.contains(pt + du) &&
-            region.contains(pt + dv) &&
-            !region.contains(pt + du + dv)
-        ) {
-            res += 1
-        }
+    for (corner <- List(List(S, SE, E), List(W, SW, S), List(N, NW, W), List(E, NE, N))) {
+        val List(a, b, c) = corner.map(pt + _)
+        if (!region.contains(a) && !region.contains(c)) res += 1
+        if (region.contains(a) && region.contains(c) && !region.contains(b)) res += 1
     }
 
     return res

@@ -18,7 +18,7 @@ def parseInput(input: List[String]): Grid = {
     } yield Vec2D(y, x) -> ch).toMap
 }
 
-def getUniquePositions(grid: Grid, getAntiNodes: (Vec2D, Vec2D, Grid) => Seq[Vec2D]): Int = {
+def getUniquePositions(grid: Grid, getAntiNodes: (Vec2D, Vec2D, Grid) => List[Vec2D]): Int = {
     val antennaLocations = grid.toSeq.collect { case (k, v) if v.isLetterOrDigit => k }
 
     return (for {
@@ -28,24 +28,16 @@ def getUniquePositions(grid: Grid, getAntiNodes: (Vec2D, Vec2D, Grid) => Seq[Vec
     } yield getAntiNodes(srcAntenna, dstAntenna, grid)).flatten.toSet.size
 }
 
-def getAntiNodesOne(srcAntenna: Vec2D, dstAntenna: Vec2D, grid: Grid): Seq[Vec2D] = {
+def getAntiNodesOne(srcAntenna: Vec2D, dstAntenna: Vec2D, grid: Grid): List[Vec2D] = {
     val dir = dstAntenna - srcAntenna
     val antiNode = dstAntenna + dir
-    if (grid.contains(antiNode)) return Seq(antiNode)
-    return Seq.empty
+    if (grid.contains(antiNode)) return List(antiNode)
+    return List.empty
 }
 
-def getAntiNodesTwo(srcAntenna: Vec2D, dstAntenna: Vec2D, grid: Grid): Seq[Vec2D] = {
+def getAntiNodesTwo(srcAntenna: Vec2D, dstAntenna: Vec2D, grid: Grid): List[Vec2D] = {
     val dir = dstAntenna - srcAntenna
-    var antiNode = dstAntenna
-    val res = ListBuffer.empty[Vec2D]
-
-    while (grid.contains(antiNode)) {
-        res += antiNode
-        antiNode += dir
-    }
-
-    return res.toSeq
+    return Iterator.iterate(dstAntenna)(_ + dir).takeWhile(grid.contains).toList
 }
 
 def evaluatorOne(input: Grid): Int = getUniquePositions(input, getAntiNodesOne)

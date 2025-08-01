@@ -12,12 +12,8 @@ def isValid(samples: List[Int]): Boolean = {
     diffArray.forall(diff => diff >= -3 && diff <= -1)
 }
 
-def attenuate(samples: List[Int]) = {
-    val skippedList = samples.indices.map(i => {
-        samples.take(i) ++ samples.drop(i + 1)    
-    })
-
-    samples +: skippedList
+def attenuate(samples: List[Int]): IndexedSeq[List[Int]] = {
+    return samples +: samples.indices.map(i => samples.take(i) ++ samples.drop(i + 1))
 }
 
 def evaluatorOne(input: List[List[Int]]): Int = input.count(isValid)

@@ -6,26 +6,25 @@ import scala.collection.mutable.{Map => MutableMap}
 import scala.util.boundary, boundary.break
 
 case class Gate(in1: String, kind: String, in2: String)
+case class Pair(inputs: Map[String, Boolean], circuit: Map[String, Gate])
 
-type Circuit = MutableMap[String, Gate]
-
-def parse(input: List[String]): (Map[String, Int], Circuit) = {
+def parseInput(input: List[String]): Pair = {
     val idx = input.indexWhere(_.trim.isEmpty)
     
     val inputs = input.take(idx).map(line => {
-        val parts = line.split(": ")
-        parts(0) -> parts(1).toInt
+        val Array(a, b) = line.split(": ")
+        a -> (b == "1")
     }).toMap
 
     val circuit = input.drop(idx + 1).map(line => {
         val Seq(a, kind, b, out) = raw"(\w+)".r.findAllIn(line).toSeq
         out -> Gate(a, kind, b)
-    })
+    }).toMap
 
-    return (inputs, MutableMap(circuit*))
+    return Pair(inputs, circuit)
 }
 
-def eval(label: String, circuit: Circuit, inputs: Map[String, Int]): Int = {
+def eval(label: String, circuit: Map[String, Gate], inputs: Map[String, Boolean]): Boolean = {
     if (inputs.contains(label)) return inputs(label)
 
     return circuit(label) match {
@@ -36,21 +35,13 @@ def eval(label: String, circuit: Circuit, inputs: Map[String, Int]): Int = {
     }
 }
 
-def output(circuit: Circuit, x: String, kind: String, y: String): String = {
+def output(circuit: MutableMap[String, Gate], x: String, kind: String, y: String): String = {
     val (g1, g2) = (Gate(x, kind, y), Gate(y, kind, x))
     return circuit.collectFirst { case (out, gate) if gate == g1 || gate == g2 => out }.getOrElse("")
 }
 
-def swapAndFix(circuit: Circuit, out1: String, out2: String): List[String] = {
-    val temp = circuit(out1)
-    circuit(out1) = circuit(out2)
-    circuit(out2) = temp
-
-    return fix(circuit) ++ List(out1, out2)
-}
-
 // the circuit should define a full adder for two 44 bit numbers
-def fix(circuit: Circuit): List[String] = {
+def fix(circuit: MutableMap[String, Gate]): List[String] = {
     var cin = output(circuit, "x00", "AND", "y00")
 
     boundary {
@@ -65,13 +56,19 @@ def fix(circuit: Circuit): List[String] = {
             val and2 = output(circuit, cin, "AND", xor1)
 
             if (xor2.isEmpty && and2.isEmpty) {
-                break(swapAndFix(circuit, xor1, and1))
+                val temp = circuit(xor1)
+                circuit(xor1) = circuit(and1)
+                circuit(and1) = temp
+                break(fix(circuit) ++ List(xor1, and1))
             }
 
             val carry = output(circuit, and1, "OR", and2)
 
             if (xor2 != z) {
-                break(swapAndFix(circuit, z, xor2))
+                val temp = circuit(z)
+                circuit(z) = circuit(xor2)
+                circuit(xor2) = temp
+                break(fix(circuit) ++ List(z, xor2))
             }
 
             cin = carry
@@ -81,18 +78,16 @@ def fix(circuit: Circuit): List[String] = {
     }
 }
 
-def evaluatorOne(input: List[String]): Long = {
-    val (inputs, circuit) = parse(input)
+def evaluatorOne(input: Pair): Long = {
+    val Pair(inputs, circuit) = input
     
     return circuit.keys.toSeq.filter(_.startsWith("z"))
-        .sorted(using Ordering.String.reverse)
-        .map(eval(_, circuit, inputs))
-        .foldLeft(0L) { case (acc, item) => 2 * acc + item }
+        .sorted.map(eval(_, circuit, inputs))
+        .zipWithIndex.collect { case (true, i) => 1L << i }.sum
 }
 
-def evaluatorTwo(input: List[String]): String = {
-    val (_, circuit) = parse(input)
-    return fix(circuit).sorted.mkString(",")
+def evaluatorTwo(input: Pair): String = {
+    return fix(MutableMap.from(input.circuit)).sorted.mkString(",")
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -101,8 +96,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day24.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

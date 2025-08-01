@@ -15,14 +15,14 @@ def parseInput(input: List[String]): Grid = {
     } yield Point(y, x) -> ch.asDigit).toMap
 }
 
-def getNeighbours(pos: Point) = Seq(
+def getNeighbours(pos: Point) = List(
     pos.copy(x = pos.x - 1),
     pos.copy(x = pos.x + 1),
     pos.copy(y = pos.y - 1),
     pos.copy(y = pos.y + 1),
 )
 
-def getTrailsFrom(grid: Grid, trailHead: Point): Seq[Point] = {
+def getTrailsFrom(grid: Grid, trailHead: Point): List[Point] = {
     val positions = Queue(trailHead)
     val trails = ListBuffer.empty[Point]
 
@@ -32,19 +32,19 @@ def getTrailsFrom(grid: Grid, trailHead: Point): Seq[Point] = {
         if (grid(point) == 9) {
             trails += point
         } else {
-            for (newPos <- getNeighbours(point)) {
-                if (grid.contains(newPos) && grid(newPos) == grid(point) + 1) {
+            for (newPos <- getNeighbours(point).filter(grid.contains)) {
+                if (grid(newPos) == grid(point) + 1) {
                     positions.enqueue(newPos)
                 }
             }
         }
     }
 
-    trails.toSeq
+    return trails.toList
 }
 
-def evaluatorOne(allTrails: Seq[Seq[Point]]): Int = allTrails.map(_.toSet).flatten.size
-def evaluatorTwo(allTrails: Seq[Seq[Point]]): Int = allTrails.flatten.size
+def evaluatorOne(allTrails: List[List[Point]]): Int = allTrails.flatMap(_.distinct).size
+def evaluatorTwo(allTrails: List[List[Point]]): Int = allTrails.flatten.size
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -53,7 +53,7 @@ def hello(): Unit = {
     readLinesFromFile("day10.txt") match {
         case Success(lines) => {
             val grid = parseInput(lines)
-            val trailHeads = grid.toSeq.collect { case (pos, ch) if ch == 0 => pos }
+            val trailHeads = grid.collect { case (pos, ch) if ch == 0 => pos }.toList
             val allTrails = trailHeads.map(pos => getTrailsFrom(grid, pos))
             println(s"Part One: ${evaluatorOne(allTrails)}")
             println(s"Part Two: ${evaluatorTwo(allTrails)}")

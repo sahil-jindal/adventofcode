@@ -8,44 +8,32 @@ case class Edge(from: String, to: String)
 
 type Graph = Map[String, List[String]]
 
-def parseInput(input: List[String]): Graph = {
-    val edges = input.flatMap(line => {
-        val Array(a, b) = line.split("-")
-        Seq(Edge(a, b), Edge(b, a))
-    })
-
-    return edges.groupMap(_.from)(_.to)
+def parseEdge(line: String) = {
+    val Array(a, b) = line.split("-")
+    List(Edge(a, b), Edge(b, a))
 }
 
-def Members(c: String) = c.split(",").toList
+def parseInput(input: List[String]) = input.flatMap(parseEdge).groupMap(_.from)(_.to)
 
-def Extend(c: String, item: String) = (Members(c) :+ item).sorted.mkString(",")
-
-def grow(g: Graph, components: Set[String]): Set[String] = {
+def grow(graph: Graph, components: Set[List[String]]): Set[List[String]] = {
     return (for {
-        c <- components.par
-        members = Members(c)
-        neighbour <- members.flatMap(m => g(m)).distinct
+        members <- components.par
+        neighbour <- members.flatMap(m => graph(m)).distinct
         if !members.contains(neighbour)
-        if members.forall(m => g(neighbour).contains(m))
-    } yield Extend(c, neighbour)).seq
+        if members.forall(graph(neighbour).contains)
+    } yield (members :+ neighbour).sorted).seq
 }
 
-def evaluatorOne(g: Graph): Int = {
-    var components = g.keySet.toSet
-    components = grow(g, components)
-    components = grow(g, components)
-    return components.map(Members).count(_.exists(_.startsWith("t")))
+def evaluatorOne(graph: Graph): Int = {
+    var components = graph.keySet.map(it => List(it))
+    for (_ <- 0 until 2) { components = grow(graph, components) }
+    return components.count(_.exists(_.startsWith("t")))
 }
 
-def evaluatorTwo(g: Graph): String = {
-    var components = g.keySet.toSet
-
-    while (components.size > 1) {
-        components = grow(g, components)
-    }
-
-    return components.head
+def evaluatorTwo(graph: Graph): String = {
+    var components = graph.keySet.map(it => List(it))
+    while (components.size > 1) { components = grow(graph, components) }
+    return components.head.mkString(",")
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

@@ -34,7 +34,7 @@ def matches(map: Grid, pt: Point, dir: Direction, pattern: String): Boolean = {
 def evaluatorOne(input: Grid): Int = {
     return (for {
         pt <- input.keys.toSeq
-        dir <- Seq(R, R + D, D + L, D)
+        dir <- List(R, R + D, D + L, D)
         if matches(input, pt, dir, "XMAS")
     } yield 1).sum
 }

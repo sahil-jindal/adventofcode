@@ -17,8 +17,8 @@ def checkMatch(k: List[Int], l: List[Int]) = (k zip l).forall { case (a, b) => a
 def solver(input: List[String]): Int = {
     val patterns = groupLines(input)
 
-    val keys = patterns.filter(p => p(0)(0) == '.').map(parsePattern)
-    val locks = patterns.filter(p => p(0)(0) == '#').map(parsePattern)
+    val keys = patterns.filter(_.head.forall(_ == '.')).map(parsePattern)
+    val locks = patterns.filter(_.head.forall(_ == '#')).map(parsePattern)
 
     return keys.map(k => locks.count(l => checkMatch(k, l))).sum
 }

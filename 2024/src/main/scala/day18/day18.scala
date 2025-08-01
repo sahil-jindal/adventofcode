@@ -13,7 +13,7 @@ def parseInput(input: List[String]) = input.map(line => {
     Point(y, x)
 })
 
-def getNeighbour(pos: Point) = Seq(
+def getNeighbour(pos: Point) = List(
     pos.copy(x = pos.x - 1),
     pos.copy(x = pos.x + 1),
     pos.copy(y = pos.y - 1),
@@ -21,13 +21,10 @@ def getNeighbour(pos: Point) = Seq(
 )
 
 def distance(blocks: List[Point]): Option[Int] = {
-    val size = 70
-    val start = Point(0, 0)
-    val goal = Point(size, size)
-
-    val blocked = Set((blocks :+ start)*)
+    val (start, goal) = (Point(0, 0), Point(70, 70))
 
     val pq = PriorityQueue((start, 0))(using Ordering.by[(Point, Int), Int](_._2).reverse)
+    val blocked = Set.from((blocks :+ start))
 
     while (pq.nonEmpty) {
         val (pos, dist) = pq.dequeue()
@@ -35,12 +32,10 @@ def distance(blocks: List[Point]): Option[Int] = {
         if (pos == goal) return Some(dist)
 
         for (posT <- getNeighbour(pos)) {
-            if (!blocked.contains(posT) &&
-                0 <= posT.y && posT.y <= size &&
-                0 <= posT.x && posT.x <= size
-            ) {
+            if (blocked.add(posT) &&
+                0 <= posT.y && posT.y <= 70 &&
+                0 <= posT.x && posT.x <= 70) {
                 pq.enqueue((posT, dist + 1))
-                blocked += posT
             }
         }
     }

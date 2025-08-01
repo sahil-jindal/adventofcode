@@ -6,7 +6,7 @@ import scala.collection.mutable.Map
 
 type Cache = Map[(String, Int), Long]
 
-def parseInput(line: String) = raw"(\d+)".r.findAllIn(line).map(_.toLong).toSeq
+def parseInput(line: String) = raw"(\d+)".r.findAllIn(line).map(_.toLong).toList
 
 def eval(n: Long, blinks: Int, cache: Cache): Long = {
     val key = (n.toString, blinks)
@@ -23,8 +23,8 @@ def eval(n: Long, blinks: Int, cache: Cache): Long = {
     })
 }
 
-def evaluatorOne(input: Seq[Long]): Long = input.map(eval(_, 25, Map.empty)).sum
-def evaluatorTwo(input: Seq[Long]): Long = input.map(eval(_, 75, Map.empty)).sum
+def evaluatorOne(input: List[Long]): Long = input.map(eval(_, 25, Map.empty)).sum
+def evaluatorTwo(input: List[Long]): Long = input.map(eval(_, 75, Map.empty)).sum
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

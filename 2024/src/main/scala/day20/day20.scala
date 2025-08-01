@@ -9,7 +9,7 @@ case class Point(y: Int, x: Int) {
     def manhattan(that: Point) = (x - that.x).abs + (y - that.y).abs
 }
 
-def getNeighbours(pos: Point) = Seq(
+def getNeighbours(pos: Point) = List(
     pos.copy(x = pos.x - 1),
     pos.copy(x = pos.x + 1),
     pos.copy(y = pos.y - 1),
