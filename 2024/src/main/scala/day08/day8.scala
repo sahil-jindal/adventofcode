@@ -2,7 +2,6 @@ package day08
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.ListBuffer
 
 case class Vec2D(y: Int, x: Int) {
     def +(that: Vec2D) = Vec2D(y + that.y, x + that.x)
