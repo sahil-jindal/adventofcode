@@ -3,7 +3,7 @@ package day07
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Node(id: String, children: Seq[String], weight: Int, var treeWeight: Int = -1)
+case class Node(id: String, children: List[String], weight: Int, var treeWeight: Int = -1)
 
 val pattern =  raw"(\w+) \((\d+)\)(?: -> ([\w, ]+))?".r
 
@@ -12,7 +12,7 @@ type Tree = Map[String, Node]
 def parseInput(input: List[String]): Tree = {    
     return input.map(line => {
         val List(id, weight, childrenOpt) = pattern.findFirstMatchIn(line).get.subgroups
-        val children = Option(childrenOpt).map(_.split(", ").toSeq).getOrElse(Seq.empty)
+        val children = Option(childrenOpt).map(_.split(", ").toList).getOrElse(List.empty)
         id -> Node(id, children, weight.toInt)
     }).toMap
 }

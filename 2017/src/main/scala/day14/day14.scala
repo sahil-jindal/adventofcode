@@ -4,8 +4,8 @@ import scala.collection.mutable.Queue
 
 case class Point(y: Int, x: Int)
 
-def knotHash(input: String): Seq[Int] = {
-    val suffix = Seq(17, 31, 73, 47, 23)
+def knotHash(input: String): List[Int] = {
+    val suffix = List(17, 31, 73, 47, 23)
     val chars = input.map(_.toInt) ++ suffix
     val output = (0 until 256).toArray
     var (current, skip) = (0, 0)
@@ -25,10 +25,10 @@ def knotHash(input: String): Seq[Int] = {
         }
     }
   
-    return output.grouped(16).map(_.reduce(_ ^ _)).toSeq
+    return output.grouped(16).map(_.reduce(_ ^ _)).toList
 }
 
-def extract(input: String): Seq[Seq[Char]] = {
+def extract(input: String): IndexedSeq[List[Char]] = {
     return (0 until 128).map { y =>
         knotHash(s"$input-$y").flatMap { n =>
             (7 to 0 by -1).map { bit => if ((n & (1 << bit)) != 0) '#' else '.' }
@@ -36,7 +36,7 @@ def extract(input: String): Seq[Seq[Char]] = {
     }
 }
 
-def getNeighbours(pos: Point) = Seq(
+def getNeighbours(pos: Point) = List(
     pos.copy(x = pos.x - 1),
     pos.copy(x = pos.x + 1),
     pos.copy(y = pos.y - 1),
@@ -59,9 +59,9 @@ def fill(mtx: Array[Array[Char]], startCell: Point): Unit = {
     }
 }
 
-def evaluatorOne(input: Seq[Seq[Char]]): Int = input.flatten.count(_ == '#')
+def evaluatorOne(input: IndexedSeq[List[Char]]): Int = input.flatten.count(_ == '#')
 
-def evaluatorTwo(input: Seq[Seq[Char]]): Int = {
+def evaluatorTwo(input: IndexedSeq[List[Char]]): Int = {
     val mtx = input.map(_.toArray).toArray
     var regions = 0
 

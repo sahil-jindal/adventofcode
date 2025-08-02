@@ -15,7 +15,7 @@ case class Particle(id: Int, pos: Vec3D, vel: Vec3D, acc: Vec3D) {
         return copy(pos = newPos, vel = newVel)
     }
 
-    def collisionTime(particle: Particle): Seq[Int] = {
+    def collisionTime(particle: Particle): List[Int] = {
         return (for {
             tx <- collisionTimeOnAxis(particle.acc.x - acc.x, particle.vel.x - vel.x, particle.pos.x - pos.x)
             ty <- collisionTimeOnAxis(particle.acc.y - acc.y, particle.vel.y - vel.y, particle.pos.y - pos.y)
@@ -24,27 +24,27 @@ case class Particle(id: Int, pos: Vec3D, vel: Vec3D, acc: Vec3D) {
         } yield tx)
     }
 
-    def collisionTimeOnAxis(da: Int, dv: Int, dp: Int): Seq[Int] = {
+    def collisionTimeOnAxis(da: Int, dv: Int, dp: Int): List[Int] = {
         return solveIntEq(da / 2, dv, dp)
     }
 
-    def solveIntEq(a: Int, b: Int, c: Int): Seq[Int] = {
+    def solveIntEq(a: Int, b: Int, c: Int): List[Int] = {
         if (a == 0) {
-            if (b != 0) return Seq(-c / b)
-            if (c == 0) return Seq(0)
-            return Seq.empty    
+            if (b != 0) return List(-c / b)
+            if (c == 0) return List(0)
+            return List.empty    
         }
 
         val d = b * b - 4 * a * c
             
-        if (d < 0) return Seq.empty
-        if (d == 0) return Seq(-b / (2 * a))
+        if (d < 0) return List.empty
+        if (d == 0) return List(-b / (2 * a))
             
         val ds = math.sqrt(d)
             
-        if (ds * ds != d) return Seq.empty
+        if (ds * ds != d) return List.empty
             
-        return Seq(((-b + ds) / (2 * a)).toInt, ((-b - ds) / (2 * a)).toInt)
+        return List(((-b + ds) / (2 * a)).toInt, ((-b - ds) / (2 * a)).toInt)
     }
 }
 

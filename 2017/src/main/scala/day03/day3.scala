@@ -9,7 +9,7 @@ case class Point(y: Int, x: Int) {
 
 val startPoint = Point(0, 0)
 
-def getAllNeighbours(pos: Point): Seq[Point] = {
+def getAllNeighbours(pos: Point): IndexedSeq[Point] = {
     return (for {
         dy <- -1 to 1
         dx <- -1 to 1
