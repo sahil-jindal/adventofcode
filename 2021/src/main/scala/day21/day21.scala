@@ -29,7 +29,7 @@ def threeRolls(): Iterator[Int] = {
     return Iterator.continually(threethrows).flatten
 }
 
-def diracThrows(): Seq[Int] = {
+def diracThrows(): IndexedSeq[Int] = {
     return (for {
         i <- 1 to 3
         j <- 1 to 3

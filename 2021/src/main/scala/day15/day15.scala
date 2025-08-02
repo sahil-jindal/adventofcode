@@ -15,7 +15,7 @@ def parseInput(input: List[String]): Grid = {
     } yield Point(y, x) -> ch.asDigit).toMap
 }
 
-def getNeighbours(pos: Point) = Seq(
+def getNeighbours(pos: Point) = List(
     pos.copy(x = pos.x - 1),
     pos.copy(x = pos.x + 1),
     pos.copy(y = pos.y + 1),

@@ -62,7 +62,7 @@ def parseInput(input: List[String]): List[Scanner] = {
 
 def potentialMatchingBeacons(scannerA: Scanner, scannerB: Scanner): List[(Vec3D, Vec3D)] = {
     def absCoordinates(scanner: Scanner): List[Int] = {
-        scanner.getbeaconsInWorld().flatMap(coord => Seq(coord.x, coord.y, coord.z)).map(_.abs)
+        scanner.getbeaconsInWorld().flatMap(coord => List(coord.x, coord.y, coord.z)).map(_.abs)
     }
 
     return (for {

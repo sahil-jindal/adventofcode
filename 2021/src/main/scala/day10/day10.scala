@@ -26,7 +26,7 @@ def getScore(line: String, getSyntaxErrorScore: Boolean): Long = {
     }
 }
 
-def getScores(input: List[String], getSyntaxErrorScore: Boolean): Seq[Long] = {
+def getScores(input: List[String], getSyntaxErrorScore: Boolean): List[Long] = {
     return input.map(getScore(_, getSyntaxErrorScore)).filter(_ > 0)
 }
 

@@ -27,7 +27,7 @@ case class BitSequenceReader(private val bits: IndexedSeq[Boolean]) {
 def getReader(input: String) = BitSequenceReader(
     input.flatMap(hexChar => {
         val value = Integer.parseInt(hexChar.toString, 16)
-        Seq(8, 4, 2, 1).map(mask => (value & mask) != 0)
+        List(8, 4, 2, 1).map(mask => (value & mask) != 0)
     })
 )
 

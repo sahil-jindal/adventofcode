@@ -8,14 +8,14 @@ case class Point(y: Int, x: Int)
 
 type Grid = Map[Point, Int]
 
-def parseInput(map: List[String]): Map[Point, Int] = {
+def parseInput(input: List[String]): Grid = {
     return (for { 
-        (line, y) <- map.zipWithIndex 
+        (line, y) <- input.zipWithIndex 
         (ch, x) <- line.zipWithIndex 
     } yield Point(y, x) -> ch.asDigit).toMap
 }
 
-def getNeighbours(pos: Point) = Seq(
+def getNeighbours(pos: Point) = List(
     pos.copy(x = pos.x - 1),
     pos.copy(x = pos.x + 1),
     pos.copy(y = pos.y - 1),
@@ -23,8 +23,8 @@ def getNeighbours(pos: Point) = Seq(
 )
 
 def getLowPoints(grid: Grid) = grid.keys.filter(pos =>
-    getNeighbours(pos).forall(nbr => grid.getOrElse(nbr, 9) > grid(pos))
-).toSeq
+    getNeighbours(pos).filter(grid.contains).forall(nbr => grid(nbr) > grid(pos))
+).toList
 
 def basicInSize(grid: Grid, point: Point): Int = {
     val queue = Queue(point)
@@ -33,9 +33,9 @@ def basicInSize(grid: Grid, point: Point): Int = {
     while (queue.nonEmpty) {
         val current = queue.dequeue()
         
-        for (nbr <- getNeighbours(current)) {
-            if (!filled.contains(nbr) && grid.getOrElse(nbr, 9) != 9) {
-                filled += nbr
+        for (nbr <- getNeighbours(current).filter(grid.contains)) {
+            if (!filled.contains(nbr) && grid(nbr) != 9) {
+                filled.add(nbr)
                 queue.enqueue(nbr)
             }
         }

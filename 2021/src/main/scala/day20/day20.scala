@@ -16,7 +16,7 @@ def getImage(map: List[String]): Map[Point, Boolean] = {
 
 def parseInput(input: List[String]) = Pair(input.head, getImage(input.drop(2)))
 
-def neighbours(pos: Point): Seq[Point] = {
+def neighbours(pos: Point): IndexedSeq[Point] = {
     return (for {
         dy <- -1 to 1
         dx <- -1 to 1
