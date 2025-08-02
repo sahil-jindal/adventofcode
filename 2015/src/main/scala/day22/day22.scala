@@ -52,8 +52,8 @@ case class State(
         return copy(playerHp = playerHp - math.max(1, bossDamage - playerArmor))
     }
 
-    def playerSteps(): Seq[State] = {
-        if playerHp <= 0 || bossHp <= 0 then return Seq(this)
+    def playerSteps(): List[State] = {
+        if playerHp <= 0 || bossHp <= 0 then return List(this)
     
         val steps = ListBuffer.empty[State]
         
@@ -93,7 +93,7 @@ case class State(
                 recharge = 5
             )
 
-        return steps.toSeq
+        return steps.toList
     }
 }
 
@@ -101,8 +101,8 @@ def parseInput(input: List[String]): State = {
     return State(
         playerHp = 50,
         playerMana = 500,
-        bossHp = input(0).split(": ")(1).toInt,
-        bossDamage = input(1).split(": ")(1).toInt
+        bossHp = input(0).stripPrefix("Hit Points: ").toInt,
+        bossDamage = input(1).stripPrefix("Damage: ").toInt
     )
 }
 

@@ -20,7 +20,7 @@ def parseInput(line: String) = line.map(ch => {
     }
 })
 
-def run(input: Seq[Direction], actors: Int): Int = {
+def run(input: IndexedSeq[Direction], actors: Int): Int = {
     val start = Point(0, 0)
     val seen = Set(start)
     val pos = Array.fill(actors)(start)
@@ -34,8 +34,8 @@ def run(input: Seq[Direction], actors: Int): Int = {
     return seen.size
 }
 
-def evaluatorOne(input: Seq[Direction]): Int = run(input, 1)
-def evaluatorTwo(input: Seq[Direction]): Int = run(input, 2)
+def evaluatorOne(input: IndexedSeq[Direction]): Int = run(input, 1)
+def evaluatorTwo(input: IndexedSeq[Direction]): Int = run(input, 2)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

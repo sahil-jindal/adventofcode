@@ -5,20 +5,20 @@ import scala.io.Source
 import scala.collection.mutable.{Map => MutableMap}
 
 def parseInput(input: List[String]) = input.map(line => {
-    val words = raw"(\w+)".r.findAllIn(line).toSeq
+    val words = raw"(\w+)".r.findAllIn(line).toList
     words.last -> words.init
 }).toMap
 
-def evaluate(wire: String, instructions: Map[String, Seq[String]], cache: MutableMap[String, Int]): Int = {
+def evaluate(wire: String, instructions: Map[String, List[String]], cache: MutableMap[String, Int]): Int = {
     if (cache.contains(wire)) return cache(wire)
     if (wire.forall(_.isDigit)) return wire.toInt
 
     val value = instructions(wire) match {
-        case Seq(a, "AND", b) => evaluate(a, instructions, cache) & evaluate(b, instructions, cache)
-        case Seq(a, "OR", b) => evaluate(a, instructions, cache) | evaluate(b, instructions, cache)
-        case Seq(a, "LSHIFT", n) => evaluate(a, instructions, cache) << n.toInt
-        case Seq(a, "RSHIFT", n) => evaluate(a, instructions, cache) >> n.toInt
-        case Seq("NOT", a) => ~evaluate(a, instructions, cache) & 0xFFFF
+        case List(a, "AND", b) => evaluate(a, instructions, cache) & evaluate(b, instructions, cache)
+        case List(a, "OR", b) => evaluate(a, instructions, cache) | evaluate(b, instructions, cache)
+        case List(a, "LSHIFT", n) => evaluate(a, instructions, cache) << n.toInt
+        case List(a, "RSHIFT", n) => evaluate(a, instructions, cache) >> n.toInt
+        case List("NOT", a) => ~evaluate(a, instructions, cache) & 0xFFFF
         case s => evaluate(s.mkString, instructions, cache) // Direct assignment
     }
 
@@ -30,7 +30,7 @@ def solver(input: List[String]): (Int, Int) = {
     val originalInstructions = parseInput(input)
     val signalA = evaluate("a", originalInstructions, MutableMap.empty)
     
-    val modifiedInstructions = originalInstructions + ("b" -> Seq(signalA.toString))
+    val modifiedInstructions = originalInstructions + ("b" -> List(signalA.toString))
     val newSignalA = evaluate("a", modifiedInstructions, MutableMap.empty)
     
     return (signalA, newSignalA)
