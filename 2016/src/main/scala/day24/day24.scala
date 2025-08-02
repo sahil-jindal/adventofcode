@@ -24,7 +24,7 @@ def parseInput(grid: List[String]): (Map[Int, Point], Set[Point]) = {
     return (locations.toMap, walls.toSet)
 }
 
-def getNeighbours(pos: Point) = Seq(
+def getNeighbours(pos: Point) = List(
     pos.copy(x = pos.x + 1),
     pos.copy(x = pos.x - 1),
     pos.copy(y = pos.y + 1),

@@ -8,8 +8,8 @@ def md5Hash(input: String): String = {
     return md.digest(input.getBytes).map("%02x".format(_)).mkString
 }
 
-def doorHash(input: String): Seq[Boolean] = {
-    return md5Hash(input).take(4).map { it => "bcdef".contains(it) }.toSeq
+def doorHash(input: String): IndexedSeq[Boolean] = {
+    return md5Hash(input).take(4).map { it => "bcdef".contains(it) }
 }
 
 def routes(input: String): (String, Int) = {
@@ -22,17 +22,17 @@ def routes(input: String): (String, Int) = {
         val (path, y, x) = pq.dequeue()
 
         if(x == 3 && y == 3) {
-            if path.length <= minDistanceLength then {
+            if (path.length <= minDistanceLength) {
                 minDistanceLength = path.length
                 minDistance = path
             }
 
-            if path.length >= maxDistanceLength then {
+            if (path.length >= maxDistanceLength) {
                 maxDistanceLength = path.length
                 maxDistance = path
             }
         } else {
-            var Seq(up, down, left, right) = doorHash(input + path)
+            val IndexedSeq(up, down, left, right) = doorHash(input + path)
 
             if (up && y > 0) pq.enqueue((path + "U", y - 1, x))
             if (down && y < 3) pq.enqueue((path + "D", y + 1, x))
