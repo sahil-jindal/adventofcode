@@ -17,7 +17,7 @@ def mix(numsWithIdxInit: List[Data]): List[Data] = {
     val mod = numsWithIdxInit.size - 1
 
     for (idx <- numsWithIdxInit.indices) {
-        val srcIdx = numsWithIdx.indexWhere(_.idx == idx)
+        val srcIdx = numsWithIdx.map(_.idx).indexOf(idx)
         val num = numsWithIdx(srcIdx)
 
         val dstIdx = ((srcIdx + num.value) % mod + mod) % mod
@@ -31,7 +31,7 @@ def mix(numsWithIdxInit: List[Data]): List[Data] = {
 
 def getGrooveCoordinates(numsWithIdx: List[Data]): Long = {
     val nums = numsWithIdx.map(_.value)
-    val idx = nums.indexWhere(_ == 0)
+    val idx = nums.indexOf(0)
     return List(1000, 2000, 3000).map(it => nums((idx + it) % nums.size)).sum
 }
 

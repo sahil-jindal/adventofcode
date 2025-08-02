@@ -11,8 +11,8 @@ def parseInput(input: String) = input.map(ch => {
     }
 })
 
-def evaluatorOne(input: Seq[Int]): Int = input.sum
-def evaluatorTwo(input: Seq[Int]): Int = input.scanLeft(0)(_ + _).indexWhere(_ == -1)
+def evaluatorOne(input: IndexedSeq[Int]): Int = input.sum
+def evaluatorTwo(input: IndexedSeq[Int]): Int = input.scanLeft(0)(_ + _).indexOf(-1)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

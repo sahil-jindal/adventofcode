@@ -22,7 +22,7 @@ def evaluatorTwo(input: List[String]): Int = {
 
     for (step <- steps) {
         val box = boxes(hash(step.label))
-        val ilens = box.indexWhere(_.label == step.label)
+        val ilens = box.map(_.label).indexOf(step.label)
 
         if (step.focalLength.isEmpty && ilens >= 0) {
             box.remove(ilens)

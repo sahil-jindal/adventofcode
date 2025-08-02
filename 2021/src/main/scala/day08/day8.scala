@@ -44,7 +44,7 @@ def evaluatorTwo(input: List[Pair]): Int = {
         digits(8) = lookup(7, 2, 4)
         digits(9) = lookup(6, 2, 4)
 
-        def decode(v: String) = digits.indexWhere(_ == v.toSet)
+        def decode(v: String) = digits.indexOf(v.toSet)
 
         res += pair.second.map(decode).mkString.toInt
     }

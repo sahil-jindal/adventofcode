@@ -4,7 +4,7 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
 def startOfBlock(input: String, len: Int): Int = {
-    return len + input.sliding(len).indexWhere(_.toSet.size == len)
+    return len + input.sliding(len).map(_.toSet.size).indexOf(len)
 }
 
 def evaluatorOne(input: String): Int = startOfBlock(input, 4)

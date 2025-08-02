@@ -12,7 +12,7 @@ case class BingoBoard(private val cells: List[List[Cell]]) {
     var score: Int = 0
 
     def addNumber(number: String): Unit = {
-        val index = cells.flatten.indexWhere(_.number == number)
+        val index = cells.flatten.map(_.number).indexOf(number)
 
         if (index < 0) return
         
@@ -23,7 +23,7 @@ case class BingoBoard(private val cells: List[List[Cell]]) {
         }
         
         if (gameEnded) {
-            val unmarkedSum = cells.flatten.collect { case Cell(number, marked) if !marked => number.toInt }.sum
+            val unmarkedSum = cells.flatten.filterNot(_.marked).map(_.number.toInt).sum
             score = number.toInt * unmarkedSum
         }
     }

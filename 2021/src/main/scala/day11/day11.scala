@@ -52,7 +52,7 @@ def simulate(current: Grid): LazyList[Int] = {
 }
 
 def evaluatorOne(input: Grid): Int = simulate(input).take(100).sum
-def evaluatorTwo(input: Grid): Int = simulate(input).indexWhere(_ == 100) + 1
+def evaluatorTwo(input: Grid): Int = simulate(input).indexOf(100) + 1
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
