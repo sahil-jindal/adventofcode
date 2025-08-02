@@ -3,14 +3,14 @@ package day08
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Node(children: Seq[Node], metadata: Seq[Int])
-case class Pair(child: Node, remaining: Seq[Int])
+case class Node(children: IndexedSeq[Node], metadata: List[Int])
+case class Pair(child: Node, remaining: List[Int])
 
-def parseInput(input: String) = input.split(" ").map(_.toInt).toSeq
+def parseInput(input: String) = input.split(" ").map(_.toInt).toList
  
-def parseNode(input: Seq[Int]): Pair = {
+def parseNode(input: List[Int]): Pair = {
     var (header, remaining) = input.splitAt(2)
-    val Seq(numChildren, numMetadata) = header
+    val List(numChildren, numMetadata) = header
  
     val children = for (_ <- 1 to numChildren) yield {
         val Pair(child, nextRem) = parseNode(remaining)

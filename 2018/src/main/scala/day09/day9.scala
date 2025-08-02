@@ -4,9 +4,15 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
 case class Node(value: Int, var left: Node = null, var right: Node = null)
+case class Pair(length: Int, currPoints: Int)
 
-def solver(input: String, mul: Int): Long = {
+def parseInput(input: String): Pair = {
     val Seq(length, currPoints) = raw"(\d+)".r.findAllIn(input).map(_.toInt).toSeq
+    return Pair(length, currPoints)
+}
+
+def solver(input: Pair, mul: Int): Long = {
+    val Pair(length, currPoints) = input
     val players = Array.ofDim[Long](length)
     val targetPoints = currPoints * mul
 
@@ -39,8 +45,8 @@ def solver(input: String, mul: Int): Long = {
     return players.max
 }
 
-def evaluatorOne(input: String): Long = solver(input, 1)
-def evaluatorTwo(input: String): Long = solver(input, 100)
+def evaluatorOne(input: Pair): Long = solver(input, 1)
+def evaluatorTwo(input: Pair): Long = solver(input, 100)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -48,8 +54,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day09.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines.head)}")
-            println(s"Part Two: ${evaluatorTwo(lines.head)}")
+            val input = parseInput(lines.head)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

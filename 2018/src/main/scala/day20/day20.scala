@@ -10,18 +10,18 @@ case class Point(y: Int, x: Int) {
 
 case class Pair(posFrom: Point, posTo: Point)
 
-def doors(input: String): Seq[Pair] = {
+def doors(input: String): IndexedSeq[Pair] = {
     val s = Stack.empty[Point]
     var pos = Point(0, 0)
     
     return input.collect {
-        case 'N' => val prev = pos; pos = pos.move(-1, 0); Seq(Pair(prev, pos), Pair(pos, prev))
-        case 'S' => val prev = pos; pos = pos.move(1, 0); Seq(Pair(prev, pos), Pair(pos, prev))
-        case 'E' => val prev = pos; pos = pos.move(0, 1); Seq(Pair(prev, pos), Pair(pos, prev))
-        case 'W' => val prev = pos; pos = pos.move(0, -1); Seq(Pair(prev, pos), Pair(pos, prev))
-        case '(' => s.push(pos); Seq.empty
-        case '|' => pos = s.top; Seq.empty
-        case ')' => pos = s.pop(); Seq.empty
+        case 'N' => val prev = pos; pos = pos.move(-1, 0); List(Pair(prev, pos), Pair(pos, prev))
+        case 'S' => val prev = pos; pos = pos.move(1, 0); List(Pair(prev, pos), Pair(pos, prev))
+        case 'E' => val prev = pos; pos = pos.move(0, 1); List(Pair(prev, pos), Pair(pos, prev))
+        case 'W' => val prev = pos; pos = pos.move(0, -1); List(Pair(prev, pos), Pair(pos, prev))
+        case '(' => s.push(pos); List.empty
+        case '|' => pos = s.top; List.empty
+        case ')' => pos = s.pop(); List.empty
     }.flatten
 }
 

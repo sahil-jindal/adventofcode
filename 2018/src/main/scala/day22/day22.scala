@@ -28,7 +28,7 @@ def parseInput(input: List[String]): (Point, Point => RegionType) = {
     return (Point(targetY, targetX), regionType)
 }
 
-def getNeighbours(pos: Point) = Seq(
+def getNeighbours(pos: Point) = List(
     pos.copy(x = pos.x - 1),
     pos.copy(x = pos.x + 1),
     pos.copy(y = pos.y - 1),
@@ -44,7 +44,7 @@ def evaluatorOne(input: List[String]): Int = {
 def evaluatorTwo(input: List[String]): Int = {
     val (target, regionType) = parseInput(input)
     
-    def neighbours(pos: Point, tool: Tool): Seq[(Point, Tool, Int)] = {
+    def neighbours(pos: Point, tool: Tool): List[(Point, Tool, Int)] = {
         val switchTool = regionType(pos) match {
             case RegionType.Rocky  => if tool == Tool.ClimbingGear then Tool.Torch else Tool.ClimbingGear
             case RegionType.Narrow => if tool == Tool.Torch then Tool.Torch else Tool.Nothing

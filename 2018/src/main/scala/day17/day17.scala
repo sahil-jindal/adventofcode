@@ -8,7 +8,7 @@ def isStill(mtx: Array[Array[Char]], x: Int, y: Int): Boolean = {
     val width = mtx(0).length
     
     boundary {
-        for (dx <- Seq(-1, 1)) {
+        for (dx <- List(-1, 1)) {
             var xT = x
             while (xT >= 0 && xT < width && mtx(y)(xT) != '#') {
                 if (mtx(y)(xT) == '.' || mtx(y + 1)(xT) == '|') break(false)
@@ -21,8 +21,7 @@ def isStill(mtx: Array[Array[Char]], x: Int, y: Int): Boolean = {
 }
 
 def fillRecursive(mtx: Array[Array[Char]], x: Int, y: Int): Unit = {
-    val height = mtx.length
-    val width = mtx(0).length
+    val (height, width) = (mtx.length, mtx(0).length)
     
     if (mtx(y)(x) != '.') return
     
@@ -38,7 +37,7 @@ def fillRecursive(mtx: Array[Array[Char]], x: Int, y: Int): Unit = {
     }
 
     if (isStill(mtx, x, y)) {
-        for (dx <- Seq(-1, 1)) {
+        for (dx <- List(-1, 1)) {
             var xT = x
             while (xT >= 0 && xT < width && mtx(y)(xT) == '|') {
                 mtx(y)(xT) = '~'

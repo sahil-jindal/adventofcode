@@ -13,7 +13,7 @@ def step(mtx: List[List[Char]]): List[List[Char]] = {
     for (y <- 0 until height; x <- 0 until width) {
         var (tree, lumberyard, empty) = (0, 0, 0)
     
-        for (dy <- Seq(-1, 0, 1); dx <- Seq(-1, 0, 1) if dy != 0 || dx != 0) {
+        for (dy <- -1 to 1; dx <- -1 to 1; if dy != 0 || dx != 0) {
             val (xT, yT) = (x + dx, y + dy)
             if (xT >= 0 && xT < width && yT >= 0 && yT < height) {
                 mtx(yT)(xT) match {

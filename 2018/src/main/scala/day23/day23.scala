@@ -22,7 +22,7 @@ case class Drone(pos: Vec3D, r: Int) {
 case class Box(min: Vec3D, size: Vec3D) {
     val max = Vec3D(min.x + size.x - 1, min.y + size.y - 1, min.z + size.z - 1)
 
-    def corners = Seq(
+    def corners = List(
         min, Vec3D(max.x, min.y, min.z), Vec3D(min.x, max.y, min.z), Vec3D(max.x, max.y, min.z),
         Vec3D(min.x, min.y, max.z), Vec3D(max.x, min.y, max.z), Vec3D(min.x, max.y, max.z), max
     )
@@ -31,11 +31,11 @@ case class Box(min: Vec3D, size: Vec3D) {
 
     def dist: Int = corners.map(_.len).min
 
-    def divide: Seq[Box] = {
+    def divide: List[Box] = {
         val (sx, sy, sz) = (size.x / 2, size.y / 2, size.z / 2)
         val (tx, ty, tz) = (size.x - sx, size.y - sy, size.z - sz)
         
-        return Seq(
+        return List(
             Box(min, Vec3D(sx, sy, sz)), 
             Box(Vec3D(min.x + sx, min.y, min.z), Vec3D(tx, sy, sz)),
             Box(Vec3D(min.x, min.y + sy, min.z), Vec3D(sx, ty, sz)), 
