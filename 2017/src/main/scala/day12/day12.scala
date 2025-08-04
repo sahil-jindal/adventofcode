@@ -26,7 +26,7 @@ def dfs(graph: Map[String, List[String]], start: String): Set[String] = {
 def evaluatorOne(graph: Map[String, List[String]]): Int = dfs(graph, "0").size
 
 def evaluatorTwo(graph: Map[String, List[String]]): Int = {
-    var remainingNodes = graph.keys.toSet
+    val remainingNodes = MutableSet.from(graph.keySet)
     var groups = 0
 
     while (remainingNodes.nonEmpty) {

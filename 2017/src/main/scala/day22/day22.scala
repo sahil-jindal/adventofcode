@@ -27,7 +27,7 @@ def parseInput(input: List[String]): List[Point] = {
 }
 
 def iterate(input: List[Point], iterations: Int, update: Virus => Virus): Int = {
-    val cells = Map(input.map(_ -> State.Infected)*)
+    val cells = Map.from(input.map(_ -> State.Infected))
 
     var pos = Point(input.map(_.y).max / 2, input.map(_.x).max / 2)
     var dir = Direction(-1, 0)
