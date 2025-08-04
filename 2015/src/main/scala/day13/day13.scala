@@ -13,9 +13,8 @@ def parseInput(input: List[String]): Graph = {
     val happiness = MutableMap.empty[(String, String), Int]
     
     for (line <- input) {
-        val parts = parseRegex.findFirstMatchIn(line).get.subgroups
-        val (person1, person2) = (parts.head, parts.last)
-        val value = parts(2).toInt * (if (parts(1) == "gain") 1 else -1)
+        val List(person1, a, b, person2) = parseRegex.findFirstMatchIn(line).get.subgroups
+        val value = b.toInt * (if (a == "gain") 1 else -1)
         happiness((person1, person2)) = value
         people ++= Set(person1, person2)
     }
@@ -33,7 +32,7 @@ def findMaximumHappiness(graph: Graph): Int = {
 }
 
 def addYourself(graph: Graph): Graph = {
-    val updatedHappiness = MutableMap(graph.happiness.toSeq*)
+    val updatedHappiness = MutableMap.from(graph.happiness)
     
     for (guest <- graph.people) {
         updatedHappiness(("You", guest)) = 0

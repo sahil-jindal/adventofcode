@@ -2,13 +2,13 @@ package day09
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Map, Set}
+import scala.collection.mutable.{Map => MutableMap, Set => MutableSet}
 
 case class Graph(locations: Set[String], distances: Map[(String, String), Int])
 
 def parseLines(input: List[String]): Graph = {
-    val locations = Set.empty[String]
-    val distances = Map.empty[(String, String), Int]
+    val locations = MutableSet.empty[String]
+    val distances = MutableMap.empty[(String, String), Int]
 
     for (line <- input) {
         val Array(pair, cost) = line.split(" = ")
@@ -19,7 +19,7 @@ def parseLines(input: List[String]): Graph = {
         distances((place_2, place_1)) = cost.toInt
     }
 
-    return Graph(locations, distances)
+    return Graph(locations.toSet, distances.toMap)
 }
 
 def allPossiblePathCost(graph: Graph): List[Int] = {
