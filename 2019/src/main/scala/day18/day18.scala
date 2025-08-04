@@ -14,8 +14,7 @@ def getNeighbours(pos: Point) = List(
 )
 
 case class Maze(private val maze: IndexedSeq[String]) extends IndexedSeq[String] {
-    private val height = maze.size
-    private val width = maze.head.length
+    private val (height, width) = (maze.size, maze(0).length)
 
     def getStartPositions: List[Point] = {
         return (for {

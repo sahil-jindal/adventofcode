@@ -25,7 +25,7 @@ def parseInput(input: List[String]) = input.map(parseRules).toMap
 def helper(reactions: ChemicalReactions): Long => Long = {
     return fuel => {
         var ore = 0L
-        val inventory = MutableMap(reactions.keys.map(_ -> 0L).toSeq*)
+        val inventory = MutableMap.from(reactions.keys.map(_ -> 0L))
         val productionList = Queue(Chemical("FUEL", fuel))
 
         while (productionList.nonEmpty) {
