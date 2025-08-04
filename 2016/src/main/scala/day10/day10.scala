@@ -2,7 +2,7 @@ package day10
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Map, ListBuffer}
+import scala.collection.mutable.{ListBuffer, Map => MutableMap}
 
 sealed trait Destination
 case class Bot(id: Int) extends Destination
@@ -12,8 +12,8 @@ val valuePattern = raw"value (\d+) goes to bot (\d+)".r
 val botPattern = raw"bot (\d+) gives low to (bot|output) (\d+) and high to (bot|output) (\d+)".r
 
 def parseInstructions(input: List[String]): (Map[Int, ListBuffer[Int]], Map[Int, (Destination, Destination)]) = {
-    val initialValues = Map.empty[Int, ListBuffer[Int]]
-    val rules = Map.empty[Int, (Destination, Destination)]
+    val initialValues = MutableMap.empty[Int, ListBuffer[Int]]
+    val rules = MutableMap.empty[Int, (Destination, Destination)]
 
     for (line <- input) {
         line match {
@@ -30,20 +30,16 @@ def parseInstructions(input: List[String]): (Map[Int, ListBuffer[Int]], Map[Int,
         }
     }
 
-    return (initialValues, rules)
+    return (initialValues.toMap, rules.toMap)
 }
 
 def solve(input: List[String], targetLow: Int = 17, targetHigh: Int = 61): (Int, Int) = {
     val (initialValues, rules) = parseInstructions(input)
 
-    val botValues = Map.empty[Int, ListBuffer[Int]]
-    val outputValues = Map.empty[Int, ListBuffer[Int]]
+    val botValues = MutableMap.from(initialValues)
+
+    val outputValues = MutableMap.empty[Int, ListBuffer[Int]]
     var targetBot = -1
-
-    for ((botId, values) <- initialValues) {
-        botValues(botId) = values
-    }
-
     var madeProgress = true
 
     while (madeProgress) {

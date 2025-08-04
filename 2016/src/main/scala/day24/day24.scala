@@ -46,8 +46,7 @@ def aStar(start: Point, goal: Point, walls: Set[Point]): Int = {
 
         if (current == goal) return costSoFar
 
-        if (!seen.contains(current)) {
-            seen.add(current)
+        if (seen.add(current)) {
             for (neighbor <- getNeighbours(current)) {
                 if (!walls.contains(neighbor) && !seen.contains(neighbor)) {
                     pq.enqueue((costSoFar + 1, neighbor))
@@ -61,7 +60,7 @@ def aStar(start: Point, goal: Point, walls: Set[Point]): Int = {
 
 // Precompute shortest distances between all numbered locations
 def precomputeDistances(locations: Map[Int, Point], walls: Set[Point]): Graph = {
-    val keys = locations.keys.toList
+    val keys = locations.keySet
     val result = MutableMap.empty[(Int, Int), Int]
     
     for { i <- keys; j <- keys if i != j } result((i, j)) = aStar(locations(i), locations(j), walls)
