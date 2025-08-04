@@ -88,7 +88,7 @@ def evaluatorOne(input: Pair): Int = {
 }
 
 def evaluatorTwo(input: Pair): Int = {
-    val constraints = MutableMap((0 until 16).map(_ -> (0 until 16).toList)*)
+    val constraints = MutableMap.from((0 until 16).map(_ -> (0 until 16).toList))
     val Pair(testCases, prg) = input
     
     for (TestCase(regsBefore, stm, regsAfter) <- testCases) {

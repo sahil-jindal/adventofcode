@@ -1,7 +1,7 @@
 package day21
 
 import scala.collection.mutable.Set
-import scala.util.control.Breaks.{break, breakable}
+import scala.util.control.Breaks._
 
 /**
  * The direct reverse-engineered approach was chosen to bypass computationally intensive instruction-by-instruction 
