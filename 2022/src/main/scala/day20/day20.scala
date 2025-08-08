@@ -13,7 +13,7 @@ def parseInput(input: List[String]): List[Data] = {
 }
 
 def mix(numsWithIdxInit: List[Data]): List[Data] = {
-    val numsWithIdx = ArrayBuffer(numsWithIdxInit*)
+    val numsWithIdx = ArrayBuffer.from(numsWithIdxInit)
     val mod = numsWithIdxInit.size - 1
 
     for (idx <- numsWithIdxInit.indices) {
