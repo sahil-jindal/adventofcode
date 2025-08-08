@@ -22,7 +22,7 @@ case class Cave(input: List[Array[Vec2D]], hasFloor: Boolean) {
         val dispmnt = end - start
         val dir = dispmnt.sign
         val length = 1 + math.max(dispmnt.x.abs, dispmnt.y.abs)
-        List.tabulate(length)(start + dir * _).foreach(pos => grid(pos) = '#')
+        grid ++= List.tabulate(length)(start + dir * _).map(_ -> '#')
     }
 
     private def simulateFallingSand(sand: Vec2D): Vec2D = {

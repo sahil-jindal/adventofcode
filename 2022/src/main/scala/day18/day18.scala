@@ -8,8 +8,8 @@ case class Point(x: Int, y: Int, z: Int)
 case class Bounds(min: Point, max: Point)
 
 def getLavaLocations(input: List[String]) = input.map(line => {
-    val coords = line.split(",").map(_.toInt)
-    Point(coords(0), coords(1), coords(2))
+    val Array(x, y, z) = line.split(",").map(_.toInt)
+    Point(x, y, z)
 })
 
 def neighbours(point: Point) = List(
@@ -22,10 +22,8 @@ def neighbours(point: Point) = List(
 )
 
 def getBounds(points: List[Point]): Bounds = {
-    val xs = points.map(_.x)
-    val ys = points.map(_.y)
-    val zs = points.map(_.z)
-
+    val (xs, ys, zs) = (points.map(_.x), points.map(_.y), points.map(_.z))
+    
     return Bounds(
         Point(xs.min - 1, ys.min - 1, zs.min - 1),
         Point(xs.max + 1, ys.max + 1, zs.max + 1)

@@ -8,7 +8,7 @@ case class Valve(name: String, flowRate: Int, tunnels: List[String])
 
 val pattern = raw"Valve (\w+) has flow rate=(\d+); tunnel[s]? lead[s]? to valve[s]? (.+)".r
 
-def parseInput(input: List[String]): Map[String, Valve] = input.map(line => {
+def parseInput(input: List[String]) = input.map(line => {
     val List(name, rate, tunnels) = pattern.findFirstMatchIn(line).get.subgroups 
     val tunnelsList = tunnels.split(", ").toList
     name -> Valve(name, rate.toInt, tunnelsList)

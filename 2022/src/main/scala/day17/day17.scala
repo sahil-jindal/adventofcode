@@ -28,10 +28,6 @@ case class Tunnel(jets: String, linesToStore: Int) {
 
     private val irock = Iterator.continually(rocks.indices).flatten
     private val ijet = Iterator.continually(jets.indices).flatten
-
-    private def set(mat: List[Array[Char]], pos: Pos, ch: Char): Unit = {
-        mat(pos.y)(pos.x) = ch
-    }
     
     private def getRock(mat: List[String], pos: Pos): Char = {
         if (pos.y < 0 || pos.y >= mat.length || pos.x < 0 || pos.x >= mat(0).length) return ' '
@@ -51,13 +47,14 @@ case class Tunnel(jets: String, linesToStore: Int) {
     }
 
     private def draw(rock: List[String], pos: Pos): Unit = {
-        for(pt <- area(rock)) {
+        for (pt <- area(rock)) {
             if (getRock(rock, pt) == '#') {
-                set(lines, pt + pos, '#')
+                val Pos(y, x) = pt + pos
+                lines(y)(x) = '#'
             }
         }
 
-        lines = lines.dropWhile(!_.exists(_ == '#'))
+        lines = lines.dropWhile(_.forall(_ != '#'))
 
         val excessCount = math.max(0, lines.size - linesToStore)
         lines = lines.dropRight(excessCount)

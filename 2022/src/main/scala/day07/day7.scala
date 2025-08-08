@@ -12,7 +12,7 @@ def getDirectorySizes(input: List[String]): List[Int] = {
         if (line == "$ cd ..") {
             path.pop()
         } else if (line.startsWith("$ cd")) {
-            path.push(path.mkString + line.split(" ")(2))
+            path.push(path.mkString + line.stripPrefix("$ cd "))
         } else if (raw"\d+".r.findFirstIn(line).isDefined) {
             val size = line.split(" ")(0).toInt
             for (dir <- path) {

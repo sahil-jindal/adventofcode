@@ -11,8 +11,8 @@ def moveCrates(input: List[String], crateMover: Move => Unit): String = {
     val stackDefs = input.take(idx)
     val moveDefs = input.drop(idx + 1)
 
-    val numStacks = stackDefs.last.split("\\s+").filter(_.nonEmpty).length
-    val stacks = Array.ofDim[Stack[Char]](numStacks)
+    val numStacks = stackDefs.last.split("\\s+").count(_.nonEmpty)
+    val stacks = List.fill(numStacks)(Stack.empty[Char])
 
     for {
         line <- stackDefs.init.reverse
