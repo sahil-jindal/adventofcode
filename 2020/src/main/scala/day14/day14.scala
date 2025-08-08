@@ -8,8 +8,8 @@ case class Command(baseAddr: Int, value: Long)
 case class ProgramSegment(mask: String, commands: List[Command])
 
 def parseBinaryToLong(str: String): Long = {
-    if (!str.matches("^[01]+$")) throw new NumberFormatException(str)
-    return str.map(_.asDigit).foldLeft(0L) { case (acc, item) => 2 * acc + item }
+    require(str.matches("^[01]+$"))
+    return str.reverse.zipWithIndex.collect { case ('1', idx) => 1L << idx }.sum
 }
 
 def groupCommands(input: List[String]): List[List[String]] = {

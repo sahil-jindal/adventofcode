@@ -45,7 +45,7 @@ def patches(program: List[Stm]): List[List[Stm]] = {
 }
 
 def evaluatorOne(input: List[Stm]): Int = run(input).acc
-def evaluatorTwo(input: List[Stm]): Int = patches(input).map(run).collectFirst { case Pair(acc, true) => acc }.get
+def evaluatorTwo(input: List[Stm]): Int = patches(input).map(run).find(_.terminated).get.acc
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
