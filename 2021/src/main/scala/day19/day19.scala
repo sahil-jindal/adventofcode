@@ -99,7 +99,7 @@ def tryToLocate(scannerA: Scanner, scannerB: Scanner): Option[Scanner] = {
 }
 
 def locateScanners(input: List[Scanner]): Set[Scanner] = {
-    val scanners = Set(input*)
+    val scanners = Set.from(input)
     val firstScanner = scanners.head
     
     val pq = Queue(firstScanner)

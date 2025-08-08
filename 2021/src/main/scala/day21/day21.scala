@@ -17,8 +17,8 @@ case class PairTwo(activeWins: Long, otherWins: Long)
 
 def parseInput(input: List[String]): PairOne = {
     val players = input.map(line => {
-        val parts = line.split(": ")
-        Player(0, parts(1).toInt)
+        val pos = raw"Player \d starting position: (\d)".r.findFirstMatchIn(line).get.group(1)
+        Player(0, pos.toInt)
     })
 
     return PairOne(players(0), players(1))
@@ -78,9 +78,9 @@ def evaluatorTwo(opponents: PairOne): Long = {
         })
     }
 
-    val wins = winCounts(opponents)
+    val PairTwo(activeWins, otherWins) = winCounts(opponents)
 
-    return math.max(wins.activeWins, wins.otherWins)
+    return math.max(activeWins, otherWins)
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
