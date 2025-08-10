@@ -3,7 +3,6 @@ package day12
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Map
-import scala.util.chaining._
 
 type Cache = Map[(String, List[Int]), Long]
 

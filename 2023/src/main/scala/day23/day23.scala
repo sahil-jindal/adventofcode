@@ -53,8 +53,7 @@ def distance(map: Grid, crossroadA: Point, crossroadB: Point): Int = {
 
                 if (posT == crossroadB) break(dist + 1)
                 
-                if (isRoad(map, posT) && !visited.contains(posT)) {
-                    visited.add(posT)
+                if (isRoad(map, posT) && visited.add(posT)) {
                     q.enqueue((posT, dist + 1))
                 }
             }
