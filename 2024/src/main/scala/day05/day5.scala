@@ -2,10 +2,10 @@ package day05
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Map, Set, Queue, ListBuffer}
+import scala.collection.mutable.{Map, Queue, ListBuffer}
 
 case class PageOrder(earlier: String, later: String)
-case class Manual(pageNumbers: List[String], pageOrders: List[PageOrder])
+case class Manual(pageNumbers: List[String], pageOrders: Set[PageOrder])
 
 def getManuals(input: List[String]): List[Manual] = {
     val idx = input.indexWhere(_.trim.isEmpty)
@@ -21,7 +21,7 @@ def getManuals(input: List[String]): List[Manual] = {
             pages.contains(order.earlier) && pages.contains(order.later)
         )
 
-        Manual(pages, applicableOrders)
+        Manual(pages, applicableOrders.toSet)
     })
 }
 
@@ -35,27 +35,22 @@ def isOrdered(manual: Manual): Boolean = {
 
 // using Modified Kahn's algorithm here 🙃 
 def sortManual(manual: Manual): Manual = {
-    val graph = Map.empty[String, Set[String]]
-    val inDegree = Map.empty[String, Int].withDefaultValue(0)
+    val graph = manual.pageOrders.groupMap(_.earlier)(_.later)
+    val inDegree = Map.from(manual.pageOrders.groupMapReduce(_.later)(_ => 1)(_ + _))
 
-    manual.pageNumbers.foreach(page => graph(page) = Set.empty)
-
-    for (order <- manual.pageOrders) {
-        graph(order.earlier) += order.later
-        inDegree(order.later) += 1
-    }
-
-    val queue = Queue(manual.pageNumbers.filter(inDegree(_) == 0)*)
+    val queue = Queue.from(manual.pageNumbers.filterNot(inDegree.contains))
     val sortedPages = ListBuffer.empty[String]
 
     while (queue.nonEmpty) {
         val current = queue.dequeue()
         sortedPages += current
 
-        for (neighbor <- graph(current)) {
-            inDegree(neighbor) -= 1
-            if (inDegree(neighbor) == 0) {
-                queue.enqueue(neighbor)
+        if (graph.contains(current)) {
+            for (neighbor <- graph(current)) {
+                inDegree(neighbor) -= 1
+                if (inDegree(neighbor) == 0) {
+                    queue.enqueue(neighbor)
+                }
             }
         }
     }

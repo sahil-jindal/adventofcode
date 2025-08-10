@@ -45,7 +45,7 @@ def parse(input: List[String], wannaScaleUp: Boolean): (Grid, List[Direction]) =
         case _   => throw new Exception("Invalid direction")
     }
 
-    (MutableMap(grid*), steps)
+    (MutableMap.from(grid), steps)
 }
 
 def tryToStep(grid: Grid, pos: Point, dir: Direction): Boolean = {

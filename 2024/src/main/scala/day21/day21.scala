@@ -68,7 +68,7 @@ def encodeKeys(keys: String, keypads: List[Keypad], cache: Cache): Long = {
         currentKey = nextKey
     }
 
-    assert(currentKey == 'A', "The robot should point at the 'A' key")
+    require(currentKey == 'A', "The robot should point at the 'A' key")
     return length
 }
 

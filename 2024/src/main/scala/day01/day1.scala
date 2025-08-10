@@ -2,21 +2,14 @@ package day01
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.ListBuffer
 
 case class Pair(first: List[Int], second: List[Int])
 
+def parseNumbers(line: String) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toList
+
 def parseInput(input: List[String]): Pair = {
-    val num1 = ListBuffer.empty[Int]
-    val num2 = ListBuffer.empty[Int]
-
-    for (line <- input) {
-        val nums = line.split("   ").map(_.toInt)
-        num1 += nums(0)
-        num2 += nums(1)
-    }
-
-    return Pair(num1.sorted.toList, num2.sorted.toList)
+    val List(num1, num2) = input.map(parseNumbers).transpose.map(_.sorted)
+    return Pair(num1, num2)
 }
 
 def evaluatorOne(input: Pair): Int = {
@@ -28,7 +21,7 @@ def evaluatorTwo(input: Pair): Int = {
     val Pair(first, second) = input
     val weights = second.groupMapReduce(identity)(_ => 1)(_ + _)
 
-    return first.map(num => weights.getOrElse(num, 0) * num).sum
+    return first.filter(weights.contains).map(num => weights(num) * num).sum
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
