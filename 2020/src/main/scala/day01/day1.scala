@@ -5,14 +5,14 @@ import scala.io.Source
 
 def parseInput(input: List[String]) = input.map(_.toInt).toSet
 
-def partitions(total: Int, n: Int): List[List[Int]] = {
-    def helper(remaining: Int, length: Int, minValue: Int): List[List[Int]] = {
-        if (length <= 0 || length > remaining) return List(Nil)
-        if (length == 1) return List(List(remaining))
+def partitions(total: Int, n: Int): Iterator[List[Int]] = {
+    def helper(remaining: Int, length: Int, minValue: Int): Iterator[List[Int]] = {
+        if (length <= 0 || length > remaining) return Iterator.empty
+        if (length == 1) return Iterator.single(List(remaining))
 
         val maxValue = remaining / length
 
-        return (minValue to maxValue).toList.flatMap { value =>
+        return (minValue to maxValue).iterator.flatMap { value =>
             helper(remaining - value, length - 1, value).map(value :: _)
         }
     }

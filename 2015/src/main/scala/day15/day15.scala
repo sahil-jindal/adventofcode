@@ -18,14 +18,14 @@ def parseInput(input: List[String]) = input.map(line => {
     Ingredient(a, b, c, d, e)
 })
 
-def partitions(total: Int, n: Int): List[List[Int]] = {
-    def helper(remaining: Int, length: Int, minValue: Int): List[List[Int]] = {
-        if (length <= 0 || length > remaining) return List(Nil)
-        if (length == 1) return List(List(remaining))
+def partitions(total: Int, n: Int): Iterator[List[Int]] = {
+    def helper(remaining: Int, length: Int, minValue: Int): Iterator[List[Int]] = {
+        if (length <= 0 || length > remaining) return Iterator.empty
+        if (length == 1) return Iterator.single(List(remaining))
 
         val maxValue = remaining / length
 
-        return (minValue to maxValue).toList.flatMap { value =>
+        return (minValue to maxValue).iterator.flatMap { value =>
             helper(remaining - value, length - 1, value).map(value :: _)
         }
     }
@@ -34,7 +34,7 @@ def partitions(total: Int, n: Int): List[List[Int]] = {
 }
 
 def allPossibleRecipes(ingredients: List[Ingredient]): List[Ingredient] = {
-    val scoopPossibilities = partitions(totalScoops, ingredients.length).flatMap(_.permutations)
+    val scoopPossibilities = partitions(totalScoops, ingredients.length).flatMap(_.permutations).toList
 
     return scoopPossibilities.map(scoops => {
         val temp = (ingredients zip scoops).map { case (ingr, it) => ingr * it }.reduce(_ + _)
