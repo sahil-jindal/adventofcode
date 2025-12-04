@@ -3,7 +3,7 @@ package day01
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Step(start: Int, zeroHits: Int)
+case class Step(pos: Int, zeroHits: Int)
 
 def parseInput(input: List[String]) = input.map(line => {
     val (direction, amount) = line.splitAt(1)
@@ -12,8 +12,8 @@ def parseInput(input: List[String]) = input.map(line => {
 
 def preComputation(numbers: List[Int]): List[Step] = {
     return numbers.scanLeft(Step(50, 0)) { (prev, move) =>
-        val start = prev.start
-        val absDist = math.abs(move)
+        val start = prev.pos
+        val absDist = move.abs
         val raw = start + move
         val end = ((raw % 100) + 100) % 100
 
@@ -27,7 +27,7 @@ def preComputation(numbers: List[Int]): List[Step] = {
     }
 } 
 
-def evaluatorOne(steps: List[Step]) = steps.count(_.start == 0)
+def evaluatorOne(steps: List[Step]) = steps.count(_.pos == 0)
 def evaluatorTwo(steps: List[Step]) = steps.map(_.zeroHits).sum
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
