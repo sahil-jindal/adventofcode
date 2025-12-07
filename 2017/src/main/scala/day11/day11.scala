@@ -8,17 +8,14 @@ case class Vec3D(x: Int, y: Int, z: Int) {
     def +(that: Vec3D) = Vec3D(x + that.x, y + that.y, z + that.z)
 }
 
-def parseInput(input: String) = input.split(',').map(dir => {
-    dir match {
-        case "n"  => Vec3D(0, 1, -1)
-        case "s"  => Vec3D(0, -1, 1)
-        case "ne" => Vec3D(1, 0, -1)
-        case "sw" => Vec3D(-1, 0, 1)
-        case "se" => Vec3D(1, -1, 0)
-        case "nw" => Vec3D(-1, 1, 0)
-        case _    => throw new Exception(dir)
-    }
-})
+def parseInput(input: String) = input.split(',').collect {
+    case "n"  => Vec3D(0, 1, -1)
+    case "s"  => Vec3D(0, -1, 1)
+    case "ne" => Vec3D(1, 0, -1)
+    case "sw" => Vec3D(-1, 0, 1)
+    case "se" => Vec3D(1, -1, 0)
+    case "nw" => Vec3D(-1, 1, 0)    
+}
 
 def distances(distances: Array[Vec3D]): Array[Int] = {
     return distances.scanLeft(Vec3D(0, 0, 0))(_ + _).map(_.len / 2)

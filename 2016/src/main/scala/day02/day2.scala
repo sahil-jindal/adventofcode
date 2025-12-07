@@ -20,17 +20,14 @@ def parseKeypad(input: List[String]): Map[Point, Char] = {
     } yield Point(y, x) -> ch).toMap
 }
 
-def getDirections(dir: Char) = dir match {
+def parseInput(input: List[String]) = input.map(_.collect {
     case 'U' => Direction(-1, 0)
     case 'R' => Direction(0, 1)
     case 'D' => Direction(1, 0)
     case 'L' => Direction(0, -1)
-    case _ => throw new Exception()
-}
+})
 
-def parseInput(input: List[String]) = input.map(_.map(getDirections).toList)
-
-def getCode(paths: List[List[Direction]], keypad: Map[Point, Char]): String = {
+def getCode(paths: List[IndexedSeq[Direction]], keypad: Map[Point, Char]): String = {
     var temp = keypad.collectFirst { case (k, v) if v == '5' => k }.get
     val code = new StringBuilder
 
@@ -49,8 +46,8 @@ def getCode(paths: List[List[Direction]], keypad: Map[Point, Char]): String = {
     code.toString
 }
 
-def evaluatorOne(paths: List[List[Direction]]): String = getCode(paths, firstKeyPad)
-def evaluatorTwo(paths: List[List[Direction]]): String = getCode(paths, secondKeyPad)
+def evaluatorOne(paths: List[IndexedSeq[Direction]]): String = getCode(paths, firstKeyPad)
+def evaluatorTwo(paths: List[IndexedSeq[Direction]]): String = getCode(paths, secondKeyPad)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

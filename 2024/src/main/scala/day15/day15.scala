@@ -37,12 +37,11 @@ def parse(input: List[String], wannaScaleUp: Boolean): (Grid, List[Direction]) =
         (ch, x) <- line.zipWithIndex
     } yield Point(y, x) -> ch)
 
-    val steps = input.drop(idx + 1).flatten.map {
+    val steps = input.drop(idx + 1).flatten.collect {
         case '^' => Up
         case '<' => Left
         case '>' => Right
         case 'v' => Down
-        case _   => throw new Exception("Invalid direction")
     }
 
     (MutableMap.from(grid), steps)

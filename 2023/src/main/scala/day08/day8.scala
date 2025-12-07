@@ -8,13 +8,10 @@ enum Cmd { case Left, Right }
 case class Pair(dirs: IndexedSeq[Cmd], network: Map[String, Map[Cmd, String]])
 
 def parseInput(input: List[String]): Pair = {
-    val dirs = input.head.map(ch => {
-        ch match {
-            case 'L' => Cmd.Left
-            case 'R' => Cmd.Right
-            case _ => throw new Exception()
-        }
-    })
+    val dirs = input.head.collect {
+        case 'L' => Cmd.Left
+        case 'R' => Cmd.Right
+    }
 
     val network = input.drop(2).map(line => {
         val Seq(key, left, right) = raw"(\w+)".r.findAllIn(line).toSeq

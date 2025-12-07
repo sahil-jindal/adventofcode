@@ -8,13 +8,10 @@ enum Bit { case Zero, One }
 
 type Number = IndexedSeq[Bit]
 
-def parseBits(ch: Char) = ch match {
+def parseInput(input: List[String]) = input.map(_.collect {
     case '0' => Bit.Zero
     case '1' => Bit.One
-    case _ => throw new Exception()
-}
-
-def parseInput(input: List[String]) = input.map(_.map(parseBits))
+})
 
 def calculateNumber(bits: Number) = bits.reverse.zipWithIndex.collect { case (Bit.One, i) => 1 << i }.sum
 

@@ -10,15 +10,12 @@ case class Point(y: Int, x: Int) {
     def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
 }
 
-def parseInput(line: String) = line.map(ch => {
-    ch match {
-        case 'v' => Direction(1, 0)
-        case '>' => Direction(0, 1)
-        case '<' => Direction(0, -1)
-        case '^' => Direction(-1, 0)
-        case _   => throw new Exception()
-    }
-})
+def parseInput(line: String) = line.collect {
+    case 'v' => Direction(1, 0)
+    case '>' => Direction(0, 1)
+    case '<' => Direction(0, -1)
+    case '^' => Direction(-1, 0)
+}
 
 def run(input: IndexedSeq[Direction], actors: Int): Int = {
     val start = Point(0, 0)
