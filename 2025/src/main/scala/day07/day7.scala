@@ -133,7 +133,6 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day07.txt") match {
         case Success(lines) => {
-            //val input = parseInput(lines)
             println(s"Part One: ${evaluatorOne(lines)}")
             println(s"Part Two: ${evaluatorTwo(lines)}")
         }
