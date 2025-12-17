@@ -2,7 +2,6 @@ package day09
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.Queue
 
 case class Point(x: Long, y: Long)
 
