@@ -43,13 +43,15 @@ def evaluatorOne(points: List[Point]): Long = {
 def evaluatorTwo(points: List[Point]): Long = {
     val segments = boundary(points)
 
-    return allPossibleRectangles(points).sortBy(_.area)(using Ordering.Long.reverse)
-        .find(it => segments.forall(s => !it.aabbCollision(s))).get.area
+    return allPossibleRectangles(points)
+        .sortBy(_.area)(using Ordering.Long.reverse)
+        .find(it => !segments.exists(it.aabbCollision)).get.area
 } 
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
+@main
 def hello(): Unit = {
     readLinesFromFile("day09.txt") match {
         case Success(lines) => {
