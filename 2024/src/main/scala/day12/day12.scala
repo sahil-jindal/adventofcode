@@ -23,6 +23,13 @@ val NW = N + W
 val SE = S + E
 val SW = S + W
 
+def getNeighbours(pos: Point) = List(
+    pos.copy(x = pos.x - 1),
+    pos.copy(x = pos.x + 1),
+    pos.copy(y = pos.y - 1),
+    pos.copy(y = pos.y + 1),
+)
+
 def getRegions(input: List[String]): List[Region] = {
     val garden = (for {
         (line, y) <- input.zipWithIndex
@@ -43,7 +50,7 @@ def getRegions(input: List[String]): List[Region] = {
             val point = q.dequeue()
             positions.remove(point)
 
-            for (neighbor <- List(N, E, S, W).map(point + _).filter(garden.contains)) {
+            for (neighbor <- getNeighbours(point).filter(garden.contains)) {
                 if (!region.contains(neighbor) && garden(neighbor) == plant) {
                     region.add(neighbor)
                     q.enqueue(neighbor)
@@ -62,7 +69,7 @@ def calculateFencePrice(regions: List[Region], measure: (Region, Point) => Int):
 }
 
 def findEdges(region: Region, pt: Point): Int = {    
-    return List(N, E, S, W).count(du => !region.contains(pt + du))
+    return getNeighbours(pt).count(pt => !region.contains(pt))
 }
 
 def findCorners(region: Region, pt: Point): Int = {
