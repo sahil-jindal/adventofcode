@@ -10,7 +10,7 @@ def vowels = Set('a', 'e', 'i', 'o', 'u')
 def disAllowedStrings = Set("ab", "cd", "pq", "xy")
 
 def checksCondition(input: String): Boolean = {
-    if (input.filter(vowels.contains).size < 3) return false
+    if (input.count(vowels.contains) < 3) return false
     if (input.sliding(2).exists(disAllowedStrings.contains)) return false
     return (input.init zip input.tail).exists { case (a, b) => a == b }
 }
