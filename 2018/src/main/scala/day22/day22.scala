@@ -51,8 +51,8 @@ def evaluatorTwo(input: List[String]): Int = {
             case RegionType.Wet    => if tool == Tool.ClimbingGear then Tool.Nothing else Tool.ClimbingGear
         }
 
-        val moves = getNeighbours(pos).filter(p => p.x >= 0 && p.y >= 0)
-            .filter{p =>
+        val moves = getNeighbours(pos).withFilter(p => p.x >= 0 && p.y >= 0)
+            .withFilter{p =>
                 val rt = regionType(p)
                 (rt == RegionType.Rocky && (tool == Tool.ClimbingGear || tool == Tool.Torch)) ||
                 (rt == RegionType.Narrow && (tool == Tool.Torch || tool == Tool.Nothing)) ||

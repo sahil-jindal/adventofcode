@@ -42,7 +42,7 @@ def firstSumAbove(input: Int): Int = {
     boundary {
         for (n <- Iterator.from(2)) {
             val pos = getCoordinates(n)
-            val sum = getAllNeighbours(pos).filter(grid.contains).map(grid).sum
+            val sum = getAllNeighbours(pos).withFilter(grid.contains).map(grid).sum
 
             if (sum > input) break(sum)
 

@@ -39,7 +39,7 @@ def gcd(a: Long, b: Long): Long = if b == 0 then a else gcd(b, a % b)
 def lcm(a: Long, b: Long): Long = a * b / gcd(a, b)
 
 def solve(input: Pair, aMarker: String, zMarker: String): Long = {
-    return input.network.keys.filter(_.endsWith(aMarker)).map(stepsToZ(input, _, zMarker)).reduce(lcm)
+    return input.network.keys.withFilter(_.endsWith(aMarker)).map(stepsToZ(input, _, zMarker)).reduce(lcm)
 }
 
 def evaluatorOne(input: Pair): Long = solve(input, "AAA", "ZZZ")

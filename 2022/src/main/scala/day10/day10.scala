@@ -33,7 +33,7 @@ def getSignal(input: List[String]): List[Signal] = {
 
 def evaluatorOne(signals: List[Signal]): Int = {
     val sample = (20 to 220 by 40)
-    return signals.collect { case Signal(cycle, x) if sample.contains(cycle) => x * cycle }.sum
+    return signals.withFilter(it => sample.contains(it.cycle)).map(it => it.x * it.cycle).sum
 }
 
 def evaluatorTwo(signals: List[Signal]): String = {

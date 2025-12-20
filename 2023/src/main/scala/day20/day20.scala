@@ -16,9 +16,7 @@ def parseInput(input: List[String]): Machine = {
         Group(line.head, words.head, words.tail)
     })
 
-    def inputs(name: String) = descriptions.collect {
-        case d if d.outputs.contains(name) => d.name
-    }
+    def inputs(name: String) = descriptions.withFilter(_.outputs.contains(name)).map(_.name)
 
     return descriptions.map(d => d -> inputs(d.name))
 }

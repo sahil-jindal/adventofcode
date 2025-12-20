@@ -19,11 +19,11 @@ def parseInput(input: List[String]) = input.map(line => {
     )
 })
 
-def evaluatorOne(games: List[Game]): Int = games.collect {
-    case Game(id, red, green, blue) if red <= 12 && green <= 13 && blue <= 14 => id 
-}.sum
+def evaluatorOne(games: List[Game]): Int = {
+    return games.withFilter(g => g.red <= 12 && g.green <= 13 && g.blue <= 14).map(_.id).sum
+}
 
-def evaluatorTwo(games: List[Game]): Int = games.map(game => game.red * game.green * game.blue).sum
+def evaluatorTwo(games: List[Game]): Int = games.map(g => g.red * g.green * g.blue).sum
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

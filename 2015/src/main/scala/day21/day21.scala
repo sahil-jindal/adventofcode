@@ -26,7 +26,7 @@ def Buy(): List[Item] = {
         weapon <- weapons
         armor <- possibleArmors 
         ring <- possibleRings 
-    } yield weapon + armor + ring).toList
+    } yield weapon + armor + ring)
 }
 
 def defeatsBoss(player: Opponent, boss: Opponent): Boolean = {
@@ -45,12 +45,12 @@ def defeatsBoss(player: Opponent, boss: Opponent): Boolean = {
 }
 
 def evaluatorOne(boss: Opponent): Int = Buy()
-    .filter(c => defeatsBoss(Opponent(100, c.damage, c.armor), boss))
+    .withFilter(c => defeatsBoss(Opponent(100, c.damage, c.armor), boss))
     .map(_.cost)
     .min
 
 def evaluatorTwo(boss: Opponent): Int = Buy()
-    .filterNot(c => defeatsBoss(Opponent(100, c.damage, c.armor), boss))
+    .withFilter(c => !defeatsBoss(Opponent(100, c.damage, c.armor), boss))
     .map(_.cost)
     .max
 

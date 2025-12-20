@@ -2,7 +2,7 @@ package day16
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Queue, Set}
+import scala.collection.mutable.{Queue, Set => MutableSet}
 
 case class Direction(dy: Int, dx: Int) {
     def reflectNW = Direction(dx, dy)
@@ -43,7 +43,7 @@ def exits(cell: Char, dir: Direction) = cell match {
 // this is essentially just a flood fill algorithm.
 def energizedCells(map: Grid, beam: Beam): Int = {
     val q = Queue(beam)
-    val seen = Set(beam)
+    val seen = MutableSet(beam)
 
     while (q.nonEmpty) {
         val beam = q.dequeue()
@@ -62,13 +62,13 @@ def energizedCells(map: Grid, beam: Beam): Int = {
 
 // go around the edges (top, right, bottom, left order) of the map
 // and return the inward pointing directions
-def startBeams(map: Grid): List[Beam] = {
-    val br = map.keys.maxBy(pos => pos.y + pos.x)
+def startBeams(map: Grid): Set[Beam] = {
+    val br = map.keySet.maxBy(pos => pos.y + pos.x)
 
-    val a = map.keys.collect { case pos if pos.x == 0 => Beam(pos, Down) }.toList
-    val b = map.keys.collect { case pos if pos.y == 0 => Beam(pos, Right) }.toList
-    val c = map.keys.collect { case pos if pos.y == br.y => Beam(pos, Up) }.toList
-    val d = map.keys.collect { case pos if pos.x == br.x => Beam(pos, Left) }.toList
+    val a = map.keySet.withFilter(_.x == 0).map(Beam(_, Down))
+    val b = map.keySet.withFilter(_.y == 0).map(Beam(_, Right))
+    val c = map.keySet.withFilter(_.y == br.y).map(Beam(_, Up))
+    val d = map.keySet.withFilter(_.x == br.x).map(Beam(_, Left))
     
     return a ++ b ++ c ++ d
 }

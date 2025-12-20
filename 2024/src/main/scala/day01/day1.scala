@@ -21,7 +21,7 @@ def evaluatorTwo(input: Pair): Int = {
     val Pair(first, second) = input
     val weights = second.groupMapReduce(identity)(_ => 1)(_ + _)
 
-    return first.filter(weights.contains).map(num => weights(num) * num).sum
+    return first.withFilter(weights.contains).map(num => weights(num) * num).sum
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

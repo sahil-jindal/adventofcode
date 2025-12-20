@@ -27,15 +27,15 @@ def evaluatorOne(input: List[String]): Int = {
     val symbols = parse(input, raw"([^.0-9])".r)
     val numbers = parse(input, raw"(\d+)".r)
 
-    numbers.collect { case n if symbols.exists(s => adjacent(s, n)) => n.toInt }.sum
+    numbers.withFilter(n => symbols.exists(s => adjacent(s, n))).map(_.toInt).sum
 }
 
 def evaluatorTwo(input: List[String]): Int = {
     val gears = parse(input, raw"(\*)".r)
     val numbers = parse(input, raw"(\d+)".r)
 
-    gears.map(g => numbers.collect { case n if adjacent(n, g) => n.toInt })
-        .collect { case it if it.size == 2 => it(0) * it(1) }.sum  
+    gears.map(g => numbers.withFilter(n => adjacent(n, g)).map(_.toInt))
+        .withFilter(_.size == 2).map(it => it(0) * it(1)).sum  
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

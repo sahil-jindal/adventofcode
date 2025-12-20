@@ -94,9 +94,8 @@ def solve(input: List[String]): Int = {
         if (node == goal) return 0
         if ((visited & node) != 0) return Int.MinValue
 
-        cache.getOrElseUpdate((node, visited), edges.collect { 
-            case it if it.start == node => it.distance + longestPath(it.end, visited | node) 
-        }.max )
+        cache.getOrElseUpdate((node, visited), edges.withFilter(_.start == node)
+            .map(it => it.distance + longestPath(it.end, visited | node)).max)
     }
 
     return longestPath(start, 0)

@@ -11,7 +11,7 @@ def parseInput(input: List[String]) = input.map(line => {
 })
 
 def evaluatorOne(cards: List[Int]): Int = {
-    return cards.collect { case matches if matches > 0 => 1 << (matches - 1) }.sum
+    return cards.withFilter(_ > 0).map(it => 1 << (it - 1)).sum
 }
 
 def evaluatorTwo(cards: List[Int]): Int = {

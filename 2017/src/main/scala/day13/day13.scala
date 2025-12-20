@@ -11,7 +11,7 @@ def parseInput(input: List[String]) = input.map(line => {
 })
 
 def severities(layers: List[Layer], t: Int): List[Int] = {
-    return layers.filter(it => (t + it.depth) % (2 * it.range - 2) == 0).map(it => it.depth * it.range)
+    return layers.withFilter(it => (t + it.depth) % (2 * it.range - 2) == 0).map(it => it.depth * it.range)
 }
 
 def evaluatorOne(layers: List[Layer]): Int = severities(layers, 0).sum

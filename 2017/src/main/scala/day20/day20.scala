@@ -73,7 +73,7 @@ def evaluatorTwo(currParticles: List[Particle]): Int = {
 
     for (_ <- 0 to T) {
         val positionFreq = particles.groupMapReduce(_.pos)(_ => 1)(_ + _)
-        particles = particles.filterNot(it => positionFreq(it.pos) > 1).map(_.step())
+        particles = particles.withFilter(it => positionFreq(it.pos) == 1).map(_.step())
     }
     
     return particles.length

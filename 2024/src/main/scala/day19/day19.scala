@@ -12,7 +12,7 @@ import scala.collection.mutable.Map
 def matchCount(towels: List[String], pattern: String, cache: Map[String, Long]): Long = {
     cache.getOrElseUpdate(pattern, pattern match {
         case "" => 1L
-        case _ => towels.filter(pattern.startsWith)
+        case _ => towels.withFilter(pattern.startsWith)
                 .map(it => matchCount(towels, pattern.substring(it.length), cache)).sum
     })
 }

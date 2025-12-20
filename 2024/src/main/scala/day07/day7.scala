@@ -11,7 +11,7 @@ def parseInput(input: List[String]) = input.map(line => {
 })
 
 def filterNums(input: List[Pair], matchFn: (Long, Long, List[Long]) => Boolean): Long = {
-    return input.collect { case Pair(target, nums) if matchFn(target, nums.head, nums.tail) => target }.sum
+    return input.withFilter(it => matchFn(it.target, it.nums.head, it.nums.tail)).map(_.target).sum
 }
 
 def canMatchOne(target: Long, acc: Long, nums: List[Long]): Boolean = {
