@@ -4,10 +4,14 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.util.control.Breaks._
 
-case class State(left: Long, pots: List[Boolean])
-case class Pair(state: State, rules: Map[List[Boolean], Boolean])
+case class State(left: Long, pots: IndexedSeq[Boolean])
 
-def checkPots(input: String) = input.map(_ == '#').toList
+type Pair = (state: State, rules: Map[IndexedSeq[Boolean], Boolean])
+
+def checkPots(input: String) = input.collect {
+    case '#' => true
+    case '.' => false
+}
 
 def parseInput(input: List[String]): Pair = {
     val pots = checkPots(input.head.stripPrefix("initial state: "))
@@ -17,14 +21,14 @@ def parseInput(input: List[String]): Pair = {
         key -> value.head
     }).toMap
     
-    return Pair(State(0, pots), rules)
+    return (State(0, pots), rules)
 }
 
-def step(state: State, rules: Map[List[Boolean], Boolean]): State = {
-    val margin = List.fill(5)(false)
-    val pots = margin ::: state.pots ::: margin
+def step(state: State, rules: Map[IndexedSeq[Boolean], Boolean]): State = {
+    val margin = IndexedSeq.fill(5)(false)
+    val pots = margin ++ state.pots ++ margin
     
-    val newPots = pots.sliding(5).map(pot => rules.getOrElse(pot, false)).toList
+    val newPots = pots.sliding(5).map(pot => rules.getOrElse(pot, false)).toIndexedSeq
 
     val firstFlower = newPots.indexOf(true)
     val lastFlower = newPots.lastIndexOf(true)
@@ -33,7 +37,7 @@ def step(state: State, rules: Map[List[Boolean], Boolean]): State = {
 }
 
 def iterate(input: Pair, iterations: Long): Long = {
-    var Pair(state, rules) = input
+    var (state, rules) = input
     var remainingIterations = iterations
 
     breakable {

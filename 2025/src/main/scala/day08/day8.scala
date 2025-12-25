@@ -16,7 +16,7 @@ case class Vec3D(x: Long, y: Long, z: Long) {
     }
 }
 
-case class PairTwo(first: List[Vec3D], second: IndexedSeq[Edge])
+type PairTwo = (first: List[Vec3D], second: IndexedSeq[Edge])
 
 class DisjointUnionSets(size: Int) {
     private val parent = (0 until size).toArray
@@ -58,11 +58,11 @@ def preComputation(points: List[Vec3D]): PairTwo = {
         j <- i + 1 to points.length - 1
     } yield PairOne(points(i).distance(points(j)), Edge(i, j))
 
-    return PairTwo(points, pairs.sortBy(_.dist).map(_.edge))
+    return (points, pairs.sortBy(_.dist).map(_.edge))
 }
 
 def evaluatorOne(pair: PairTwo): Int = {
-    val PairTwo(points, sortedEdges) = pair
+    val (points, sortedEdges) = pair
     
     val uf = DisjointUnionSets(points.length)
 
@@ -73,23 +73,16 @@ def evaluatorOne(pair: PairTwo): Int = {
 }
 
 def evaluatorTwo(pair: PairTwo): Long = {
-    val PairTwo(points, sortedEdges) = pair
+    val (points, sortedEdges) = pair
     
     val uf = DisjointUnionSets(points.length)
 
-    var edgeIndex = 0
+    val maybeEdge = sortedEdges.find(it => {
+        uf.union(it.a, it.b)
+        points.indices.distinctBy(uf.find).size == 1
+    })
 
-    breakable {
-        while (edgeIndex < sortedEdges.length) {
-            val Edge(a, b) = sortedEdges(edgeIndex)
-            uf.union(a, b)
-            val consolidated = points.indices.distinctBy(uf.find).size == 1
-            if (consolidated) break()
-            edgeIndex += 1
-        }
-    }
-
-    val Edge(a, b) = sortedEdges(edgeIndex)
+    val Edge(a, b) = maybeEdge.get
     return points(a).x * points(b).x
 }
 

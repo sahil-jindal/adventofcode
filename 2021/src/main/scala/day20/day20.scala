@@ -5,7 +5,8 @@ import scala.io.Source
 import scala.collection.mutable.{Map => MutableMap}
 
 case class Point(y: Int, x: Int)
-case class Pair(algo: String, image: Map[Point, Boolean])
+
+type Pair = (algo: String, image: Map[Point, Boolean])
 
 def getImage(map: List[String]): Map[Point, Boolean] = {
     return (for {
@@ -14,7 +15,7 @@ def getImage(map: List[String]): Map[Point, Boolean] = {
     } yield Point(y, x) -> (ch == '#')).toMap
 }
 
-def parseInput(input: List[String]) = Pair(input.head, getImage(input.drop(2)))
+def parseInput(input: List[String]) = (input.head, getImage(input.drop(2)))
 
 def neighbours(pos: Point): IndexedSeq[Point] = {
     return (for {
@@ -24,7 +25,7 @@ def neighbours(pos: Point): IndexedSeq[Point] = {
 }
 
 def enhanced(input: Pair, n: Int): Int = {
-    var Pair(algo, image) = input
+    var (algo, image) = input
 
     var (minY, maxY) = (0, image.keys.map(_.y).max)
     var (minX, maxX) = (0, image.keys.map(_.x).max)

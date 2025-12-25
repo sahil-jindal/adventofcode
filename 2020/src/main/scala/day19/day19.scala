@@ -7,7 +7,7 @@ sealed trait Rule
 case class Literal(char: Char) extends Rule
 case class Alternative(options: List[List[Int]]) extends Rule
 
-case class Pair(rules: Map[Int, Rule], messages: List[String])
+type Pair = (rules: Map[Int, Rule], messages: List[String])
 
 def parseRules(line: String) = {
     val Array(idStr, ruleStr) = line.split(": ")
@@ -23,7 +23,7 @@ def parseRules(line: String) = {
 
 def parseInput(input: List[String]): Pair = {
     val idx = input.indexWhere(_.trim.isEmpty)
-    return Pair(input.take(idx).map(parseRules).toMap, input.drop(idx + 1))
+    return (input.take(idx).map(parseRules).toMap, input.drop(idx + 1))
 }
 
 def buildRegex(rules: Map[Int, Rule], id: Int, partTwo: Boolean): String = {
@@ -51,7 +51,7 @@ def buildRegex(rules: Map[Int, Rule], id: Int, partTwo: Boolean): String = {
 }
 
 def countValidMessages(input: Pair, partTwo: Boolean): Int = {
-    val Pair(rules, messages) = input
+    val (rules, messages) = input
     val regex = raw"^${buildRegex(rules, 0, partTwo)}$$".r
     return messages.count(msg => regex.pattern.matcher(msg).matches())
 }

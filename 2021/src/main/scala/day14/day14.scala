@@ -4,7 +4,7 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Map => MutableMap}
 
-case class Pair(polymer: String, template: Map[(Char, Char), Char])
+type Pair = (polymer: String, template: Map[(Char, Char), Char])
 
 def parseInput(input: List[String]): Pair = {
     val template = input.drop(2).map(line => {
@@ -12,11 +12,11 @@ def parseInput(input: List[String]): Pair = {
         (a, b) -> c
     }).toMap
 
-    return Pair(input.head, template)
+    return (input.head, template)
 }
 
 def solve(input: Pair, steps: Int): Long = {
-    val Pair(polymer, template) = input
+    val (polymer, template) = input
 
     var moleculeCount = (polymer.init zip polymer.tail).groupMapReduce(identity)(_ => 1L)(_ + _)
 

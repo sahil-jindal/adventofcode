@@ -9,30 +9,31 @@ case class Forward(n: Int) extends Cmd
 case class Left() extends Cmd
 case class Right() extends Cmd
 
-case class Point(y: Int, x: Int) {
-    def +(that: Point) = Point(y + that.y, x + that.x)
+case class Vec2D(y: Int, x: Int) {
+    def +(that: Vec2D) = Vec2D(y + that.y, x + that.x)
 }
 
-case class State(block: Char, coord: Point, dir: Int)
-case class PairOne(msg: List[String], commands: List[Cmd])
+case class State(block: Char, coord: Vec2D, dir: Int)
 case class PairTwo(block: Char, noOfRotations: Int)
+
+type PairOne = (msg: List[String], commands: List[Cmd])
 
 val blockSize = 50
 
 def parseInput(input: List[String]): PairOne = {
     val map = input.dropRight(2)
 
-    val commands = raw"(\d+)|L|R".r.findAllIn(input.last).map {
+    val commands = raw"(\d+)|L|R".r.findAllIn(input.last).collect {
         case "L" => Left()
         case "R" => Right()
-        case num => Forward(num.toInt)
+        case num if num.forall(_.isDigit) => Forward(num.toInt)
     }.toList
 
-    PairOne(map, commands)  
+    return (map, commands)  
 }
 
 def step(topology: Map[Char, List[PairTwo]], state: State): State = {
-    def wrapsAround(coord: Point): Boolean = {
+    def wrapsAround(coord: Vec2D): Boolean = {
         coord.x < 0 || coord.x >= blockSize || 
         coord.y < 0 || coord.y >= blockSize
     }
@@ -65,13 +66,13 @@ def step(topology: Map[Char, List[PairTwo]], state: State): State = {
         // rotate: 3
 
         // go back to the 0..49 range first, then rotate as much as needed
-        coord = Point(
+        coord = Vec2D(
             y = (coord.y + blockSize) % blockSize,
             x = (coord.x + blockSize) % blockSize
         )
 
         for (i <- 0 until rotate) {
-            coord = Point( 
+            coord = Vec2D( 
                 y = coord.x, 
                 x = blockSize - coord.y - 1 
             )
@@ -85,19 +86,19 @@ def step(topology: Map[Char, List[PairTwo]], state: State): State = {
 
 def toGlobal(state: State) = { 
     state.block match {
-        case 'A' => state.coord + Point(0, blockSize)
-        case 'B' => state.coord + Point(0, 2 * blockSize)
-        case 'C' => state.coord + Point(blockSize, blockSize)
-        case 'D' => state.coord + Point(2 * blockSize, 0)
-        case 'E' => state.coord + Point(2 * blockSize, blockSize)
-        case 'F' => state.coord + Point(3 * blockSize, 0)
+        case 'A' => state.coord + Vec2D(0, blockSize)
+        case 'B' => state.coord + Vec2D(0, 2 * blockSize)
+        case 'C' => state.coord + Vec2D(blockSize, blockSize)
+        case 'D' => state.coord + Vec2D(2 * blockSize, 0)
+        case 'E' => state.coord + Vec2D(2 * blockSize, blockSize)
+        case 'F' => state.coord + Vec2D(3 * blockSize, 0)
         case _ => throw new Exception()
     }
 }
 
 def solve(input: PairOne, topology: Map[Char, List[PairTwo]]): Int = {
-    val PairOne(map, cmds) = input
-    var state = new State('A', new Point(0, 0), 0)
+    val (map, cmds) = input
+    var state = new State('A', new Vec2D(0, 0), 0)
 
     for (cmd <- cmds) {
         cmd match {

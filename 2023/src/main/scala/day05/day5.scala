@@ -9,7 +9,7 @@ case class Range(start: Long, end: Long) {
     def overlaps(that: Range) = start <= that.end && that.start <= end 
 }
 
-case class Pair(numbers: List[Long], maps: List[Map[Range, Range]])
+type Pair = (numbers: List[Long], maps: List[Map[Range, Range]])
 
 def groupLines(input: List[String]): List[List[String]] = {
     return input.foldLeft(List(List.empty[String])) {
@@ -26,7 +26,7 @@ def parseInput(input: List[String]): Pair = {
         Range(sB, sB + len - 1) -> Range(sA, sA + len - 1)
     }).toMap)
 
-    return Pair(parseNumbers(input.head), maps)
+    return (parseNumbers(input.head), maps)
 }
 
 def project(inputRanges: List[Range], map: Map[Range, Range]): List[Range] = {
@@ -66,8 +66,9 @@ def project(inputRanges: List[Range], map: Map[Range, Range]): List[Range] = {
 }
 
 def solve(input: Pair, parseSeeds: List[Long] => List[Range]): Long = {
-    val seedRanges = parseSeeds(input.numbers)
-    return input.maps.foldLeft(seedRanges)(project).map(_.start).min
+    val (numbers, maps) = input
+    val seedRanges = parseSeeds(numbers)
+    return maps.foldLeft(seedRanges)(project).map(_.start).min
 }
 
 def partOneRanges(numbers: List[Long]): List[Range] = numbers.map(n => Range(n, n))

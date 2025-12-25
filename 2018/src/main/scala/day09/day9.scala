@@ -4,15 +4,16 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
 case class Node(value: Int, var left: Node = null, var right: Node = null)
-case class Pair(length: Int, currPoints: Int)
+
+type Pair = (length: Int, currPoints: Int)
 
 def parseInput(input: String): Pair = {
     val Seq(length, currPoints) = raw"(\d+)".r.findAllIn(input).map(_.toInt).toSeq
-    return Pair(length, currPoints)
+    return (length, currPoints)
 }
 
 def solver(input: Pair, mul: Int): Long = {
-    val Pair(length, currPoints) = input
+    val (length, currPoints) = input
     val players = Array.ofDim[Long](length)
     val targetPoints = currPoints * mul
 
@@ -36,7 +37,7 @@ def solver(input: Pair, mul: Int): Long = {
         } else {
             val left = current.right
             val right = current.right.right
-            current = Node(value = points, left = left, right = right)
+            current = Node(points, left, right)
             left.right = current
             right.left = current
         }
