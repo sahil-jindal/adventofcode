@@ -21,18 +21,12 @@ def parseInput(input: List[String]): Pair = {
     return Pair(dirs, network)
 }
 
-def stepsToZ(input: Pair, currentInit: String, zMarker: String): Long = {
+def stepsToZ(input: Pair, current: String, zMarker: String): Long = {
     val Pair(dirsInit, network) = input
     val dirs = Iterator.continually(dirsInit).flatten
-    var current = currentInit
-    var i = 0L
 
-    while (!current.endsWith(zMarker)) {
-        current = network(current)(dirs.next())
-        i += 1
-    }
-
-    return i
+    return Iterator.iterate(current)(it => network(it)(dirs.next()))
+        .indexWhere(_.endsWith(zMarker)).toLong
 }
 
 def gcd(a: Long, b: Long): Long = if b == 0 then a else gcd(b, a % b)

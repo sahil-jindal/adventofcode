@@ -8,17 +8,17 @@ case class Point(y: Int, x: Int) {
     def move(dy: Int, dx: Int) = Point(y + dy, x + dx)
 }
 
-case class Pair(posFrom: Point, posTo: Point)
+case class Edge(posFrom: Point, posTo: Point)
 
-def doors(input: String): IndexedSeq[Pair] = {
+def doors(input: String): IndexedSeq[Edge] = {
     val s = Stack.empty[Point]
     var pos = Point(0, 0)
     
     return input.collect {
-        case 'N' => val prev = pos; pos = pos.move(-1, 0); List(Pair(prev, pos), Pair(pos, prev))
-        case 'S' => val prev = pos; pos = pos.move(1, 0); List(Pair(prev, pos), Pair(pos, prev))
-        case 'E' => val prev = pos; pos = pos.move(0, 1); List(Pair(prev, pos), Pair(pos, prev))
-        case 'W' => val prev = pos; pos = pos.move(0, -1); List(Pair(prev, pos), Pair(pos, prev))
+        case 'N' => val prev = pos; pos = pos.move(-1, 0); List(Edge(prev, pos), Edge(pos, prev))
+        case 'S' => val prev = pos; pos = pos.move(1, 0); List(Edge(prev, pos), Edge(pos, prev))
+        case 'E' => val prev = pos; pos = pos.move(0, 1); List(Edge(prev, pos), Edge(pos, prev))
+        case 'W' => val prev = pos; pos = pos.move(0, -1); List(Edge(prev, pos), Edge(pos, prev))
         case '(' => s.push(pos); List.empty
         case '|' => pos = s.top; List.empty
         case ')' => pos = s.pop(); List.empty

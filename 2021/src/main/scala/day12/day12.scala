@@ -3,14 +3,14 @@ package day12
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Pair(from: String, to: String)
+case class Edge(from: String, to: String)
 
 type Graph = Map[String, List[String]]
 
 def parseInput(input: List[String]): Graph = {
     return input.flatMap(line => {
         val Array(caveA, caveB) = line.split("-")
-        List(Pair(caveA, caveB), Pair(caveB, caveA))
+        List(Edge(caveA, caveB), Edge(caveB, caveA))
     }).groupMap(_.from)(_.to)
 }
 
