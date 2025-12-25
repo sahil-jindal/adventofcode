@@ -22,10 +22,10 @@ def parseInput(input: List[String]): Pair = {
 }
 
 def stepsToZ(input: Pair, current: String, zMarker: String): Long = {
-    val Pair(dirsInit, network) = input
-    val dirs = Iterator.continually(dirsInit).flatten
-
-    return Iterator.iterate(current)(it => network(it)(dirs.next()))
+    val Pair(dirs, network) = input
+    
+    return Iterator.continually(dirs).flatten
+        .scanLeft(current) { case (cur, dir) => network(cur)(dir) }
         .indexWhere(_.endsWith(zMarker)).toLong
 }
 
@@ -42,6 +42,7 @@ def evaluatorTwo(input: Pair): Long = solve(input, "A", "Z")
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
+@main
 def hello(): Unit = {
     readLinesFromFile("day08.txt") match {
         case Success(lines) => {
