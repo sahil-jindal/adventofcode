@@ -2,129 +2,42 @@ package day07
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.annotation.tailrec
-import scala.collection.mutable
-import scala.math.BigInt
 
-def evaluatorOne(grid: List[String]): Int = {
-    val n = grid.length
-    val m = grid.head.length
+def runManiFold(grid: List[String]) = {
+    // Dynamic programming over the grid:
+    //
+    // Each cell in row i depends only on the values from row i-1 directly above it.
+    // We propagate a vector of "timeline counts" downward row by row instead of
+    // keeping a full 2D DP table, which reduces memory to O(columns).
+    //
+    // At forks ('^'), a timeline splits into left/right branches, and we count a
+    // "split" whenever an active timeline actually forks (>0 incoming paths).
 
-    // Find S
-    val startR = grid.indexWhere(_.contains('S'))
-    val startC = grid(startR).indexOf('S')
+    val height = grid.length
+    val width = grid.head.length
 
     var splits = 0
-    var active = Set(startC) // beams entering the next row
+    var timelines = Array.ofDim[Long](width)
 
-    // Process rows below S
-    for (r <- startR + 1 until n if active.nonEmpty) {
-        var nextActive = Set.empty[Int]
-        var toProcess = active
-        var processed = Set.empty[Int]
+    for (r <- 0 until height) {
+        val nextTimelines = Array.ofDim[Long](width)
 
-        while (toProcess.nonEmpty) {
-            val col = toProcess.head
-            toProcess -= col
-
-            if (!processed(col) && col >= 0 && col < m) {
-                processed += col
-                
-                grid(r)(col) match {
-                    case '^' => {
-                        // Split the beam
-                        splits += 1
-                        val left = col - 1
-                        val right = col + 1
-
-                        // Add new beams on same row if not already processed
-                        if (!processed(left) && left >= 0) toProcess += left
-                        if (!processed(right) && right < m) toProcess += right
-                    }
-                    case _ => {
-                        // Beam passes through to next row
-                        nextActive += col
-                    }
-                }
-            }
-        }
-
-        active = nextActive
-    }
-
-    return splits
-}
-
-def evaluatorTwo(grid: List[String]): BigInt = {
-    val n = grid.length
-    val m = grid.head.length
-
-    // find S
-    val startR = grid.indexWhere(_.contains('S'))
-    val startC = grid(startR).indexOf('S')
-
-    // active counts entering the next row: column -> count of timelines
-    var active = mutable.Map(startC -> BigInt(1))
-    var finished = BigInt(0)
-
-    // process rows below S
-
-    for (r <- startR + 1 until n if active.nonEmpty) {
-        // current row counts (we'll mutate this while resolving split cascades on this same row)
-        val curr = active.clone()//.withDefaultValue(BigInt(0))
-
-        // Resolve splits on this same row until no splitter positions remain with counts
-        var changed = true
-        
-        while (changed) {
-            changed = false
-            
-            // Collect positions that are splitters and have a positive count
-            val splitCols = curr.keys.filter { col =>
-                col >= 0 && col < m && grid(r)(col) == '^' && curr(col) > 0
-            }.toList
-
-            if (splitCols.nonEmpty) {
-                changed = true
-                
-                for (col <- splitCols) {
-                    val count = curr.remove(col).getOrElse(BigInt(0))
-                    // emit to left and right on same row
-                    val left = col - 1
-                    val right = col + 1
-                    if (left >= 0 && left < m) curr(left) = curr.getOrElse(left, BigInt(0)) + count
-                    // if left out of bounds -> those timelines are lost
-                    if (right >= 0 && right < m) curr(right) = curr.getOrElse(right, BigInt(0)) + count
-                    // splitter consumed (so removed from curr)
-                }
-            }
-        }
-
-        // After row stabilizes, timelines on non-splitter cells move down to next row
-        val nextActive = mutable.Map.empty[Int, BigInt]
-        
-        for ((col, cnt) <- curr) {
-            if (col < 0 || col >= m) {
-                // out of bounds - lost
-            } else if (r == n - 1) {
-                // This is the last row; when they move down they exit the grid => finished
-                finished += cnt
+        for (c <- 0 until width) {
+            if (grid(r)(c) == 'S') {
+                nextTimelines(c) = 1
+            } else if (grid(r)(c) == '^') {
+                splits += (if timelines(c) > 0 then 1 else 0)
+                nextTimelines(c - 1) += timelines(c)
+                nextTimelines(c + 1) += timelines(c)
             } else {
-                // If the cell is a splitter on this row it would have been removed earlier, so this is safe
-                nextActive(col) = nextActive.getOrElse(col, BigInt(0)) + cnt
+                nextTimelines(c) += timelines(c)
             }
         }
 
-        active = nextActive
+        timelines = nextTimelines
     }
 
-    // If after finishing all rows we still have active timelines (this can happen if S is at last row),
-    // they will exit immediately (move down out of grid)
-    if (active.nonEmpty) {
-        finished += active.values.sum
-    }
-
-    return finished
+    (splits, timelines.sum)
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -133,8 +46,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day07.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val (splits, timelines) = runManiFold(lines)
+            println(s"Part One: $splits")
+            println(s"Part Two: $timelines")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
