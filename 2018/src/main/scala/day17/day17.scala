@@ -3,6 +3,24 @@ package day17
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.util.boundary, boundary.break
+import scala.collection.immutable.Range.Inclusive
+
+case class Point(y: Int, x: Int)
+
+sealed trait LineSegment { def formPoints(): IndexedSeq[Point] }
+
+case class Vertical(x: Int, yRange: Inclusive) extends LineSegment {
+    override def formPoints() = yRange.map(y => Point(y, x))
+}
+
+case class Horizontal(y: Int, xRange: Inclusive) extends LineSegment {
+    override def formPoints() = xRange.map(x => Point(y, x))
+}
+
+def parseInput(input: List[String]) = input.collect {
+    case s"x=$a, y=$b..$c" => Vertical(a.toInt, b.toInt to c.toInt)
+    case s"y=$a, x=$b..$c" => Horizontal(a.toInt, b.toInt to c.toInt)
+}
 
 def isStill(mtx: Array[Array[Char]], x: Int, y: Int): Boolean = {
     val width = mtx(0).length
@@ -47,16 +65,11 @@ def fillRecursive(mtx: Array[Array[Char]], x: Int, y: Int): Unit = {
     }
 }
 
-def solver(input: List[String]): Map[Char, Int] = {
+def solver(input: List[LineSegment]): Map[Char, Int] = {
     val mtx = Array.fill(2000, 2000)('.')
 
-    for (line <- input) {
-        val Seq(a, b, c) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toSeq
-        
-        for (i <- b to c) {
-            if (line.startsWith("x")) mtx(i)(a) = '#' 
-            else mtx(a)(i) = '#'
-        }
+    input.flatMap(_.formPoints()).foreach {
+        case Point(y, x) => mtx(y)(x) = '#'
     }
     
     fillRecursive(mtx, 500, 0)
@@ -76,7 +89,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day17.txt") match {
         case Success(lines) => {
-            val input = solver(lines)
+            val input = solver(parseInput(lines))
             println(s"Part One: ${evaluatorOne(input)}")
             println(s"Part Two: ${evaluatorTwo(input)}")
         }
