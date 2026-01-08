@@ -4,10 +4,9 @@ def solve(digits: IndexedSeq[Int], maxLabel: Int, rotate: Int): LazyList[Long] =
     val next = (1 to maxLabel + 1).toArray
     next(0) = -1
 
-    for (i <- digits.indices) {
-        next(digits(i)) = digits((i + 1) % digits.size)
-    }
-
+    val rightShifted = digits.tail :+ digits.head
+    (digits zip rightShifted).foreach { case (d1, d2) => next(d1) = d2 }
+    
     if (maxLabel > digits.size) {
         next(maxLabel) = next(digits.last)
         next(digits.last) = digits.size + 1
@@ -23,7 +22,7 @@ def solve(digits: IndexedSeq[Int], maxLabel: Int, rotate: Int): LazyList[Long] =
 
         var destination = current - 1
 
-        while (destination < 1 || destination == removed1 || destination == removed2 || destination == removed3) {
+        while (destination < 1 || Set(removed1, removed2, removed3).contains(destination)) {
             destination = if (destination <= 1) maxLabel else destination - 1
         }
 

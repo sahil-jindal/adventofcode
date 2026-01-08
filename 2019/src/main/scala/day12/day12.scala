@@ -45,7 +45,7 @@ def evaluatorTwo(input: List[String]): Long = {
     def findCycle(dimExtract: Planet => (Int, Int)): Long = {
         val states = Set.empty[List[Int]]
         return simulate(input).indexWhere { planets =>
-            val state = planets.map(dimExtract).flatMap { case (posD, vecD) => List(posD, vecD) }
+            val state = planets.map(dimExtract).flatMap(List(_, _))
             !states.add(state)
         }
     }

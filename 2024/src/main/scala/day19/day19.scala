@@ -10,10 +10,9 @@ import scala.collection.mutable.Map
 // to _drammatically_ speed up execution
 
 def matchCount(towels: List[String], pattern: String, cache: Map[String, Long]): Long = {
-    cache.getOrElseUpdate(pattern, pattern match {
-        case "" => 1L
-        case _ => towels.withFilter(pattern.startsWith)
-                .map(it => matchCount(towels, pattern.substring(it.length), cache)).sum
+    cache.getOrElseUpdate(pattern, {
+        if (pattern.isBlank()) 1L else towels.withFilter(pattern.startsWith)
+            .map(it => matchCount(towels, pattern.substring(it.length), cache)).sum
     })
 }
 

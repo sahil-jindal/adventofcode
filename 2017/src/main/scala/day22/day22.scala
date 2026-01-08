@@ -26,7 +26,7 @@ def parseInput(input: List[String]): List[Point] = {
     } yield Point(y, x)).toList
 }
 
-def iterate(input: List[Point], iterations: Int, update: Virus => Virus): Int = {
+def iterate(input: List[Point], iterations: Int, update: PartialFunction[Virus, Virus]): Int = {
     val cells = Map.from(input.map(_ -> State.Infected))
 
     var pos = Point(input.map(_.y).max / 2, input.map(_.x).max / 2)
@@ -54,21 +54,16 @@ def iterate(input: List[Point], iterations: Int, update: Virus => Virus): Int = 
     return infections
 }
 
-def evaluatorOne(input: List[Point]) = iterate(input, 10000, { case Virus(dir, state) =>
-    state match {
-        case State.Clean => Virus(dir.rotateLeft, State.Infected)
-        case State.Infected => Virus(dir.rotateRight, State.Clean)
-        case _ => ??? // Purposely left as this returns "Nothing"
-    }
+def evaluatorOne(input: List[Point]) = iterate(input, 10000, {
+    case Virus(dir, State.Clean) => Virus(dir.rotateLeft, State.Infected)
+    case Virus(dir, State.Infected) => Virus(dir.rotateRight, State.Clean)
 })
 
-def evaluatorTwo(input: List[Point]) = iterate(input, 10000000, { case Virus(dir, state) =>
-    state match {
-        case State.Flagged => Virus(-dir, State.Clean)
-        case State.Weakened => Virus(dir, State.Infected)
-        case State.Clean => Virus(dir.rotateLeft, State.Weakened)
-        case State.Infected => Virus(dir.rotateRight, State.Flagged)       
-    }
+def evaluatorTwo(input: List[Point]) = iterate(input, 10000000, { 
+    case Virus(dir, State.Flagged) => Virus(-dir, State.Clean)
+    case Virus(dir, State.Weakened) => Virus(dir, State.Infected)
+    case Virus(dir, State.Clean) => Virus(dir.rotateLeft, State.Weakened)
+    case Virus(dir, State.Infected) => Virus(dir.rotateRight, State.Flagged)
 })
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

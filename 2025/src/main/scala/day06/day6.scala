@@ -12,7 +12,7 @@ def parseInput(lines: List[String]): List[Problem] = {
         lines.init.forall(_(idx).isWhitespace)
     })
 
-    val worksheet = (-1 +: indices :+ maxLength).sliding(2).map { 
+    val worksheet = (-1 +: indices :+ maxLength).sliding(2).collect { 
         case Seq(start, end) => lines.init.map(_.substring(start + 1, end))
     }.toList
 

@@ -17,14 +17,8 @@ def solver(input: List[String]): Long = {
     }
 
     subj = if (num == doorKey) cardKey else doorKey
-    num = subj
     
-    while (pow > 0) {
-        num = (num * subj) % mod
-        pow -= 1
-    }
-
-    return num
+    return BigInt(subj).modPow(pow + 1, mod).toLong
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

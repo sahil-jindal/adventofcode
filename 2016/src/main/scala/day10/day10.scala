@@ -50,9 +50,8 @@ def solve(input: List[String], targetLow: Int = 17, targetHigh: Int = 61): (Int,
 
             madeProgress = true
             
-            val sortedValues = values.sorted
-            val lowValue = sortedValues.head
-            val highValue = sortedValues.last
+            val lowValue = values.min
+            val highValue = values.max
             
             if (lowValue == targetLow && highValue == targetHigh) {
                 targetBot = botId

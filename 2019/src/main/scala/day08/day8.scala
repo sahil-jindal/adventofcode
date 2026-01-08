@@ -11,15 +11,12 @@ def evaluatorOne(layers: List[IndexedSeq[Int]]): Int = {
 }
 
 def evaluatorTwo(layers: List[IndexedSeq[Int]]): String = {
-    val img = Array.fill(6 * 25)(' ')
-
-    for (layer <- layers.reverse; i <- img.indices) {
-        img(i) = layer(i) match {
-            case 0 => ' '
-            case 1 => '#'
-            case _ => img(i)
+    val img = layers.transpose.map(pixelStack => {
+        pixelStack.find(_ != 2) match {
+            case Some(1) => '#'
+            case _       => ' '
         }
-    }
+    })
 
     return img.grouped(25).map(_.mkString).mkString("\n")
 }

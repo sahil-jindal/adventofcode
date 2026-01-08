@@ -34,10 +34,8 @@ def partitions(total: Int, n: Int): Iterator[List[Int]] = {
 }
 
 def allPossibleRecipes(ingredients: List[Ingredient]): List[Ingredient] = {
-    val scoopPossibilities = partitions(totalScoops, ingredients.length).flatMap(_.permutations).toList
-
-    return scoopPossibilities.map(scoops => {
-        val temp = (ingredients zip scoops).map { case (ingr, it) => ingr * it }.reduce(_ + _)
+    return partitions(totalScoops, ingredients.length).flatMap(_.permutations).map(scoops => {
+        val temp = (ingredients zip scoops).map(_ * _).reduce(_ + _)
 
         temp.copy(
             flavor = math.max(temp.flavor, 0),
@@ -45,7 +43,7 @@ def allPossibleRecipes(ingredients: List[Ingredient]): List[Ingredient] = {
             capacity = math.max(temp.capacity, 0),
             durability = math.max(temp.durability, 0),
         )
-    })
+    }).toList
 }
 
 def bestPossibleRecipe(cookeRecipes: List[Ingredient]): Int = {
