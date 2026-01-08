@@ -22,10 +22,9 @@ case class Rectangle(a: Point, b: Point) {
     }
 }
 
-def parseInput(input: List[String]) = input.map(line => {
-    val Array(x, y) = line.split(",").map(_.toLong)
-    Point(x, y)
-})
+def parseInput(input: List[String]) = input.collect {
+    case s"$x,$y" => Point(x.toLong, y.toLong)
+}
 
 def allPossibleRectangles(points: List[Point]): List[Rectangle] = {
     return points.combinations(2).map(it => Rectangle(it(0), it(1))).toList

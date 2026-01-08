@@ -55,10 +55,9 @@ case class Cave(input: List[Array[Vec2D]], hasFloor: Boolean) {
 }
 
 def parseInput(input: List[String]): List[Array[Vec2D]] = {
-    return input.map(_.split(" -> ").map(step => {
-        val Array(x, y) = step.split(",").map(_.toInt)
-        Vec2D(y, x)
-    }))
+    return input.map(_.split(" -> ").collect {
+        case s"$x,$y" => Vec2D(y.toInt, x.toInt)
+    })
 }
 
 def evaluatorOne(input: List[Array[Vec2D]]): Int = new Cave(input, false).fillWithSand(Vec2D(0, 500))

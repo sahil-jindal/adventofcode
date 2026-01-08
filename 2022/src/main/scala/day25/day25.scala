@@ -5,13 +5,11 @@ import scala.io.Source
 import scala.collection.mutable.ListBuffer
 
 def snafuToLong(snafu: String): Long = {
-    val snafuNumbers = snafu.map(digit => {
-        digit match {
-            case '=' => -2L
-            case '-' => -1L
-            case it => it.asDigit.toLong      
-        } 
-    })
+    val snafuNumbers = snafu.collect {
+        case '=' => -2L
+        case '-' => -1L
+        case it => it.asDigit.toLong
+    }
 
     return snafuNumbers.reduce { case (acc, item) => acc * 5L + item }
 }

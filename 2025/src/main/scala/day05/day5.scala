@@ -12,10 +12,9 @@ case class Data(ranges: List[Range], ids: List[Long])
 def parseInput(lines: List[String]): Data = {
     val idx = lines.indexWhere(_.trim.isEmpty)
 
-    val ranges = lines.take(idx).map(line => {
-        val Array(start, end) = line.split('-').map(_.toLong)
-        Range(start, end)
-    })
+    val ranges = lines.take(idx).collect {
+        case s"$start-$end" => Range(start.toLong, end.toLong)
+    }
 
     val numbers = lines.drop(idx + 1).map(_.toLong)
 

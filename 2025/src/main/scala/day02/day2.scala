@@ -8,13 +8,13 @@ import scala.util.matching.Regex
 val partOne = raw"(\d+)\1".r
 val partTwo = raw"(\d+?)\1+".r
 
-def parseInput(input: String) = input.split(',').map(line => {
-    val Array(start, end) = line.split('-').map(_.toLong)
-    start to end
-})
+def parseInput(input: String) = input.split(',').collect {
+    case s"$start-$end" => start.toLong to end.toLong
+}
 
-def helper(ranges: Array[Inclusive[Long]], pattern: Regex) = 
-    ranges.flatMap(_.filter(it => pattern.matches(it.toString))).sum
+def helper(ranges: Array[Inclusive[Long]], pattern: Regex): Long = {
+    return ranges.flatMap(_.filter(it => pattern.matches(it.toString))).sum
+}
 
 def evaluatorOne(ranges: Array[Inclusive[Long]]) = helper(ranges, partOne)
 def evaluatorTwo(ranges: Array[Inclusive[Long]]) = helper(ranges, partTwo)

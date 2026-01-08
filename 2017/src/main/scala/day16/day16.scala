@@ -9,22 +9,11 @@ case class Spin(size: Int) extends Move
 case class Exchange(a: Int, b: Int) extends Move
 case class Partner(a: Char, b: Char) extends Move
 
-def parseInput(input: String) = input.split(',').map(dance => {
-    val (moves, rest) = (dance.head, dance.tail)
-
-    moves match {
-        case 's' => Spin(rest.toInt)
-        case 'x' => {
-            val Array(a, b) = rest.split('/').map(_.toInt)
-            Exchange(a, b)
-        }
-        case 'p' => {
-            val Array(a, b) = rest.split('/').map(_.head)
-            Partner(a, b)
-        }
-        case _ => throw new Exception(s"Unknown move: $moves")
-    }
-}).toList
+def parseInput(input: String) = input.split(',').collect {
+    case s"s$num" => Spin(num.toInt)
+    case s"x$a/$b" => Exchange(a.toInt, b.toInt)
+    case s"p$a/$b" => Partner(a.head, b.head)
+}.toList
 
 def applySpin(str: String, num: Int): String = {
     return str.takeRight(num) + str.dropRight(num)
@@ -35,7 +24,7 @@ def applyExchange(str: String, a: Int, b: Int): String = {
     val temp = arr(a)
     arr(a) = arr(b)
     arr(b) = temp
-    return new String(arr)
+    return arr.mkString
 }
 
 def applyPartner(str: String, a: Char, b: Char): String = {

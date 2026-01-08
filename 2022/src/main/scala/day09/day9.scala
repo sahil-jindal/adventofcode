@@ -12,12 +12,11 @@ case class Knot(y: Int, x: Int) {
     def -(that: Knot) = Direction(y - that.y, x - that.x)
 }
 
-def getDirections(dir: Char) = dir match {
+def getDirections: PartialFunction[Char, Direction] = {
     case 'U' => Direction(-1, 0)
     case 'D' => Direction(1, 0)
     case 'L' => Direction(0, -1)
     case 'R' => Direction(0, 1)
-    case _ => throw new Exception()
 }
 
 def parseInput(input: List[String]) = input.flatMap(line => {

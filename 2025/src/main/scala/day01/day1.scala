@@ -5,10 +5,10 @@ import scala.io.Source
 
 case class Step(pos: Int, zeroHits: Int)
 
-def parseInput(input: List[String]) = input.map(line => {
-    val (direction, amount) = line.splitAt(1)
-    if (direction == "L") -amount.toInt else amount.toInt
-})
+def parseInput(input: List[String]) = input.collect {
+    case s"L$amount" => -amount.toInt
+    case s"R$amount" =>  amount.toInt
+}
 
 def preComputation(numbers: List[Int]): List[Step] = {
     return numbers.scanLeft(Step(50, 0)) { (prev, move) =>

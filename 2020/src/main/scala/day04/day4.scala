@@ -22,8 +22,8 @@ def groupLines(input: List[String]): List[List[String]] = {
 
 def parseInput(input: List[String]): List[Map[String, String]] = {
     return groupLines(input).map(passport => {
-        passport.flatMap(_.split(" ")).map(_.split(":")).collect {
-            case Array(key, value) => key -> value
+        passport.flatMap(_.split(" ")).collect {
+            case s"$key:$value" => key -> value
         }.toMap
     })
 }
