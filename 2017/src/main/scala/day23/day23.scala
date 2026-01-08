@@ -4,34 +4,75 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Map
 
-def evaluatorOne(input: List[String]): Int = {
-    val prog = input.map(_.split(" "))
-    val regs = Map.empty[String, Int]
-    var ip = 0
-    var mulCount = 0
+// # Coprocessor Conflagration
+//
+// Just like [`Day 18`] reverse engineering the code is essential. The entire input can be reduced
+// to only the very first number.
+//
+// ```none
+//     set b $NUMBER       if a == 0 {
+//     set c b                 b = $NUMBER;
+//     jnz a 2                 c = b;
+//     jnz 1 5             } else {
+//     mul b 100               b = 100000 + 100 * $NUMBER;
+//     sub b -100000           c = b + 17000;
+//     set c b             }
+//     sub c -17000
+//     set f 1             for b in (b..=c).step_by(17) {
+//     set d 2                 f = 1;
+//     set e 2                 for d in 2..b {
+//     set g d                     for e in 2..b {
+//     mul g e                         if d * e == b {
+//     sub g b                             f = 0;
+//     jnz g 2                         }
+//     set f 0
+//     sub e -1
+//     set g e
+//     sub g b
+//     jnz g -8                    }
+//     sub d -1
+//     set g d
+//     sub g b
+//     jnz g -13               }
+//     jnz f 2
+//     sub h -1                if f == 0 {
+//     set g b                     h += 1;
+//     sub g c                 }
+//     jnz g 2
+//     jnz 1 3
+//     sub b -17
+//     jnz 1 -23           }
+//  ```
+//
+// ## Part One
+//
+// The number of `mul` operations is the product of the two inner loops from 2 to `n` exclusive.
+//
+// ## Part Two
+//
+// Counts the number of composite numbers starting from `100,000 + 100 * n` checking the next
+// 1,000 numbers in steps of 17. The raw code take `O(n²)` complexity for each number so emulating
+// this directly would take at least 10⁵.10⁵.10³ = 10¹³ = 10,000,000,000,000 steps.
 
-    def getReg(reg: String): Int = reg.toIntOption.getOrElse(regs.getOrElse(reg, 0))
-    def setReg(reg: String, value: Int): Unit = regs(reg) = value
-
-    while (ip >= 0 && ip < prog.length) {
-        prog(ip) match {
-            case Array("set", x, y) => setReg(x, getReg(y)); ip += 1
-            case Array("sub", x, y) => setReg(x, getReg(x) - getReg(y)); ip += 1
-            case Array("mul", x, y) => setReg(x, getReg(x) * getReg(y)); ip += 1; mulCount += 1
-            case Array("jnz", x, y) => ip += (if (getReg(x) != 0) getReg(y) else 1)
-            case _ => throw new Exception(s"Cannot parse ${prog(ip)}")
-        }
-    }
-
-    return mulCount
+def parseInput(input: List[String]): Int = {
+    return raw"(-?\d+)".r.findFirstMatchIn(input.head).get.group(1).toInt
 }
 
-def isPrime(n: Int): Boolean = {
-    if n < 2 then return false
-    return (2 to math.sqrt(n).toInt).forall(n % _ != 0)
+def isComposite(n: Int): Boolean = {
+    if (n & 1) == 0 then return true
+    return (3 to math.sqrt(n).toInt by 2).exists(n % _ == 0)
 }
 
-def evaluatorTwo(): Int = (109300 to 126300 by 17).count(!isPrime(_))
+def evaluatorOne(input: Int): Int = {
+    val n = input - 2
+    return n * n
+}
+
+def evaluatorTwo(input: Int): Int = {
+    val start = 100000 + 100*input
+    val end = start + 17000
+    return (start to end by 17).count(isComposite)
+}
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -39,8 +80,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day23.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo()}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")

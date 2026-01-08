@@ -4,48 +4,37 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Map
 
-def parseInput(input: Array[String]) = input.map(_.split(' ')).toList
+// # Safe Cracking
+//
+// Like [`Day 12`] this problem is all about *reading* code not writing code.
+//
+// We could implement a brute force virtual machine without understanding the underlying code
+// but it's much more efficient to analyze the code instead.
+//
+// The first thing we notice is that the following idiom is repeated several times:
+//
+// ```none
+//     inc x
+//     dec y
+//     jnz y -2
+// ```
+//
+// This is equivalent to `x += y` only much less efficient. The `tgl` instruction eventually
+// rewrites a `jnz` to `cpy` to allow the program loop to end.
+//
+// Analysis shows that the code is calculating the [factorial](https://en.wikipedia.org/wiki/Factorial)
+// of `a` plus some constant offset. We can replace the entire code with a single multiplication.
+// If we had emulated the raw instructions directly then it would have taken billions of
+// iterations to get the answer.
 
-def solve(input: List[Array[String]], a: Int): Int = {
-    val prg = input.map(_.clone())
-    var regs = Map("a" -> a)
-    var ip = 0
-
-    def getReg(reg: String): Int = reg.toIntOption.getOrElse(regs.getOrElse(reg, 0))
-    def setReg(reg: String, value: Int): Unit = if (reg.toIntOption.isEmpty) regs(reg) = value
-
-    while (ip >= 0 && ip < prg.length) do {
-        prg(ip) match {
-            case Array("inc", x) => setReg(x, getReg(x) + 1); ip += 1
-            case Array("dec", x) => setReg(x, getReg(x) - 1); ip += 1
-            case Array("cpy", x, y) => setReg(y, getReg(x)); ip += 1
-            case Array("mul", x, y) => setReg(y, getReg(x) * getReg(y)); ip += 1
-            case Array("jnz", x, y) => ip += (if getReg(x) != 0 then getReg(y) else 1)
-            case Array("tgl", x) => {
-                val ipDst = ip + getReg(x)
-
-                if (ipDst >= 0 && ipDst < prg.length) {
-                    prg(ipDst)(0) = prg(ipDst)(0) match {
-                        case "cpy" => "jnz"
-                        case "inc" => "dec"
-                        case "dec" => "inc"
-                        case "jnz" => "cpy"
-                        case "tgl" => "inc"
-                        case other => other
-                    }
-                }
-                
-                ip += 1
-            }
-            case stm => throw new Exception(s"Cannot parse ${stm.mkString(" ")}")
-        }
-    }
-
-    return getReg("a")
+def parseInput(input: List[String]): Int = {
+    val first = raw"(-?\d+)".r.findFirstMatchIn(input(19)).get.group(1).toInt
+    val second = raw"(-?\d+)".r.findFirstMatchIn(input(20)).get.group(1).toInt
+    return first * second
 }
 
-def evaluatorOne(input: List[Array[String]]): Long = solve(input, 7)
-def evaluatorTwo(input: List[Array[String]]): Long = solve(input, 12)
+def evaluatorOne(input: Int): Int = 5040 + input
+def evaluatorTwo(input: Int): Int = 479001600 + input
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -53,13 +42,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day23.txt") match {
         case Success(lines) => {
-            val newLines = lines.toArray
-            newLines(5) = "cpy c a"
-            newLines(6) = "mul d a"
-            newLines(7) = "cpy 0 d"
-            newLines(8) = "cpy 0 c"
-            
-            val input = parseInput(newLines)
+            val input = parseInput(lines)
             println(s"Part One: ${evaluatorOne(input)}")
             println(s"Part Two: ${evaluatorTwo(input)}")
         }

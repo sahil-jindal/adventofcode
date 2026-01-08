@@ -3,65 +3,117 @@ package day19
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
+// # Go With The Flow
+//
+// There are two parts to this problem:
+// * Reverse engineering the assembly in order to figure out what the program is doing.
+// * Implementing the program more efficiently in Rust.
+//
+// ## Reverse Engineering
+//
+// ```none
+//     Raw              | Pseudo-Assembly                  | Pseudo-Rust
+//     -----------------+----------------------------------+-----------------------------------
+//     #ip 1            | # a = 0 b = 2 c = 3 d = 4 e = 5  |
+//     addi 1 16 1      |           goto hotel             |
+//     seti 1 8 2       | alfa:     b = 1                  | for b in 1..=e {
+//     seti 1 5 4       | bravo:    d = 1                  |     for d in 1..=e {
+//     mulr 2 4 3       | charlie:  c = b * d              |
+//     eqrr 3 5 3       |           c = (c == e) ? 1: 0    |
+//     addr 3 1 1       |           if c == 1 goto delta   |         if b * d == e {
+//     addi 1 1 1       |           goto echo              |
+//     addr 2 0 0       | delta:    a += b                 |             a += b
+//     addi 4 1 4       | echo:     d += 1                 |
+//     gtrr 4 5 3       |           c = (d > e) ? 1: 0     |         }
+//     addr 1 3 1       |           if c == 1 goto foxtrot |
+//     seti 2 8 1       |           goto charlie           |     }
+//     addi 2 1 2       | foxtrot:  b += 1                 |
+//     gtrr 2 5 3       |           c = (b > e) ? 1: 0     |
+//     addr 3 1 1       |           if c == 1 goto golf    |
+//     seti 1 8 1       |           goto bravo             | }
+//     mulr 1 1 1       | golf:     goto end               |
+//     addi 5 2 5       | hotel:    e = 2                  |
+//     mulr 5 5 5       |           e = e * e              |
+//     mulr 1 5 5       |           e *= 19                |
+//     muli 5 11 5      |           e *= 11                |
+//     addi 3 $FIRST 3  |           c = $FIRST             |
+//     mulr 3 1 3       |           c *= 22                |
+//     addi 3 $SECOND 3 |           c += $SECOND           |
+//     addr 5 3 5       |           e += c                 | e = (22 * $FIRST + $SECOND) + 836
+//     addr 1 0 1       |           if a == 1 goto india   |
+//     seti 0 7 1       |           goto alfa              |
+//     setr 1 1 3       | india:    c = 27                 |
+//     mulr 3 1 3       |           c *= 28                |
+//     addr 1 3 3       |           c += 29                |
+//     mulr 1 3 3       |           c *= 30                |
+//     muli 3 14 3      |           c *= 14                |
+//     mulr 3 1 3       |           c *= 32                |
+//     addr 5 3 5       |           e += c                 | if a == 1 { e += 10550400 }
+//     seti 0 9 0       |           a = 0                  |
+//     seti 0 0 1       |           goto alfa              |
+//                      | end:                             |
+// ```
+//
+// The decoded assembly shows that the program is computing the
+// [sum of the divisors](https://en.wikipedia.org/wiki/Divisor_summatory_function) of a number `n`,
+// using two nested loops for a total complexity in part two of `O(n²) = O(10¹⁴)`.
+//
+// Clearly there is some room for performance improvements. The interesting part is that we only
+// need the two numbers `$FIRST` and `$SECOND` and can discard the rest of the input.
+//
+// We compute the divisor sum using [trial division](https://en.wikipedia.org/wiki/Trial_division).
+// As we want the prime factors (instead of checking that `n` is prime) the asymptotic complexity
+// is slightly lower in practice, being the square root of the largest prime factor of `n`
+// instead of the square root of `n` itself.
+//
+// As `n` is on the order of 10,000,000 this gives a worst case upper bound of `√10000000 = 3162`
+// when `n` is prime. However for most composite numbers the largest prime factor will be much
+// smaller, on the order of 100,000 for an approximate complexity of `√100000 = 316`.
+
 case class State(regs: Vector[Int], ip: Int, ipReg: Int)
+case class Input(first: Int, second: Int)
 
-def executeInstruction(state: State, op: String, a: Int, b: Int, c: Int): State = {
-    val regs = state.regs.updated(state.ipReg, state.ip)
-    
-    val newValue = op match {
-        case "addr" => regs(a) + regs(b)
-        case "addi" => regs(a) + b
-        case "mulr" => regs(a) * regs(b)
-        case "muli" => regs(a) * b
-        case "banr" => regs(a) & regs(b)
-        case "bani" => regs(a) & b
-        case "borr" => regs(a) | regs(b)
-        case "bori" => regs(a) | b
-        case "setr" => regs(a)
-        case "seti" => a
-        case "gtir" => if (a > regs(b)) 1 else 0
-        case "gtri" => if (regs(a) > b) 1 else 0
-        case "gtrr" => if (regs(a) > regs(b)) 1 else 0
-        case "eqir" => if (a == regs(b)) 1 else 0
-        case "eqri" => if (regs(a) == b) 1 else 0
-        case "eqrr" => if (regs(a) == regs(b)) 1 else 0
-        case _ => throw new IllegalArgumentException(s"Unknown opcode: $op")
+def parseInput(input: List[String]): Input = {
+    val first = raw"addi 3 (-?\d+) 3".r.findFirstMatchIn(input(22)).get.group(1).toInt
+    val second = raw"addi 3 (-?\d+) 3".r.findFirstMatchIn(input(24)).get.group(1).toInt
+    val base = 22*first + second
+    return Input(base + 836, base + 10551236)
+}
+
+/// Returns the sum of the divisors of an integer `n`, including 1 and `n` itself.
+/// For example `20 => 1 + 2 + 4 + 5 + 10 + 20 = 42`.
+def divisorSum(input: Int): Int = {
+    var n = input
+    var f = 2
+    var sum = 1
+
+    // We only need to check factors less than or equal to the square root of the greatest prime
+    // factor of the input. This loop will only consider prime numbers since we will have sieved
+    // out smaller primes. For example `n = 20 = 2 * 2 * 5`. When we check `f = 4`, `n` will
+    // already be reduced to 5.
+    while (f * f <= n) {
+        // `g` is the next term in the geometric series
+        // representing the sum of a repeated prime factor.
+        var g = sum
+
+        // `n` could have more than one of the same prime factor.
+        while (n % f == 0) {
+            n /= f
+            g *= f
+            sum += g
+        }
+
+        f += 1
     }
-    
-    val newregs = regs.updated(c, newValue)
-    val newIp = newregs(state.ipReg) + 1
 
-    return State(newregs, newIp, state.ipReg)
+    // If `n` is one then the greatest prime factor was repeated so has already been included in
+    // the sum and we can just return it directly. Otherwise `n` is the unique greatest prime
+    // factor and must be added to the sum.
+    return if n == 1 then sum else sum * (1 + n)
 }
 
-def executeProgram(state: State, instructions: List[(String, Int, Int, Int)]): State = {
-    var currentState = state
-    
-    while (currentState.ip >= 0 && currentState.ip < instructions.length) {
-        val (op, a, b, c) = instructions(currentState.ip)
-        currentState = executeInstruction(currentState, op, a, b, c)
-    }
-    
-    return currentState
-}
-
-def evaluatorOne(input: List[String]): Int = {
-    var ipReg = input.head.stripPrefix("#ip ").toInt
-    
-    var instructions = input.tail.map(it => {
-        val Array(a, b, c, d) = it.split(" ")
-        (a, b.toInt, c.toInt, d.toInt)
-    })
-
-    val initialState = State(Vector.fill(6)(0), 0, ipReg)
-
-    return executeProgram(initialState, instructions).regs(0)
-}
-
-def evaluatorTwo(): Int = {
-    val n = 10551345
-    return (1 to n).filter(it => n % it == 0).sum
-}
+def evaluatorOne(input: Input) = divisorSum(input.first)
+def evaluatorTwo(input: Input) = divisorSum(input.second)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -69,8 +121,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day19.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo()}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
