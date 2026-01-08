@@ -4,32 +4,46 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Map
 
-def parseInput(input: List[String]) = input.map(_.replace(",", "").split(" "))
+sealed trait Op
+case object Hlf extends Op
+case object Tpl extends Op
+case object IncA extends Op
+case object IncB extends Op
+case class Jmp(a: Int) extends Op
+case class Jie(a: Int) extends Op
+case class Jio(a: Int) extends Op
 
-def Solve(prg: List[Array[String]], a: Long): Long = {
-    val regs = Map("a" -> a)
-    var ip = 0L
+def parseInput(input: List[String]) = input.collect {
+    case "hlf a" => Hlf
+    case "tpl a" => Tpl
+    case "inc a" => IncA
+    case "inc b" => IncB
+    case s"jmp $num" => Jmp(num.toInt)
+    case s"jie a, $num" => Jie(num.toInt)
+    case s"jio a, $num" => Jio(num.toInt)
+}
 
-    def getReg(reg: String): Long = reg.toLongOption.getOrElse(regs.getOrElse(reg, 0L))
-    def setReg(reg: String, value: Long): Unit = regs(reg) = value
+def Solve(prg: List[Op], start: Int): Int = {
+    var (a, b) = (start, 0)
+    var ip = 0
     
     while (ip >= 0 && ip < prg.length) {
-        prg(ip.toInt) match {
-            case Array("hlf", x) => setReg(x, getReg(x) / 2); ip += 1
-            case Array("tpl", x) => setReg(x, getReg(x) * 3); ip += 1
-            case Array("inc", x) => setReg(x, getReg(x) + 1); ip += 1
-            case Array("jmp", x) => ip += x.toLong
-            case Array("jie", x, y) => ip += (if (getReg(x) % 2 == 0) y.toLong else 1)
-            case Array("jio", x, y) => ip += (if (getReg(x) == 1) y.toLong else 1)
-            case _ => throw new Exception(s"Cannot parse: ${prg(ip.toInt)}")
+        prg(ip) match {
+            case Hlf => a /= 2; ip += 1
+            case Tpl => a *= 3; ip += 1
+            case IncA => a += 1; ip += 1
+            case IncB => b += 1; ip += 1
+            case Jmp(x) => ip += x
+            case Jie(x) => ip += (if (a % 2 == 0) x else 1)
+            case Jio(x) => ip += (if (a == 1) x else 1)
         }
     }
 
-    return getReg("b")
+    return b
 }
 
-def evaluatorOne(input: List[Array[String]]): Long = Solve(input, 0)
-def evaluatorTwo(input: List[Array[String]]): Long = Solve(input, 1)
+def evaluatorOne(input: List[Op]): Int = Solve(input, 0)
+def evaluatorTwo(input: List[Op]): Int = Solve(input, 1)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

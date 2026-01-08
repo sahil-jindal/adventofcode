@@ -4,13 +4,18 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Set
 
-case class Stm(op: String, arg: Int)
+sealed trait Stm
+case class Nop(arg: Int) extends Stm
+case class Acc(arg: Int) extends Stm
+case class Jmp(arg: Int) extends Stm
+
 case class Pair(acc: Int, terminated: Boolean)
 
-def parseInput(input: List[String]) = input.map(line => {
-    val Array(first, second) = line.split(" ")
-    Stm(first, second.toInt)
-})
+def parseInput(input: List[String]) = input.collect {
+    case s"nop $arg" => Nop(arg.toInt)
+    case s"acc $arg" => Acc(arg.toInt)
+    case s"jmp $arg" => Jmp(arg.toInt)
+}
 
 def run(program: List[Stm]): Pair = {
     var (ip, acc) = (0, 0)
@@ -22,10 +27,9 @@ def run(program: List[Stm]): Pair = {
       
         seen += ip
         program(ip) match {
-            case Stm("nop", _)  => ip += 1
-            case Stm("acc", arg) => acc += arg; ip += 1
-            case Stm("jmp", arg) => ip += arg
-            case _ => ()
+            case Nop(_)  => ip += 1
+            case Acc(arg) => acc += arg; ip += 1
+            case Jmp(arg) => ip += arg
         }
     }
 
@@ -33,15 +37,10 @@ def run(program: List[Stm]): Pair = {
 }
 
 def patches(program: List[Stm]): List[List[Stm]] = {
-    return program.zipWithIndex.collect { case (stm, idx) if stm.op != "acc" => idx }.map(lineToPatch => {
-        val oldStm = program(lineToPatch)
-
-        program.updated(lineToPatch, oldStm.op match {
-            case "jmp" => oldStm.copy(op = "nop")
-            case "nop" => oldStm.copy(op = "jmp")
-            case _ => throw Exception()
-        })
-    })
+    return program.zipWithIndex.collect { 
+        case (Jmp(arg), idx) => program.updated(idx, Nop(arg)) 
+        case (Nop(arg), idx) => program.updated(idx, Jmp(arg))
+    }
 }
 
 def evaluatorOne(input: List[Stm]): Int = run(input).acc

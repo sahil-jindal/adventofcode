@@ -3,7 +3,11 @@ package day21
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-type Context = Map[String, List[String]]
+enum Op { case Add, Sub, Mul, Div }
+
+sealed trait Result 
+case class Value(num: Long) extends Result
+case class Statement(left: String, op: Op, right: String) extends Result
 
 sealed trait Expr { def simplify(): Expr }
 
@@ -22,23 +26,33 @@ case class Eq(left: Expr, right: Expr) extends Expr {
     override def simplify(): Expr = Eq(left.simplify(), right.simplify())
 }
 
-case class Op(left: Expr, op: String, right: Expr) extends Expr {
+case class Resolve(left: Expr, op: Op, right: Expr) extends Expr {
     override def toString: String = s"($left) $op ($right)"
 
     override def simplify(): Expr = {
         (left.simplify(), op, right.simplify()) match {
-            case (Const(l), "+", Const(r)) => Const(l + r)
-            case (Const(l), "-", Const(r)) => Const(l - r)
-            case (Const(l), "*", Const(r)) => Const(l * r)
-            case (Const(l), "/", Const(r)) => Const(l / r)
-            case (l, o, r) => Op(l, o, r)
+            case (Const(l), Op.Add, Const(r)) => Const(l + r)
+            case (Const(l), Op.Sub, Const(r)) => Const(l - r)
+            case (Const(l), Op.Mul, Const(r)) => Const(l * r)
+            case (Const(l), Op.Div, Const(r)) => Const(l / r)
+            case (l, o, r) => Resolve(l, o, r)
         }
     }
 }
 
+type Context = Map[String, Result]
+
+def parseResult(input: String) = input match {
+    case s"$op1 + $op2" => Statement(op1, Op.Add, op2)
+    case s"$op1 - $op2" => Statement(op1, Op.Sub, op2)
+    case s"$op1 * $op2" => Statement(op1, Op.Mul, op2)
+    case s"$op1 / $op2" => Statement(op1, Op.Div, op2)
+    case other => Value(other.toLong)
+}
+
 def parseInput(input: List[String]) = input.map(line => {
     val Array(key, value) = line.split(": ")
-    key -> value.split(" ").toList
+    key -> parseResult(value)
 }).toMap
 
 def createExpression(context: Context, part2: Boolean): Expr = {
@@ -47,24 +61,29 @@ def createExpression(context: Context, part2: Boolean): Expr = {
         
         if (part2) {
             if (name == "humn") return Var("humn")
-            if (name == "root") return Eq(buildExpr(parts(0)), buildExpr(parts(2)))
+            
+            if (name == "root") {
+                val temp = parts.asInstanceOf[Statement]
+                return Eq(buildExpr(temp.left), buildExpr(temp.right))
+            }
         }
         
-        if (parts.length == 1) return Const(parts(0).toLong)
-
-        return Op(buildExpr(parts(0)), parts(1), buildExpr(parts(2)))
+        return parts match {
+            case Value(n) => Const(n)
+            case Statement(l, op, r) => Resolve(buildExpr(l), op, buildExpr(r))
+        }
     }
 
     return buildExpr("root")
 }
 
 def solve(eq: Eq): Eq = eq.left match {
-    case Op(Const(l), "+", r) => Eq(r, Op(eq.right, "-", Const(l)).simplify())
-    case Op(Const(l), "*", r) => Eq(r, Op(eq.right, "/", Const(l)).simplify())
-    case Op(l, "+", r) => Eq(l, Op(eq.right, "-", r).simplify())
-    case Op(l, "-", r) => Eq(l, Op(eq.right, "+", r).simplify())
-    case Op(l, "*", r) => Eq(l, Op(eq.right, "/", r).simplify())
-    case Op(l, "/", r) => Eq(l, Op(eq.right, "*", r).simplify())
+    case Resolve(Const(l), Op.Add, r) => Eq(r, Resolve(eq.right, Op.Sub, Const(l)).simplify())
+    case Resolve(Const(l), Op.Mul, r) => Eq(r, Resolve(eq.right, Op.Div, Const(l)).simplify())
+    case Resolve(l, Op.Add, r) => Eq(l, Resolve(eq.right, Op.Sub, r).simplify())
+    case Resolve(l, Op.Sub, r) => Eq(l, Resolve(eq.right, Op.Add, r).simplify())
+    case Resolve(l, Op.Mul, r) => Eq(l, Resolve(eq.right, Op.Div, r).simplify())
+    case Resolve(l, Op.Div, r) => Eq(l, Resolve(eq.right, Op.Mul, r).simplify())
     case Const(_) => Eq(eq.right, eq.left)
     case _ => eq
 }

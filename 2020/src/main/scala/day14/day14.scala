@@ -4,12 +4,16 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Map
 
-case class Command(baseAddr: Int, value: Long)
-case class ProgramSegment(mask: String, commands: List[Command])
+sealed trait Bit
+case object Unknown extends Bit
+case class Value(a: Boolean) extends Bit
 
-def parseBinaryToLong(str: String): Long = {
-    require(str.matches("^[01]+$"))
-    return str.reverse.zipWithIndex.collect { case ('1', idx) => 1L << idx }.sum
+case class Command(baseAddr: Int, value: Long)
+case class ProgramSegment(mask: IndexedSeq[Bit], commands: List[Command])
+
+def parseBinaryToLong(str: IndexedSeq[Bit]): Long = {
+    require(str.forall(_.isInstanceOf[Value]))
+    return str.reverse.zipWithIndex.collect { case (Value(true), idx) => 1L << idx }.sum
 }
 
 def groupCommands(input: List[String]): List[List[String]] = {
@@ -22,7 +26,11 @@ def groupCommands(input: List[String]): List[List[String]] = {
 
 def parseInput(input: List[String]): List[ProgramSegment] = {
     return groupCommands(input).map(group => {
-        val mask = group.head.stripPrefix("mask = ")
+        val mask = group.head.stripPrefix("mask = ").collect {
+            case '0' => Value(false)
+            case '1' => Value(true)
+            case 'X' => Unknown
+        }
 
         val commands = group.tail.map(line => {
             val List(a, b) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toList
@@ -33,14 +41,14 @@ def parseInput(input: List[String]): List[ProgramSegment] = {
     })
 }
 
-def addresses(baseAddr: Long, mask: String): List[Long] = {
+def addresses(baseAddr: Long, mask: IndexedSeq[Bit]): List[Long] = {
     return mask.zipWithIndex.foldLeft(List(0L)) { case (prefixes, (ch, i)) =>
         val bit = (baseAddr >> (35 - i)) & 1
 
         ch match {
-            case '0' => prefixes.map(prefix => (prefix << 1) + bit)
-            case '1' => prefixes.map(prefix => (prefix << 1) + 1)
-            case  _  => prefixes.flatMap(prefix => List((prefix << 1), (prefix << 1) + 1))
+            case Value(false) => prefixes.map(prefix => (prefix << 1) + bit)
+            case Value(true) => prefixes.map(prefix => (prefix << 1) + 1)
+            case Unknown => prefixes.flatMap(prefix => List((prefix << 1), (prefix << 1) + 1))
         }
     }    
 }
@@ -50,8 +58,8 @@ def evaluatorOne(input: List[ProgramSegment]): Long = {
     
     for {
         ProgramSegment(mask, commands) <- input
-        andMask = parseBinaryToLong(mask.replace("X", "1"))
-        orMask = parseBinaryToLong(mask.replace("X", "0"))
+        andMask = parseBinaryToLong(mask.map(it => if (it == Unknown) Value(true) else it))
+        orMask = parseBinaryToLong(mask.map(it => if (it == Unknown) Value(false) else it))
         Command(baseAddr, value) <- commands
     } mem(baseAddr) = (value & andMask) | orMask
     

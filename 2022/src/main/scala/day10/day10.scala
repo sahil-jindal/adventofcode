@@ -4,27 +4,33 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.ListBuffer
 
+sealed trait Op
+case object Noop extends Op
+case class Add(num: Int) extends Op
+
 case class Signal(cycle: Int, x: Int)
 
-def getSignal(input: List[String]): List[Signal] = {
+def parseInput(input: List[String]) = input.collect {
+    case "noop" => Noop
+    case s"addx $num" => Add(num.toInt)
+}
+
+def getSignal(operations: List[Op]): List[Signal] = {
     var (cycle, x) = (1, 1)
     val res = ListBuffer.empty[Signal]
 
-    for (line <- input) {
-        val parts = line.split(" ")
-
-        parts(0) match {
-            case "noop" => {
+    for (op <- operations) {
+        op match {
+            case Noop => {
                 res += Signal(cycle, x)
                 cycle += 1
             }
-            case "addx" => {
+            case Add(num) => {
                 res += Signal(cycle, x)
                 res += Signal(cycle + 1, x)
-                x += parts(1).toInt
+                x += num
                 cycle += 2
             }
-            case _ => throw Exception()
         }
     }
 
@@ -51,7 +57,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day10.txt") match {
         case Success(lines) => {
-            val input = getSignal(lines)
+            val input = getSignal(parseInput(lines))
             println(s"Part One: ${evaluatorOne(input)}")
             println(s"Part Two:\n${evaluatorTwo(input)}")
         }

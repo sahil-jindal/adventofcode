@@ -5,20 +5,28 @@ import scala.io.Source
 import scala.collection.mutable.{Map => MutableMap}
 import scala.util.boundary, boundary.break
 
-case class Gate(in1: String, kind: String, in2: String)
+enum Kind { case OR, AND, XOR }
+
+case class Gate(in1: String, kind: Kind, in2: String)
 case class Pair(inputs: Map[String, Boolean], circuit: Map[String, Gate])
+
+def parseKind: PartialFunction[String, Kind] = {
+    case "OR" => Kind.OR
+    case "AND" => Kind.AND
+    case "XOR" => Kind.XOR
+}
 
 def parseInput(input: List[String]): Pair = {
     val idx = input.indexWhere(_.trim.isEmpty)
     
-    val inputs = input.take(idx).map(line => {
-        val Array(a, b) = line.split(": ")
-        a -> (b == "1")
-    }).toMap
+    val inputs = input.take(idx).collect {
+        case s"$addr: 1" => addr -> true
+        case s"$addr: 0" => addr -> false
+    }.toMap
 
     val circuit = input.drop(idx + 1).map(line => {
         val Seq(a, kind, b, out) = raw"(\w+)".r.findAllIn(line).toSeq
-        out -> Gate(a, kind, b)
+        out -> Gate(a, parseKind(kind), b)
     }).toMap
 
     return Pair(inputs, circuit)
@@ -27,22 +35,25 @@ def parseInput(input: List[String]): Pair = {
 def eval(label: String, circuit: Map[String, Gate], inputs: Map[String, Boolean]): Boolean = {
     if (inputs.contains(label)) return inputs(label)
 
-    return circuit(label) match {
-        case Gate(in1, "AND", in2) => eval(in1, circuit, inputs) & eval(in2, circuit, inputs)
-        case Gate(in1, "OR", in2)  => eval(in1, circuit, inputs) | eval(in2, circuit, inputs)
-        case Gate(in1, "XOR", in2) => eval(in1, circuit, inputs) ^ eval(in2, circuit, inputs)
-        case  _ => throw Exception(circuit(label).toString())
+    val Gate(in1, kind, in2) = circuit(label)
+    val out1 = eval(in1, circuit, inputs)
+    val out2 = eval(in2, circuit, inputs)
+
+    return kind match {
+        case Kind.OR  => out1 | out2
+        case Kind.AND => out1 & out2
+        case Kind.XOR => out1 ^ out2
     }
 }
 
-def output(circuit: MutableMap[String, Gate], x: String, kind: String, y: String): String = {
+def output(circuit: MutableMap[String, Gate], x: String, kind: Kind, y: String): String = {
     val (g1, g2) = (Gate(x, kind, y), Gate(y, kind, x))
     return circuit.collectFirst { case (out, gate) if gate == g1 || gate == g2 => out }.getOrElse("")
 }
 
 // the circuit should define a full adder for two 44 bit numbers
 def fix(circuit: MutableMap[String, Gate]): List[String] = {
-    var cin = output(circuit, "x00", "AND", "y00")
+    var cin = output(circuit, "x00", Kind.AND, "y00")
 
     boundary {
         for (i <- 1 until 45) {
@@ -50,10 +61,10 @@ def fix(circuit: MutableMap[String, Gate]): List[String] = {
             val y = f"y${i}%02d"
             val z = f"z${i}%02d"
 
-            val xor1 = output(circuit, x, "XOR", y)
-            val and1 = output(circuit, x, "AND", y)
-            val xor2 = output(circuit, cin, "XOR", xor1)
-            val and2 = output(circuit, cin, "AND", xor1)
+            val xor1 = output(circuit, x, Kind.XOR, y)
+            val and1 = output(circuit, x, Kind.AND, y)
+            val xor2 = output(circuit, cin, Kind.XOR, xor1)
+            val and2 = output(circuit, cin, Kind.AND, xor1)
 
             if (xor2.isEmpty && and2.isEmpty) {
                 val temp = circuit(xor1)
@@ -62,7 +73,7 @@ def fix(circuit: MutableMap[String, Gate]): List[String] = {
                 break(fix(circuit) ++ List(xor1, and1))
             }
 
-            val carry = output(circuit, and1, "OR", and2)
+            val carry = output(circuit, and1, Kind.OR, and2)
 
             if (xor2 != z) {
                 val temp = circuit(z)

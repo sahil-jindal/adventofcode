@@ -5,30 +5,33 @@ import scala.io.Source
 
 case class Point(y: Int, x: Int)
 
-def foldX(pts: Set[Point], x: Int) = pts.map(p => if p.x > x then p.copy(x = 2*x - p.x) else p)
-def foldY(pts: Set[Point], y: Int) = pts.map(p => if p.y > y then p.copy(y = 2*y - p.y) else p)
+sealed trait Line { def fold(p: Point): Point }
+
+case class Vertical(x: Int) extends Line {
+    override def fold(p: Point) = {
+        if (p.x > x) p.copy(x = 2*x - p.x) else p
+    }
+}
+
+case class Horizontal(y: Int) extends Line {
+    override def fold(p: Point) = {
+        if (p.y > y) p.copy(y = 2*y - p.y) else p
+    }
+}
 
 def getHolds(input: List[String]): List[Set[Point]] = {
     val idx = input.indexWhere(_.trim.isEmpty)
-    val first = input.take(idx)
-    val second = input.drop(idx + 1)
 
-    val points = first.map(line => {
-        val Array(x, y) = line.split(",").map(_.toInt)
-        Point(y, x)
-    }).toSet
+    val points = input.take(idx).collect { 
+        case s"$x,$y" => Point(y.toInt, x.toInt) 
+    }.toSet
 
-    val res = second.scanLeft(points) { case (points, line) => 
-        val Array(axis, number) = line.stripPrefix("fold along ").split("=")
-
-        if (axis == "x") {
-            foldX(points, number.toInt)
-        } else {
-            foldY(points, number.toInt)
-        }
+    val lines = input.drop(idx + 1).map(_.stripPrefix("fold along ")).collect { 
+        case s"x=$num" => Vertical(num.toInt)
+        case s"y=$num" => Horizontal(num.toInt)
     }
 
-    return res.tail
+    return lines.scanLeft(points) { case (pts, line) => pts.map(line.fold) }.tail
 }
 
 def makeMessage(points: Set[Point]): String = {

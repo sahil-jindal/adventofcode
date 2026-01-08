@@ -3,14 +3,19 @@ package day06
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Instruction(action: String, startx: Int, starty: Int, endx: Int, endy: Int)
+enum Actions { case Toggle, TurnOn, TurnOff }
 
-val instructionRegex = raw"(toggle|turn on|turn off) (\d+),(\d+) through (\d+),(\d+)".r
+case class Instruction(action: Actions, startx: Int, starty: Int, endx: Int, endy: Int)
 
-def parseInput(input: List[String]) = input.map(line => {
-    val List(action, a, b, c, d) = instructionRegex.findFirstMatchIn(line).get.subgroups
-    Instruction(action, a.toInt, b.toInt, c.toInt, d.toInt)
-})
+val toggleRegex = raw"toggle (\d+),(\d+) through (\d+),(\d+)".r
+val turnOnRegex = raw"turn on (\d+),(\d+) through (\d+),(\d+)".r
+val turnOffRegex = raw"turn off (\d+),(\d+) through (\d+),(\d+)".r
+
+def parseInput(input: List[String]) = input.collect {
+    case toggleRegex(a, b, c, d) => Instruction(Actions.Toggle, a.toInt, b.toInt, c.toInt, d.toInt)
+    case turnOnRegex(a, b, c, d) => Instruction(Actions.TurnOn, a.toInt, b.toInt, c.toInt, d.toInt)
+    case turnOffRegex(a, b, c, d) => Instruction(Actions.TurnOff, a.toInt, b.toInt, c.toInt, d.toInt)
+}
 
 def evaluatorOne(input: List[Instruction]): Int = {
     
@@ -30,9 +35,9 @@ def evaluatorOne(input: List[Instruction]): Int = {
 
     for (Instruction(action, startx, starty, endx, endy) <- input) {
         action match {
-            case "turn on" => turnOnBrightness(grid, startx, starty, endx, endy)
-            case "turn off" => turnOffBrightness(grid, startx, starty, endx, endy)
-            case "toggle" => toggleBrightness(grid, startx, starty, endx, endy)
+            case Actions.Toggle => toggleBrightness(grid, startx, starty, endx, endy)
+            case Actions.TurnOn => turnOnBrightness(grid, startx, starty, endx, endy)
+            case Actions.TurnOff => turnOffBrightness(grid, startx, starty, endx, endy)
         }
     }
 
@@ -57,9 +62,9 @@ def evaluatorTwo(input: List[Instruction]): Int = {
 
     for (Instruction(action, startx, starty, endx, endy) <- input) {
         action match {
-            case "turn on" => turnOnBrightness(grid, startx, starty, endx, endy)
-            case "turn off" => turnOffBrightness(grid, startx, starty, endx, endy)
-            case "toggle" => toggleBrightness(grid, startx, starty, endx, endy)
+            case Actions.Toggle => toggleBrightness(grid, startx, starty, endx, endy)
+            case Actions.TurnOn => turnOnBrightness(grid, startx, starty, endx, endy)
+            case Actions.TurnOff => turnOffBrightness(grid, startx, starty, endx, endy)
         }
     }
 

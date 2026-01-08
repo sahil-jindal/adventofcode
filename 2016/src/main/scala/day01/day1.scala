@@ -4,7 +4,9 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Set
 
-case class Pair(turn: Char, steps: Int)
+enum Moves { case Left, Right }
+
+case class Pair(turn: Moves, steps: Int)
 case class Direction(dy: Int, dx: Int)
 
 case class Point(y: Int, x: Int) {
@@ -12,12 +14,14 @@ case class Point(y: Int, x: Int) {
     def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
 }
 
-def parseInput(input: String) = input.split(", ").map(it => Pair(it.head, it.tail.toInt)).toList
+def parseInput(input: String) = input.split(", ").collect {
+    case s"L$num" => Pair(Moves.Left, num.toInt)
+    case s"R$num" => Pair(Moves.Right, num.toInt)
+}.toList
 
-def updateDirection(dir: Direction, turn: Char) = turn match {
-    case 'R' => Direction(dir.dx, -dir.dy)
-    case 'L' => Direction(-dir.dx, dir.dy)
-    case _   => dir // No change for invalid input
+def updateDirection(dir: Direction, turn: Moves) = turn match {
+    case Moves.Right => Direction(dir.dx, -dir.dy)
+    case Moves.Left => Direction(-dir.dx, dir.dy)
 }
 
 def travel(directions: List[Pair]): List[Point] = {
