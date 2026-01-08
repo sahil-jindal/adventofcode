@@ -2,7 +2,6 @@ package day03
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Map => MutableMap}
 
 case class Direction(dy: Int, dx: Int)
 
@@ -15,30 +14,18 @@ case class Pair(pos: Point, distance: Int)
 
 type WirePath = Map[Point, Int]
 
-def getDirections: PartialFunction[Char, Direction] = {
-    case 'U' => Direction(-1, 0)
-    case 'R' => Direction(0, 1)
-    case 'D' => Direction(1, 0)
-    case 'L' => Direction(0, -1)
-}
+def parseLine(line: String) = line.split(",").collect {
+    case s"R$num" => (Direction(0, 1)  -> num.toInt)
+    case s"D$num" => (Direction(1, 0)  -> num.toInt)
+    case s"U$num" => (Direction(-1, 0) -> num.toInt)
+    case s"L$num" => (Direction(0, -1) -> num.toInt)
+}.toList
 
-def parseInput(input: List[String]) = input.map(line => {
-    line.split(",").map(it => (getDirections(it.head), it.tail.toInt)).toList
-})
+def parseInput(input: List[String]) = input.map(parseLine)
 
 def preComputeTrace(path: List[(Direction, Int)]): WirePath = {
     val directions = path.flatMap { case (dir, amount) => List.fill(amount)(dir) }
-    val points = directions.scanLeft(Point(0, 0))(_ + _)
-    
-    val result = MutableMap.empty[Point, Int]
-
-    for ((pos, dist) <- points.zipWithIndex.tail) {
-        if (!result.contains(pos)) {
-            result += pos -> dist
-        }
-    }
-    
-    return result.toMap
+    return directions.scanLeft(Point(0, 0))(_ + _).zipWithIndex.tail.distinctBy(_._1).toMap
 }
 
 def solve(traces: List[WirePath], distance: Pair => Int): Int = {

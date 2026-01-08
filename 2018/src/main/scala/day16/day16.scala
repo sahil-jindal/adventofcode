@@ -2,11 +2,34 @@ package day16
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Map => MutableMap}
-import scala.util.boundary, boundary.break
+import scala.util.control.Breaks._
 
-case class TestCase(regsBefore: List[Int], stm: List[Int], regsAfter: List[Int])
-case class Pair(testCases: List[TestCase], prg: List[List[Int]])
+// # Chronal Classification
+//
+// There are only 16 opcodes so we can use bitwise logic to efficiently perform the 
+// set operations that uniquely determine the mapping of each opcode to instruction.
+//
+// First we create a bitmask for each instruction block in the first half of the 
+// input with a `1` for each potential instruction. For example:
+//
+// ```none
+//     Before: [3, 2, 1, 1]
+//     9 2 1 2
+//     After:  [3, 2, 2, 1]
+//
+//     Possible instructions: mulr, addi, seti
+//     Binary Mask: 0000001000000110
+// ```
+//
+// For part one the [`count_ones`] intrinsic computes the size of each set.
+//
+// For part two we need to determine the mapping of the unknown codes. First we reduce each
+// unknown to a single set by taking the intersection of all examples. Then similar to
+// solving simultaneous equation, we eliminate one unknown at a time, removing it from the other
+// possibilities. This causes a domino effect, continuing until all unknowns are resolved.
+
+case class Pair(unknown: Int, mask: Int)
+case class Input(samples: List[Pair], prg: List[List[Int]])
 
 def groupLines(input: List[String]): List[List[String]] = {
     return input.foldLeft(List(List.empty[String])) {
@@ -17,23 +40,28 @@ def groupLines(input: List[String]): List[List[String]] = {
 
 def ints(input: String) = raw"(\d+)".r.findAllIn(input).map(_.toInt).toList
 
-def parseInput(input: List[String]): Pair = {
+def parseInput(input: List[String]): Input = {
     val blocks = groupLines(input)
 
-    val testCases = blocks.init.map(group => {
-        val List(regsBefore, stm, regsAfter) = group.map(ints)
-        TestCase(regsBefore, stm, regsAfter)
+    val samples = blocks.init.map(group => {
+        val List(before, instruction, after) = group.map(ints)
+        val List(unknown, b, c, d) = instruction
+
+        val mask = (for {
+            opcode <- 0 until 16
+            if cpu(opcode, b, c, before.toArray) == after(d)
+        } yield 1 << opcode).sum
+
+        Pair(unknown, mask)
     })
 
     val prg = blocks.last.map(ints)
 
-    return Pair(testCases, prg)
+    return Input(samples, prg)
 }
 
-def step(regs: List[Int], stm: List[Int]): List[Int] = {
-    val List(a, b, c, d) = stm
-
-    val newValue = a match {
+def cpu(opcode: Int, b: Int, c: Int, regs: Array[Int]): Int = {
+    return opcode match {
         case 0 => regs(b) + regs(c)
         case 1 => regs(b) + c
         case 2 => regs(b) * regs(c)
@@ -52,58 +80,46 @@ def step(regs: List[Int], stm: List[Int]): List[Int] = {
         case 15 => if (regs(b) == regs(c)) 1 else 0
         case _ => throw new IllegalArgumentException()
     }
-
-    return regs.updated(d, newValue)
 }
 
-def workOutMapping(mapping: Map[Int, List[Int]]): Map[Int, Int] = {
-    val used = Array.fill(16)(false)
-    val res = MutableMap.empty[Int, Int]
+def evaluatorOne(input: Input): Int = {
+    return input.samples.count(it => Integer.bitCount(it.mask) >= 3)
+}
 
-    def helper(constraints: Map[Int, List[Int]]): Map[Int, Int] = {
-        if (res.size == 16) return res.toMap
-        val op = res.size
-        
-        boundary {
-            for (i <- constraints(op) if !used(i)) {
-                used(i) = true
-                res += op -> i
-                val x = helper(constraints)
-                if (x.nonEmpty) break(x)
-                res -= op
-                used(i) = false
+def evaluatorTwo(input: Input): Int = {
+    // Take intersection of samples, reducing each unknown opcode to a single set of possibilities.
+    val masks = Array.fill(16)(0xffff)
+
+    input.samples.groupMapReduce(_.unknown)(_.mask)(_ & _).foreachEntry {
+        case (unknown, mask) => masks(unknown) &= mask
+    }
+
+    // To uniquely determine the mapping, there must be at least 1 opcode during each iteration
+    // that only has one possibility.
+    val convert = Array.fill(16)(0)
+
+    breakable {
+        while (true) {
+            val index = masks.indexWhere(n => Integer.bitCount(n) == 1)
+            if (index == -1) break()
+
+            val mask = masks(index)
+
+            // This opcode has only 1 possible mapping, so remove possibility from other opcodes.
+            for (j <- masks.indices) {
+                masks(j) &= ~mask
             }
 
-            return Map.empty[Int, Int]
+            // Add mapping.
+            convert(index) = Integer.numberOfTrailingZeros(mask)
         }
     }
-
-    return helper(mapping)
-}
-
-def evaluatorOne(input: Pair): Int = {
-    return input.testCases.count { case TestCase(regsBefore, stm, regsAfter) =>
-        (0 until 16).count { i => step(regsBefore, stm.updated(0, i)).sameElements(regsAfter) } >= 3
-    }
-}
-
-def evaluatorTwo(input: Pair): Int = {
-    val constraints = MutableMap.from((0 until 16).map(_ -> (0 until 16).toList))
-    val Pair(testCases, prg) = input
     
-    for (TestCase(regsBefore, stm, regsAfter) <- testCases) {
-        constraints(stm(0)) = constraints(stm(0)).filter { 
-            i => step(regsBefore, stm.updated(0, i)).sameElements(regsAfter) 
-        }
-    }
-
-    val mapping = workOutMapping(constraints.toMap)
+    // Run the program now that we know the mapping.
+    val regs = Array.fill(4)(0)
     
-    var regs = List.fill(4)(0)
-    
-    for (stm <- prg) { 
-        val newStm = stm.updated(0, mapping(stm(0)))
-        regs = step(regs, newStm) 
+    for (List(unknown, b, c, d) <- input.prg) { 
+        regs(d) = cpu(convert(unknown), b, c, regs)
     }
 
     return regs(0)

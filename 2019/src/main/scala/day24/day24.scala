@@ -2,7 +2,7 @@ package day24
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Set, ListBuffer}
+import scala.collection.mutable.Set
 
 case class Point(y: Int, x: Int)
 case class Position(ilevel: Int, y: Int, x: Int)
@@ -20,35 +20,22 @@ def setBug(biodiversity: Int, y: Int, x: Int): Int = biodiversity | (1 << (y*5 +
 
 def step(oldLevelsT: List[Int], neighbours: Position => List[Position]): List[Int] = {
     val oldLevels = 0 +: oldLevelsT :+ 0
-    val newLevels = ListBuffer.empty[Int]
+    
+    return oldLevels.zipWithIndex.map { case (oldLevel, ilevel) =>
+        positions().foldLeft(0) { case (newLevel, Point(y, x)) =>
+            val bugCount = neighbours(Position(ilevel, y, x)).count(p => {
+                oldLevels.indices.contains(p.ilevel) && hasBug(oldLevels(p.ilevel), p.y, p.x)
+            })
 
-    for (ilevel <- oldLevels.indices) {
-        var newLevel = 0
-
-        for (Point(y, x) <- positions()) {
-            var bugCount = 0
-
-            for (Position(ilevelT, yT, xT) <- neighbours(Position(ilevel, y, x))) {
-                if (oldLevels.indices.contains(ilevelT)) {
-                    bugCount += (if (hasBug(oldLevels(ilevelT), yT, xT)) then 1 else 0)
-                }
-            }
-
-            if (!hasBug(oldLevels(ilevel), y, x)) {
-                if (bugCount == 1 || bugCount == 2) {
-                    newLevel = setBug(newLevel, y, x)
-                }
+            val nextHasBug = if (!hasBug(oldLevel, y, x)) {
+                bugCount == 1 || bugCount == 2
             } else {
-                if (bugCount == 1) {
-                    newLevel = setBug(newLevel, y, x)
-                }
+                bugCount == 1
             }
+
+            if (nextHasBug) setBug(newLevel, y, x) else newLevel
         }
-
-        newLevels.append(newLevel)
     }
-
-    return newLevels.toList
 }
 
 def getNeighbours(pos: Position) = List(
@@ -63,10 +50,9 @@ def flatNeighbours(pos: Position): List[Position] = {
 }
 
 def recursiveNeighbours(pos: Position): List[Position] = {
-    var Position(ilevel, y, x) = pos
-    val result = ListBuffer.empty[Position]
-
-    for ((dy, dx) <- List((0, 1), (0, -1), (-1, 0), (1, 0))) {
+    val Position(ilevel, y, x) = pos
+    
+    return List((0, 1), (0, -1), (-1, 0), (1, 0)).flatMap { case (dy, dx) =>
         var posMin = Point(y + dy, x + dx)
         var posMax = Point(y + dy, x + dx)
         var ilevelT = ilevel
@@ -98,13 +84,11 @@ def recursiveNeighbours(pos: Position): List[Position] = {
             }
         }
 
-        result :++ (for {
+        (for {
             yT <- posMin.y to posMax.y 
             xT <- posMin.x to posMax.x
         } yield Position(ilevelT, yT, xT))
     }
-
-    return result.toList
 }
 
 def evaluatorOne(levelsInit: List[Int]): Int = {
@@ -112,8 +96,7 @@ def evaluatorOne(levelsInit: List[Int]): Int = {
     val seen = Set.empty[Int]
     var biodiversity = levels(0)
 
-    while (!seen.contains(biodiversity)) {
-        seen.add(biodiversity)
+    while (seen.add(biodiversity)) {
         levels = step(levels, flatNeighbours)
         biodiversity = levels(levels.size >> 1)
     }

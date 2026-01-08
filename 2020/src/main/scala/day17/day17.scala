@@ -2,7 +2,6 @@ package day17
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Map, Set}
 
 case class Vec3D(x: Int, y: Int, z: Int) {
     def +(that: Vec3D) = Vec3D(x + that.x, y + that.y, z + that.z)
@@ -20,24 +19,18 @@ def solve[T](input: List[String], create: (Int, Int) => T, neighbours: T => List
     } yield create(x, y)).toSet
 
     for (_ <- 0 until 6) {
-        val newActivePoints = Set.empty[T]
-        val inactivePoints = Map.empty[T, Int].withDefaultValue(0)
+        val newActivePoints = activePoints.filter(it => {
+            val activeNeighbours = neighbours(it).count(activePoints.contains)
+            activeNeighbours == 2 || activeNeighbours == 3
+        })
+        
+        val inactivePoints = activePoints.toSeq.flatMap(neighbours)
+            .filterNot(activePoints.contains)
+            .groupMapReduce(identity)(_ => 1)(_ + _)
 
-        for (point <- activePoints) {
-            val activeNeighbours = neighbours(point).count(activePoints.contains)
-
-            if (activeNeighbours == 2 || activeNeighbours == 3) {
-                newActivePoints += point
-            }
-
-            for (neighbour <- neighbours(point).filterNot(activePoints.contains)) {
-                inactivePoints(neighbour) += 1
-            }
-        }
-
-        newActivePoints ++= inactivePoints.collect { case (pos, count) if count == 3 => pos }.toSet
-
-        activePoints = newActivePoints.toSet
+        activePoints = newActivePoints ++ inactivePoints.collect { 
+            case (pos, count) if count == 3 => pos 
+        }.toSet
     }
 
     return activePoints.size

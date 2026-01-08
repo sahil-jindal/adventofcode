@@ -1,9 +1,5 @@
 package day14
 
-import scala.collection.mutable.Queue
-
-case class Point(y: Int, x: Int)
-
 def knotHash(input: String): List[Int] = {
     val suffix = List(17, 31, 73, 47, 23)
     val chars = input.map(_.toInt) ++ suffix
@@ -28,50 +24,47 @@ def knotHash(input: String): List[Int] = {
     return output.grouped(16).map(_.reduce(_ ^ _)).toList
 }
 
-def extract(input: String): IndexedSeq[List[Char]] = {
+def extract(input: String): IndexedSeq[List[Boolean]] = {
     return (0 until 128).map { y =>
         knotHash(s"$input-$y").flatMap { n =>
-            (7 to 0 by -1).map { bit => if ((n & (1 << bit)) != 0) '#' else '.' }
+            (7 to 0 by -1).map { bit => (n & (1 << bit)) != 0 }
         }
     }
 }
 
-def getNeighbours(pos: Point) = List(
-    pos.copy(x = pos.x - 1),
-    pos.copy(x = pos.x + 1),
-    pos.copy(y = pos.y - 1),
-    pos.copy(y = pos.y + 1)
-)
+def fill(grid: Array[Array[Boolean]], y: Int, x: Int): Unit = {
+    grid(y)(x) = false
 
-def fill(mtx: Array[Array[Char]], startCell: Point): Unit = {
-    val q = Queue(startCell)
-    val (rows, cols) = (mtx.length, mtx(0).length)
+    if (x > 0 && grid(y)(x - 1)) {
+        fill(grid, y, x - 1)
+    }
 
-    while (q.nonEmpty) {
-        val pos = q.dequeue()
-        mtx(pos.y)(pos.x) = ' '
+    if (x < 127 && grid(y)(x + 1)) {
+        fill(grid, y, x + 1)
+    }
 
-        val neighbors = getNeighbours(pos).filter { n =>
-            n.y >= 0 && n.y < rows && n.x >= 0 && n.x < cols && mtx(n.y)(n.x) == '#'
-        }
+    if (y > 0 && grid(y - 1)(x)) {
+        fill(grid, y - 1, x)
+    }
 
-        q.enqueueAll(neighbors)
+    if (y < 127 && grid(y + 1)(x)) {
+        fill(grid, y + 1, x)
     }
 }
 
-def evaluatorOne(input: IndexedSeq[List[Char]]): Int = input.flatten.count(_ == '#')
+def evaluatorOne(input: IndexedSeq[List[Boolean]]): Int = input.flatten.count(identity)
 
-def evaluatorTwo(input: IndexedSeq[List[Char]]): Int = {
+def evaluatorTwo(input: IndexedSeq[List[Boolean]]): Int = {
     val mtx = input.map(_.toArray).toArray
     var regions = 0
 
     for {
-        y <- mtx.indices
-        x <- mtx(0).indices
-        if mtx(y)(x) == '#'
+        y <- 0 to 127
+        x <- 0 to 127
+        if mtx(y)(x)
     } do {
         regions += 1
-        fill(mtx, Point(y, x))
+        fill(mtx, y, x)
     }
 
     return regions
