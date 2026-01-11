@@ -15,12 +15,10 @@ case class Player(score: Int, pos: Int) {
 case class PairOne(active: Player, other: Player)
 case class PairTwo(activeWins: Long, otherWins: Long)
 
-def parseInput(input: List[String]): PairOne = {
-    val players = input.map(line => {
-        val pos = raw"Player \d starting position: (\d)".r.findFirstMatchIn(line).get.group(1)
-        Player(0, pos.toInt)
-    })
+val regex = raw"Player \d starting position: (\d)".r
 
+def parseInput(input: List[String]): PairOne = {
+    val players = input.collect { case regex(pos) => Player(0, pos.toInt) }
     return PairOne(players(0), players(1))
 }
 

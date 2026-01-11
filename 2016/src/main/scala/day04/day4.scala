@@ -7,10 +7,11 @@ case class Room(encrypted: String, id: Int, checkSum: String) {
     def decryptedRoom = encrypted.map(ch => ('a' + (ch - 'a' + id) % 26).toChar).mkString
 }
 
-def parseInput(input: List[String]) = input.map(line => { 
-    val List(first, second, third) = raw"([^\d]+)\-(\d+)\[(.*)\]".r.findFirstMatchIn(line).get.subgroups
-    Room(first.replaceAll("-",""), second.toInt, third)
-})
+val roomRegex = raw"([^\d]+)\-(\d+)\[(.*)\]".r
+
+def parseInput(input: List[String]) = input.collect { 
+    case roomRegex(first, second, third) => Room(first.replaceAll("-",""), second.toInt, third)
+}
 
 def getRealRooms(rooms: List[Room]) = rooms.filter(room => { 
     val computedhash = room.encrypted.groupMapReduce(identity)(_ => 1)(_ + _).toSeq

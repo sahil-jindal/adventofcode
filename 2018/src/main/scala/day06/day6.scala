@@ -10,16 +10,23 @@ case class Point(y: Int, x: Int) {
 }
 
 case class Plane(xRange: Inclusive, yRange: Inclusive) {
-    def onLeftOrRight(pos: Point) = (pos.x == xRange.start || pos.x == xRange.end) && yRange.contains(pos.y)
-    def onTopOrBottom(pos: Point) = (pos.y == yRange.start || pos.y == yRange.end) && xRange.contains(pos.x)
     def grid = for {y <- yRange; x <- xRange} yield Point(y, x)
+
+    def areOnBorders(pos: Point): Boolean = {
+        val onXRange = xRange.contains(pos.x)
+        val onYRange = yRange.contains(pos.y)
+        val onTopBorder = pos.y == yRange.start && onXRange
+        val onRightBorder = pos.x == xRange.end && onYRange
+        val onBottomBorder = pos.y == yRange.end && onXRange
+        val onLeftBorder = pos.x == xRange.start && onYRange
+        return onTopBorder || onRightBorder || onBottomBorder || onLeftBorder
+    }
 }
 
 def parseInput(input: List[String]): (Plane, List[Point]) = {
-    val points = input.map(line => {
-        val Array(x, y) = line.split(", ").map(_.toInt)
-        Point(y, x)
-    })
+    val points = input.collect {
+        case s"$x, $y" => Point(y.toInt, x.toInt)
+    }
 
     val (ys, xs) = (points.map(_.y), points.map(_.x))
     return (Plane(xs.min to xs.max, ys.min to ys.max), points)
@@ -47,7 +54,7 @@ def evaluatorOne(plane: Plane, points: List[Point]): Int = {
         if (found.isDefined) {
             val index = found.get
             closestPointCounts(index) += 1
-            if (plane.onLeftOrRight(point) || plane.onTopOrBottom(point)) {
+            if (plane.areOnBorders(point)) {
                 infinitePoints.add(index)
             }
         }

@@ -8,10 +8,9 @@ case class Point(y: Int, x: Int) {
     override def toString(): String = s"$x,$y"
 }
 
-def parseInput(input: List[String]) = input.map(line => {
-    val Seq(x, y) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toSeq
-    Point(y, x)
-})
+def parseInput(input: List[String]) = input.collect {
+    case s"$x,$y" => Point(y.toInt, x.toInt)
+}
 
 def getNeighbour(pos: Point) = List(
     pos.copy(x = pos.x - 1),

@@ -5,12 +5,9 @@ import scala.io.Source
 
 case class PasswordEntry(a: Int, b: Int, ch: Char, password: String)
 
-val regex = raw"(\d+)-(\d+) (\w): (\w+)".r
-
-def parseInput(input: List[String]) = input.map(line => {
-    val List(a, b, ch, password) = regex.findFirstMatchIn(line).get.subgroups
-    PasswordEntry(a.toInt, b.toInt, ch.head, password)
-})
+def parseInput(input: List[String]) = input.collect {
+    case s"$a-$b $ch: $password" => PasswordEntry(a.toInt, b.toInt, ch.head, password)
+}
 
 def evaluatorOne(input: List[PasswordEntry]): Int = input.count(pe => {
     val count = pe.password.count(_ == pe.ch)

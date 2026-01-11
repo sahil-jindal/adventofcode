@@ -8,38 +8,36 @@ import com.github.nscala_time.time.Imports._
 case class Day(guard: Int, sleep: List[Boolean]) 
 case class Guard(id: Int, sleepByMin: List[Int])
 
+def groupLogs(input: List[String]): List[List[String]] = {
+    return input.foldLeft(List.empty[List[String]]) {
+        case (Nil, line) if line.contains("Guard") => List(List(line))
+        case (acc, line) if line.contains("Guard") => acc :+ List(line)
+        case (acc, line) => acc.init :+ (acc.last :+ line)
+    }
+}
+
 def extractMinute(input: String): Int = {
     val timestamp = raw"\[(.*)\]".r.findFirstMatchIn(input).get.group(1)
     return DateTimeFormat.forPattern("yyyy-MM-dd HH:mm").parseDateTime(timestamp).minuteOfHour.get
 }
 
-def parseInput(input: List[String]): List[Day] = {
-    val lines = input.sorted
-    
-    val result = ListBuffer.empty[Day]
-    var idx = 0
-    
-    while (idx < lines.length) {
-        val guard = raw"Guard #(\d+) begins shift".r.findFirstMatchIn(lines(idx)).get.group(1).toInt
-        idx += 1
+def parseGroup(lines: List[String]): Day = {
+    val (first, remaining) = (lines.head, lines.tail)
 
-        val sleep = Array.fill(60)(false)
-        
-        while (idx < lines.length && !lines(idx).contains("Guard")) {
-            val start = extractMinute(lines(idx))
-            idx += 1
+    val guard = raw"Guard #(\d+) begins shift".r.findFirstMatchIn(first).get.group(1).toInt
 
-            val end = extractMinute(lines(idx))
-            idx += 1
+    val sleep = Array.fill(60)(false)
 
-            for (min <- start until end) { sleep(min) = true }
-        }
-
-        result += Day(guard, sleep.toList)
+    for (List(asleep, wakeUp) <- remaining.grouped(2)) { 
+        val start = extractMinute(asleep) 
+        val end = extractMinute(wakeUp)
+        for (min <- start until end) { sleep(min) = true }
     }
 
-    return result.toList
+    return Day(guard, sleep.toList)
 }
+
+def parseInput(input: List[String]) = groupLogs(input.sorted).map(parseGroup)
 
 def preComputeRecords(records: List[Day]): List[Guard]  = {
     return records.groupMap(_.guard)(_.sleep).toList.map { case (id, sleepDays) =>
@@ -59,6 +57,7 @@ def evaluatorTwo(guards: List[Guard]): Int = solver(guards, it => it.sleepByMin.
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
+@main
 def hello(): Unit = {
     readLinesFromFile("day04.txt") match {
         case Success(lines) => {

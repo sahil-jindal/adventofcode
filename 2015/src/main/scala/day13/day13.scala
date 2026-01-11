@@ -6,20 +6,18 @@ import scala.collection.mutable.{Map => MutableMap, Set => MutableSet}
 
 case class Graph(people: Set[String], happiness: Map[(String, String), Int])
 
-val parseRegex = raw"(\w+) would (gain|lose) (\d+) happiness units by sitting next to (\w+)".r
+val gainRegex = raw"(\w+) would gain (\d+) happiness units by sitting next to (\w+).".r
+val loseRegex = raw"(\w+) would lose (\d+) happiness units by sitting next to (\w+).".r
 
 def parseInput(input: List[String]): Graph = {
-    val people = MutableSet.empty[String]
-    val happiness = MutableMap.empty[(String, String), Int]
-    
-    for (line <- input) {
-        val List(person1, a, b, person2) = parseRegex.findFirstMatchIn(line).get.subgroups
-        val value = b.toInt * (if (a == "gain") 1 else -1)
-        happiness((person1, person2)) = value
-        people ++= Set(person1, person2)
-    }
+    val happiness = input.collect {
+        case gainRegex(person1, b, person2) => (person1, person2) -> b.toInt
+        case loseRegex(person1, b, person2) => (person1, person2) -> -b.toInt
+    }.toMap
 
-    return Graph(people.toSet, happiness.toMap)
+    val people = happiness.keySet.flatMap(List(_,_))
+
+    return Graph(people, happiness)
 }
 
 def findMaximumHappiness(graph: Graph): Int = {
@@ -32,14 +30,8 @@ def findMaximumHappiness(graph: Graph): Int = {
 }
 
 def addYourself(graph: Graph): Graph = {
-    val updatedHappiness = MutableMap.from(graph.happiness)
-    
-    for (guest <- graph.people) {
-        updatedHappiness(("You", guest)) = 0
-        updatedHappiness((guest, "You")) = 0
-    }
-
-    return Graph(graph.people.incl("You"), updatedHappiness.toMap)
+    val newHappiness = graph.people.flatMap(p => List(("You", p), (p, "You"))).map(_ -> 0).toMap
+    return Graph(graph.people.incl("You"), graph.happiness ++ newHappiness)
 }
 
 def evaluatorOne(graph: Graph): Int = findMaximumHappiness(graph)
