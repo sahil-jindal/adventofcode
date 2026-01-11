@@ -28,22 +28,16 @@ def parseInput(input: List[String]) = input.map(_.collect {
 })
 
 def getCode(paths: List[IndexedSeq[Direction]], keypad: Map[Point, Char]): String = {
-    var temp = keypad.collectFirst { case (k, v) if v == '5' => k }.get
-    val code = new StringBuilder
-
-    for (path <- paths) {
-        for (dir <- path) {
-            val newP = temp + dir
-
-            if (keypad.contains(newP)) {
-                temp = newP
-            } 
+    var start = keypad.collectFirst { case (k, v) if v == '5' => k }.get
+    
+    val code = paths.scanLeft(start) { case (temp, path) => 
+        path.foldLeft(temp) { case (pt, dir) => 
+            val newP = pt + dir
+            if (keypad.contains(newP)) newP else pt
         }
-
-        code.append(keypad(temp))
     }
 
-    code.toString
+    return code.tail.map(keypad).mkString
 }
 
 def evaluatorOne(paths: List[IndexedSeq[Direction]]): String = getCode(paths, firstKeyPad)

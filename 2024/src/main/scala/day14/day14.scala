@@ -3,7 +3,10 @@ package day14
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Vec2D(x: Int, y: Int)
+case class Vec2D(x: Int, y: Int) {
+    def +(that: Vec2D) = Vec2D(x + that.x, y + that.y)
+}
+
 case class Robot(pos: Vec2D, vel: Vec2D)
 
 val (height, width) = (103, 101)
@@ -14,9 +17,10 @@ def parseInput(input: List[String]) = input.map(line =>{
 })
 
 // advance a robot by its velocity taking care of the 'teleportation'
-def step(robot: Robot) = robot.copy(pos = {
-    Vec2D((robot.pos.x + robot.vel.x + width) % width, (robot.pos.y + robot.vel.y + height) % height)
-})
+def step(robot: Robot): Robot = {
+    val newPos = robot.pos + robot.vel
+    robot.copy(pos = Vec2D((newPos.x + width) % width, (newPos.y + height) % height))
+}
 
 // an infinite simulation of robot movement
 def simulate(robots: List[Robot]) = Iterator.iterate(robots)(_.map(step))

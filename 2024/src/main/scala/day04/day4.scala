@@ -26,8 +26,9 @@ def parseInput(input: List[String]): Grid = {
     } yield Point(y, x) -> ch).toMap
 }
 
-def matches(map: Grid, pt: Point, dir: Direction, pattern: String): Boolean = {
-    val str = pattern.indices.map(i => map.getOrElse(pt + dir * i, '-')).mkString
+def matches(map: Grid, start: Point, dir: Direction, pattern: String): Boolean = {
+    val points = List.tabulate(pattern.length)(i => start + dir * i)
+    val str = points.map(pt => map.getOrElse(pt, '-')).mkString
     return str == pattern || str == pattern.reverse
 }
 

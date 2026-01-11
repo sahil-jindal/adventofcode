@@ -30,9 +30,8 @@ def encode(digits: IndexedSeq[Int]): Int = {
 // map cards to the number of their occurrences in the hand then order them 
 // such that A8A8A becomes 33322, 9A34Q becomes 11111 and K99AA becomes 22221
 def patternValue(hand: String): Int = {
-    return encode(hand.distinct.map(card => hand.count(_ == card))
-        .sorted(using Ordering.Int.reverse)
-        .flatMap(n => List.fill(n)(n)))   
+    val freq = hand.groupMapReduce(identity)(_ => 1)(_ + _)
+    return encode(hand.map(freq).sorted(using Ordering.Int.reverse))   
 }
 
 // map cards to their indices in cardOrder. E.g. for 123456789TJQKA
