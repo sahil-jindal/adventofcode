@@ -10,7 +10,7 @@ case class Manual(pageNumbers: List[String], pageOrders: Set[PageOrder])
 def getManuals(input: List[String]): List[Manual] = {
     val idx = input.indexWhere(_.trim.isEmpty)
 
-    val pageOrders = input.take(idx).map {
+    val pageOrders = input.take(idx).collect {
         case s"$earlier|$later" => PageOrder(earlier, later)
     }
 

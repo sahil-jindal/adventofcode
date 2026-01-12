@@ -22,7 +22,9 @@ def getScore(line: String, getSyntaxErrorScore: Boolean): Long = {
 
         if (getSyntaxErrorScore) return 0L
     
-        return stack.map(ch => 1 + "([{<".indexOf(ch)).foldLeft(0L) { case (acc, item) => acc * 5 + item }
+        return stack.map(ch => 1 + "([{<".indexOf(ch)).foldLeft(0L) { 
+            case (acc, item) => acc * 5 + item 
+        }
     }
 }
 

@@ -6,8 +6,8 @@ import scala.io.Source
 def parseInput(input: String) = input.map(_.asDigit)
 
 def pattern(digit: Int): Iterator[Int] = {
-    val basePattern = List(0, 1, 0, -1)
-    return Iterator.continually(basePattern.flatMap(List.fill(digit + 1))).flatten
+    val pattern = List(0, 1, 0, -1).flatMap(List.fill(digit + 1))
+    return Iterator.continually(pattern).flatten
 }
 
 def fft(digits: IndexedSeq[Int]): IndexedSeq[Int] = {

@@ -4,7 +4,7 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import play.api.libs.json._
 
-case class Pair(a: JsValue, b: JsValue)
+type Pair = (a: JsValue, b: JsValue)
 
 object PacketOrdering extends Ordering[JsValue] {
     def compare(nodeA: JsValue, nodeB: JsValue): Int = {
@@ -43,18 +43,19 @@ def groupLines(input: List[String]): List[List[String]] = {
 }
 
 def parseInput(input: List[String]): List[Pair] = {
-    return groupLines(input).map(it => Pair(Json.parse(it(0)), Json.parse(it(1))))
+    return groupLines(input).map(it => (Json.parse(it(0)), Json.parse(it(1))))
 }
 
 def evaluatorOne(packets: List[Pair]): Int = packets.zipWithIndex.collect { 
-    case (Pair(a, b), i) if PacketOrdering.compare(a, b) < 0 => i + 1 
+    case ((a, b), i) if PacketOrdering.compare(a, b) < 0 => i + 1 
 }.sum
 
 def evaluatorTwo(packets: List[Pair]): Int = {
-    val divider = Pair(Json.parse("[[2]]"), Json.parse("[[6]]"))
-    val sortedPackets = (packets :+ divider).flatMap { case Pair(a, b) => List(a, b) }.sorted(using PacketOrdering)
-    val i1 = sortedPackets.indexOf(divider.a) + 1
-    val i2 = sortedPackets.indexOf(divider.b) + 1
+    val divider = (Json.parse("[[2]]"), Json.parse("[[6]]"))
+    val sortedPackets = (packets :+ divider).flatMap(List(_, _)).sorted(using PacketOrdering)
+    val (a, b) = divider
+    val i1 = sortedPackets.indexOf(a) + 1
+    val i2 = sortedPackets.indexOf(b) + 1
     return i1 * i2
 }
 

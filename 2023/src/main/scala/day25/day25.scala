@@ -47,7 +47,7 @@ def parseEdge(line: String) = {
 }
 
 def findCut(edges: List[(String, String)], r: Random): Group = {
-    val allNodes = edges.flatMap { case (u, v) => List(u, v) }.toSet
+    val allNodes = edges.flatMap(List(_, _)).toSet
     val shuffledEdges = r.shuffle(edges)
     val uf = new UnionFind(allNodes)
 

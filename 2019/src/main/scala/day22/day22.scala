@@ -32,16 +32,16 @@ case class Technique(a: BigInt, c: BigInt, m: BigInt) {
 
 def deck(input: List[String], m: BigInt): Technique = {
     val techniques = input.collect {
-        case l if l.contains("into new stack") => {
-            Technique(m - 1, m - 1, m)
-        }
-        case l if l.startsWith("cut") => {
-            val n = BigInt(l.split(" ").last)
+        case s"cut $num" => {
+            val n = BigInt(num)
             val c = (m - n % m) % m
             Technique(1, c, m)
         }
-        case l if l.contains("increment") => {
-            val n = BigInt(l.split(" ").last)
+        case "deal into new stack" => {
+            Technique(m - 1, m - 1, m)
+        }
+        case s"deal with increment $num" => {
+            val n = BigInt(num)
             val a = (m + n % m) % m;
             Technique(a, 0, m)
         }
