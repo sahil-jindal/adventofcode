@@ -10,18 +10,18 @@ case class State(cost: Int, pos: Int, visited: Int)
 type Graph = Map[(Int, Int), Int]
 
 def parseInput(grid: List[String]): (Map[Int, Point], Set[Point]) = {
-    val locations = MutableMap.empty[Int, Point]
-    val walls = MutableSet.empty[Point]
+    val pairs = (for {
+        (line, y) <- grid.zipWithIndex
+        (ch, x) <- line.zipWithIndex
+    } yield ch -> Point(y, x))
     
-    for (y <- grid.indices; x <- grid(y).indices) {
-        grid(y)(x) match {
-            case '#' => walls.add(Point(y, x))
-            case d if d.isDigit => locations(d.asDigit) = Point(y, x)
-            case _ =>
-        }
-    }
+    val walls = pairs.collect { case ('#', pt) => pt }.toSet
+
+    val locations = pairs.withFilter(_._1.isDigit).map {
+        case (d, pt) => (d.asDigit, pt)
+    }.toMap
     
-    return (locations.toMap, walls.toSet)
+    return (locations, walls)
 }
 
 def getNeighbours(pos: Point) = List(

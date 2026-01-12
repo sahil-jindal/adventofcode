@@ -50,10 +50,9 @@ def parseResult(input: String) = input match {
     case other => Value(other.toLong)
 }
 
-def parseInput(input: List[String]) = input.map(line => {
-    val Array(key, value) = line.split(": ")
-    key -> parseResult(value)
-}).toMap
+def parseInput(input: List[String]) = input.collect {
+    case s"$key: $value" => key -> parseResult(value)
+}.toMap
 
 def createExpression(context: Context, part2: Boolean): Expr = {
     def buildExpr(name: String): Expr = {

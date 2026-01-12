@@ -22,10 +22,9 @@ def parseInput(input: List[String]) = input.map(line => {
     val Array(partOne, partTwo) = line.split(": ", 2)
     val sueNumber = partOne.stripPrefix("Sue ").toInt
 
-    val properties = partTwo.split(", ").map(prop => {
-        val Array(key, value) = prop.split(": ")
-        key -> value.toInt
-    }).toMap
+    val properties = partTwo.split(", ").collect {
+        case s"$key: $value" => key -> value.toInt
+    }.toMap
 
     Aunt(sueNumber, properties)
 })

@@ -4,10 +4,9 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Stack, Set => MutableSet}
 
-def parseInput(input: List[String]) = input.map(line => {
-    val Array(first, second) = line.split(" <-> ")
-    first -> second.split(", ").toList
-}).toMap
+def parseInput(input: List[String]) = input.collect {
+    case s"$first <-> $second" => first -> second.split(", ").toList
+}.toMap
 
 def dfs(graph: Map[String, List[String]], start: String): Set[String] = {
     val visited = MutableSet.empty[String]

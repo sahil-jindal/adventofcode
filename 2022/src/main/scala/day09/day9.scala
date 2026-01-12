@@ -12,19 +12,17 @@ case class Knot(y: Int, x: Int) {
     def -(that: Knot) = Direction(y - that.y, x - that.x)
 }
 
-def getDirections: PartialFunction[Char, Direction] = {
-    case 'U' => Direction(-1, 0)
-    case 'D' => Direction(1, 0)
-    case 'L' => Direction(0, -1)
-    case 'R' => Direction(0, 1)
+type Pair = (Direction, Int)
+
+def parseInput(input: List[String]) = input.collect {
+    case s"U $num" => Direction(-1, 0) -> num.toInt
+    case s"D $num" => Direction(1, 0) -> num.toInt
+    case s"L $num" => Direction(0, -1) -> num.toInt
+    case s"R $num" => Direction(0, 1) -> num.toInt
 }
 
-def parseInput(input: List[String]) = input.flatMap(line => {
-    val Array(a, b) = line.split(" ")
-    List.fill(b.toInt)(getDirections(a.head)) 
-})
-
-def solver(directions: List[Direction], ropelength: Int): Int = {
+def solver(input: List[Pair], ropelength: Int): Int = {
+    val directions = input.flatMap { case (dir, num) => List.fill(num)(dir) }
     val rope = Array.fill(ropelength)(Knot(0, 0))
     val res = Set(rope.last)
 
@@ -45,8 +43,8 @@ def solver(directions: List[Direction], ropelength: Int): Int = {
     return res.size
 }
 
-def evaluatorOne(directions: List[Direction]): Int = solver(directions, 2)
-def evaluatorTwo(directions: List[Direction]): Int = solver(directions, 10)
+def evaluatorOne(input: List[Pair]): Int = solver(input, 2)
+def evaluatorTwo(input: List[Pair]): Int = solver(input, 10)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

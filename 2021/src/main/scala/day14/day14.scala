@@ -7,10 +7,9 @@ import scala.collection.mutable.{Map => MutableMap}
 type Pair = (polymer: String, template: Map[(Char, Char), Char])
 
 def parseInput(input: List[String]): Pair = {
-    val template = input.drop(2).map(line => {
-        val Seq(a, b, c) = raw"(\w)".r.findAllIn(line).map(_.head).toSeq
-        (a, b) -> c
-    }).toMap
+    val template = input.drop(2).collect {
+        case s"$ab -> $c" => (ab(0), ab(1)) -> c(0)
+    }.toMap
 
     return (input.head, template)
 }

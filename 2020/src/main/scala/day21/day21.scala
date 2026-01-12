@@ -5,7 +5,11 @@ import scala.io.Source
 import scala.collection.mutable.{Set => MutableSet}
 
 case class Pair(ingredients: Set[String], allergens: Set[String])
-case class Problem(allergens: Set[String], ingredients: Set[String], mapping: List[Pair])
+
+case class Problem(mapping: List[Pair]) {
+    val allergens = mapping.flatMap(_.allergens).toSet
+    val ingredients = mapping.flatMap(_.ingredients).toSet
+}
 
 def parseInput(input: List[String]): Problem = {
     val mapping = input.map(line => {
@@ -15,7 +19,7 @@ def parseInput(input: List[String]): Problem = {
         Pair(ingredients, allergens)
     })
 
-    return Problem(mapping.flatMap(_.allergens).toSet, mapping.flatMap(_.ingredients).toSet, mapping)
+    return Problem(mapping)
 }
 
 def getIngredientsByAllergen(problem: Problem) = problem.allergens.map(allergen => {

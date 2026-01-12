@@ -4,7 +4,11 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
 def parseInput(input: List[String]) = input.map(line => {
-    val binaryString = line.replace('B', '1').replace('F', '0').replace('R', '1').replace('L', '0')
+    val binaryString = line.collect {
+        case 'B' | 'R' => '1'
+        case 'F' | 'L' => '0'
+    }
+    
     Integer.parseInt(binaryString, 2)
 }).toSet
 

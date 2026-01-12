@@ -5,10 +5,9 @@ import scala.io.Source
 
 case class Range(start: Long, end: Long)
 
-def parseInput(input: List[String]) = input.map(line => {
-    val Array(start, end) = line.split("-").map(_.toLong)
-    Range(start, end)
-})
+def parseInput(input: List[String]) = input.collect {
+    case s"$start-$end" => Range(start.toLong, end.toLong)
+}
 
 def mergeRanges(ranges: List[Range]): List[Range] = {
     if (ranges.size < 2) return ranges

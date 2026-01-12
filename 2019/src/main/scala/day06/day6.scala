@@ -5,10 +5,9 @@ import scala.io.Source
 
 type ChildToParent = Map[String, String]
 
-def parseTree(input: List[String]) = input.map(line => {
-    val Array(parent, child) = line.split("\\)", 2)
-    child -> parent
-}).toMap
+def parseTree(input: List[String]) = input.collect {
+    case s"$parent)$child" => child -> parent
+}.toMap
 
 def getAncestors(trees: ChildToParent, node: String): List[String] = {
     return Iterator.iterate(Option(node))(_.flatMap(trees.get)).takeWhile(_.isDefined).drop(1).map(_.get).toList

@@ -5,10 +5,9 @@ import scala.io.Source
 
 case class Layer(depth: Int, range: Int)
 
-def parseInput(input: List[String]) = input.map(line => {
-    val Array(depth, range) = line.split(": ").map(_.toInt)
-    Layer(depth, range)
-})
+def parseInput(input: List[String]) = input.collect {
+    case s"$depth: $range" => Layer(depth.toInt, range.toInt)
+}
 
 def severities(layers: List[Layer], t: Int): List[Int] = {
     return layers.withFilter(it => (t + it.depth) % (2 * it.range - 2) == 0).map(it => it.depth * it.range)

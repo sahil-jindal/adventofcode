@@ -8,18 +8,17 @@ case class State(left: Long, pots: IndexedSeq[Boolean])
 
 type Pair = (state: State, rules: Map[IndexedSeq[Boolean], Boolean])
 
-def checkPots(input: String) = input.collect {
+def checkPot: PartialFunction[Char, Boolean] = {
     case '#' => true
     case '.' => false
 }
 
 def parseInput(input: List[String]): Pair = {
-    val pots = checkPots(input.head.stripPrefix("initial state: "))
+    val pots = input.head.stripPrefix("initial state: ").collect(checkPot)
     
-    val rules = input.drop(2).map(line => {
-        val Array(key, value) = line.split(" => ").map(checkPots)
-        key -> value.head
-    }).toMap
+    val rules = input.drop(2).collect {
+        case s"$key => $value" => key.collect(checkPot) -> checkPot(value.head)
+    }.toMap
     
     return (State(0, pots), rules)
 }

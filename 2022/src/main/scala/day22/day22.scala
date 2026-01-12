@@ -5,9 +5,9 @@ import scala.io.Source
 import scala.util.control.Breaks._
 
 sealed trait Cmd
+case object Left extends Cmd
+case object Right extends Cmd
 case class Forward(n: Int) extends Cmd
-case class Left() extends Cmd
-case class Right() extends Cmd
 
 case class Vec2D(y: Int, x: Int) {
     def +(that: Vec2D) = Vec2D(y + that.y, x + that.x)
@@ -24,8 +24,8 @@ def parseInput(input: List[String]): PairOne = {
     val map = input.dropRight(2)
 
     val commands = raw"(\d+)|L|R".r.findAllIn(input.last).collect {
-        case "L" => Left()
-        case "R" => Right()
+        case "L" => Left
+        case "R" => Right
         case num if num.forall(_.isDigit) => Forward(num.toInt)
     }.toList
 
@@ -102,8 +102,8 @@ def solve(input: PairOne, topology: Map[Char, List[PairTwo]]): Int = {
 
     for (cmd <- cmds) {
         cmd match {
-            case Left()  => state = state.copy(dir = (state.dir + 3) % 4)
-            case Right() => state = state.copy(dir = (state.dir + 1) % 4)
+            case Left => state = state.copy(dir = (state.dir + 3) % 4)
+            case Right => state = state.copy(dir = (state.dir + 1) % 4)
             case Forward(n) => {
                 breakable {
                     for (i <- 0 until n) {

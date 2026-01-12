@@ -5,10 +5,9 @@ import scala.io.Source
 
 case class Pair(hand: String, bid: Int)
 
-def parseInput(input: List[String]) = input.map(line => {
-    val Array(a, b) = line.split(" ")
-    Pair(a, b.toInt)
-})
+def parseInput(input: List[String]) = input.collect {
+    case s"$a $b" => Pair(a, b.toInt)
+}
 
 def solve(input: List[Pair], getPoints: String => (Int, Int)): Int = {
     val bidByRanking = input.sortBy(it => getPoints(it.hand)).map(_.bid)

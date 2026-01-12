@@ -9,10 +9,9 @@ case class Pair(length: Int, strength: Int)
 val partOneOrdering = Ordering.by[Pair, Int](_.strength)
 val partTwoOrdering = Ordering.by[Pair, Int](_.length) orElse Ordering.by(_.strength)
 
-def parseInput(input: List[String]) = input.map(line => {
-    val Array(pinA, pinB) = line.split("/").map(_.toInt)
-    Component(pinA, pinB)
-}).toSet
+def parseInput(input: List[String]) = input.collect {
+    case s"$pinA/$pinB" => Component(pinA.toInt, pinB.toInt)
+}.toSet
 
 def strongestBridge(input: Set[Component], compare: (Pair, Pair) => Int): Int = {
     def fold(pinIn: Int, components: Set[Component]): Pair = {
