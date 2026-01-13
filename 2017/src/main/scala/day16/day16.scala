@@ -4,10 +4,29 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Map, ListBuffer}
 
-sealed trait Move
-case class Spin(size: Int) extends Move
-case class Exchange(a: Int, b: Int) extends Move
-case class Partner(a: Char, b: Char) extends Move
+sealed trait Move { def dance(str: String): String }
+
+case class Spin(size: Int) extends Move {
+    override def dance(str: String): String = {
+        return str.takeRight(size) + str.dropRight(size)
+    }
+}
+
+case class Exchange(a: Int, b: Int) extends Move {
+    override def dance(str: String): String = {
+        val arr = str.toCharArray
+        val temp = arr(a)
+        arr(a) = arr(b)
+        arr(b) = temp
+        return arr.mkString
+    }
+}
+
+case class Partner(a: Char, b: Char) extends Move {
+    override def dance(str: String): String = {
+        return Exchange(str.indexOf(a), str.indexOf(b)).dance(str)
+    }
+}
 
 def parseInput(input: String) = input.split(',').collect {
     case s"s$num" => Spin(num.toInt)
@@ -15,30 +34,8 @@ def parseInput(input: String) = input.split(',').collect {
     case s"p$a/$b" => Partner(a.head, b.head)
 }.toList
 
-def applySpin(str: String, num: Int): String = {
-    return str.takeRight(num) + str.dropRight(num)
-}
-
-def applyExchange(str: String, a: Int, b: Int): String = {
-    val arr = str.toCharArray
-    val temp = arr(a)
-    arr(a) = arr(b)
-    arr(b) = temp
-    return arr.mkString
-}
-
-def applyPartner(str: String, a: Char, b: Char): String = {
-    return applyExchange(str, str.indexOf(a), str.indexOf(b))
-}
-
 def applyMoves(initial: String, moves: List[Move]): String = {
-    return moves.foldLeft(initial) { (current, move) =>
-        move match {
-            case Spin(x) => applySpin(current, x)
-            case Exchange(a, b) => applyExchange(current, a, b)
-            case Partner(a, b) => applyPartner(current, a, b)
-        }
-    }
+    return moves.foldLeft(initial) { (current, move) => move.dance(current) }
 }
 
 def findCycle(initial: String, moves: List[Move]): (List[String], Int, Int) = {   
