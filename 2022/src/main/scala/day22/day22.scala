@@ -14,13 +14,13 @@ case class Vec2D(y: Int, x: Int) {
 }
 
 case class State(block: Char, coord: Vec2D, dir: Int)
-case class PairTwo(block: Char, noOfRotations: Int)
+case class Pair(block: Char, noOfRotations: Int)
 
-type PairOne = (msg: List[String], commands: List[Cmd])
+type Input = (msg: List[String], commands: List[Cmd])
 
 val blockSize = 50
 
-def parseInput(input: List[String]): PairOne = {
+def parseInput(input: List[String]): Input = {
     val map = input.dropRight(2)
 
     val commands = raw"(\d+)|L|R".r.findAllIn(input.last).collect {
@@ -32,7 +32,7 @@ def parseInput(input: List[String]): PairOne = {
     return (map, commands)  
 }
 
-def step(topology: Map[Char, List[PairTwo]], state: State): State = {
+def step(topology: Map[Char, List[Pair]], state: State): State = {
     def wrapsAround(coord: Vec2D): Boolean = {
         coord.x < 0 || coord.x >= blockSize || 
         coord.y < 0 || coord.y >= blockSize
@@ -96,7 +96,7 @@ def toGlobal(state: State) = {
     }
 }
 
-def solve(input: PairOne, topology: Map[Char, List[PairTwo]]): Int = {
+def solve(input: Input, topology: Map[Char, List[Pair]]): Int = {
     val (map, cmds) = input
     var state = new State('A', new Vec2D(0, 0), 0)
 
@@ -121,9 +121,8 @@ def solve(input: PairOne, topology: Map[Char, List[PairTwo]]): Int = {
         }
     }
 
-    return 1000 * (toGlobal(state).y + 1) + 
-              4 * (toGlobal(state).x + 1) + 
-                  state.dir
+    val Vec2D(y, x) = toGlobal(state)
+    return 1000 * (y + 1) + 4 * (x + 1) + state.dir
 }
 
 /*
@@ -149,25 +148,25 @@ def solve(input: PairOne, topology: Map[Char, List[PairTwo]]): Int = {
     This mapping was generated from a paper model.
 */
 
-def evaluatorOne(input: PairOne): Int = solve(
+def evaluatorOne(input: Input): Int = solve(
     input, Map(
-        'A' -> List(PairTwo('B', 0), PairTwo('C', 0), PairTwo('B', 0), PairTwo('E', 0)),
-        'B' -> List(PairTwo('A', 0), PairTwo('B', 0), PairTwo('A', 0), PairTwo('B', 0)),
-        'C' -> List(PairTwo('C', 0), PairTwo('E', 0), PairTwo('C', 0), PairTwo('A', 0)),
-        'D' -> List(PairTwo('E', 0), PairTwo('F', 0), PairTwo('E', 0), PairTwo('F', 0)),
-        'E' -> List(PairTwo('D', 0), PairTwo('A', 0), PairTwo('D', 0), PairTwo('C', 0)),
-        'F' -> List(PairTwo('F', 0), PairTwo('D', 0), PairTwo('F', 0), PairTwo('D', 0))
+        'A' -> List(Pair('B', 0), Pair('C', 0), Pair('B', 0), Pair('E', 0)),
+        'B' -> List(Pair('A', 0), Pair('B', 0), Pair('A', 0), Pair('B', 0)),
+        'C' -> List(Pair('C', 0), Pair('E', 0), Pair('C', 0), Pair('A', 0)),
+        'D' -> List(Pair('E', 0), Pair('F', 0), Pair('E', 0), Pair('F', 0)),
+        'E' -> List(Pair('D', 0), Pair('A', 0), Pair('D', 0), Pair('C', 0)),
+        'F' -> List(Pair('F', 0), Pair('D', 0), Pair('F', 0), Pair('D', 0))
     )
 )
 
-def evaluatorTwo(input: PairOne): Int = solve(
+def evaluatorTwo(input: Input): Int = solve(
     input, Map(
-        'A' -> List(PairTwo('B', 0), PairTwo('C', 0), PairTwo('D', 2), PairTwo('F', 1)),
-        'B' -> List(PairTwo('E', 2), PairTwo('C', 1), PairTwo('A', 0), PairTwo('F', 0)),
-        'C' -> List(PairTwo('B', 3), PairTwo('E', 0), PairTwo('D', 3), PairTwo('A', 0)),
-        'D' -> List(PairTwo('E', 0), PairTwo('F', 0), PairTwo('A', 2), PairTwo('C', 1)),
-        'E' -> List(PairTwo('B', 2), PairTwo('F', 1), PairTwo('D', 0), PairTwo('C', 0)),
-        'F' -> List(PairTwo('E', 3), PairTwo('B', 0), PairTwo('A', 3), PairTwo('D', 0))
+        'A' -> List(Pair('B', 0), Pair('C', 0), Pair('D', 2), Pair('F', 1)),
+        'B' -> List(Pair('E', 2), Pair('C', 1), Pair('A', 0), Pair('F', 0)),
+        'C' -> List(Pair('B', 3), Pair('E', 0), Pair('D', 3), Pair('A', 0)),
+        'D' -> List(Pair('E', 0), Pair('F', 0), Pair('A', 2), Pair('C', 1)),
+        'E' -> List(Pair('B', 2), Pair('F', 1), Pair('D', 0), Pair('C', 0)),
+        'F' -> List(Pair('E', 3), Pair('B', 0), Pair('A', 3), Pair('D', 0))
     )
 )
 

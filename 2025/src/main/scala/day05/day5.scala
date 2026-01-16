@@ -7,9 +7,9 @@ case class Range(start: Long, end: Long) {
     def length = end - start + 1
 }
 
-case class Data(ranges: List[Range], ids: List[Long])
+case class Input(ranges: List[Range], ids: List[Long])
 
-def parseInput(lines: List[String]): Data = {
+def parseInput(lines: List[String]): Input = {
     val idx = lines.indexWhere(_.trim.isEmpty)
 
     val ranges = lines.take(idx).collect {
@@ -18,15 +18,15 @@ def parseInput(lines: List[String]): Data = {
 
     val numbers = lines.drop(idx + 1).map(_.toLong)
 
-    Data(ranges, numbers)
+    return Input(ranges, numbers)
 }
 
-def evaluatorOne(data: Data): Int = {
-    val Data(ranges, ids) = data
+def evaluatorOne(data: Input): Int = {
+    val Input(ranges, ids) = data
     return ids.count(id => ranges.exists(r => id >= r.start && id <= r.end))
 }
 
-def evaluatorTwo(data: Data): Long = {
+def evaluatorTwo(data: Input): Long = {
     val ranges = data.ranges
 
     if (ranges.isEmpty) return 0

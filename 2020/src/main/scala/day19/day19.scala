@@ -7,7 +7,7 @@ sealed trait Rule
 case class Literal(char: Char) extends Rule
 case class Alternative(options: List[List[Int]]) extends Rule
 
-type Pair = (rules: Map[Int, Rule], messages: List[String])
+type Input = (rules: Map[Int, Rule], messages: List[String])
 
 def parseRules(line: String) = {
     val Array(idStr, ruleStr) = line.split(": ")
@@ -21,7 +21,7 @@ def parseRules(line: String) = {
     idStr.toInt -> rule
 }
 
-def parseInput(input: List[String]): Pair = {
+def parseInput(input: List[String]): Input = {
     val idx = input.indexWhere(_.trim.isEmpty)
     return (input.take(idx).map(parseRules).toMap, input.drop(idx + 1))
 }
@@ -50,14 +50,14 @@ def buildRegex(rules: Map[Int, Rule], id: Int, partTwo: Boolean): String = {
     }
 }
 
-def countValidMessages(input: Pair, partTwo: Boolean): Int = {
+def countValidMessages(input: Input, partTwo: Boolean): Int = {
     val (rules, messages) = input
     val regex = raw"^${buildRegex(rules, 0, partTwo)}$$".r
-    return messages.count(msg => regex.pattern.matcher(msg).matches())
+    return messages.count(msg => regex.findFirstIn(msg).isDefined)
 }
 
-def evaluatorOne(input: Pair): Int = countValidMessages(input, false)
-def evaluatorTwo(input: Pair): Int = countValidMessages(input, true)
+def evaluatorOne(input: Input): Int = countValidMessages(input, false)
+def evaluatorTwo(input: Input): Int = countValidMessages(input, true)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

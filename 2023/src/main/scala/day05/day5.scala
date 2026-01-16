@@ -9,7 +9,7 @@ case class Range(start: Long, end: Long) {
     def overlaps(that: Range) = start <= that.end && that.start <= end 
 }
 
-type Pair = (numbers: List[Long], maps: List[Map[Range, Range]])
+type Input = (numbers: List[Long], maps: List[Map[Range, Range]])
 
 def groupLines(input: List[String]): List[List[String]] = {
     return input.foldLeft(List(List.empty[String])) {
@@ -20,7 +20,7 @@ def groupLines(input: List[String]): List[List[String]] = {
 
 def parseNumbers(input: String) = raw"(\d+)".r.findAllIn(input).map(_.toLong).toList
 
-def parseInput(input: List[String]): Pair = {
+def parseInput(input: List[String]): Input = {
     val maps = groupLines(input.drop(2)).map(_.tail.map(line => {
         val List(sA, sB, len) = parseNumbers(line)
         Range(sB, sB + len - 1) -> Range(sA, sA + len - 1)
@@ -65,7 +65,7 @@ def project(inputRanges: List[Range], map: Map[Range, Range]): List[Range] = {
     return output.toList
 }
 
-def solve(input: Pair, parseSeeds: List[Long] => List[Range]): Long = {
+def solve(input: Input, parseSeeds: List[Long] => List[Range]): Long = {
     val (numbers, maps) = input
     val seedRanges = parseSeeds(numbers)
     return maps.foldLeft(seedRanges)(project).map(_.start).min
@@ -77,8 +77,8 @@ def partTwoRanges(numbers: List[Long]): List[Range] = {
     return numbers.grouped(2).map(n => Range(n(0), n(0) + n(1) - 1)).toList
 }
 
-def evaluatorOne(input: Pair): Long = solve(input, partOneRanges)
-def evaluatorTwo(input: Pair): Long = solve(input, partTwoRanges)
+def evaluatorOne(input: Input): Long = solve(input, partOneRanges)
+def evaluatorTwo(input: Input): Long = solve(input, partTwoRanges)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

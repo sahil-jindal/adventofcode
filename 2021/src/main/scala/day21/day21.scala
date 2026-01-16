@@ -12,14 +12,14 @@ case class Player(score: Int, pos: Int) {
     }
 }
 
-case class PairOne(active: Player, other: Player)
-case class PairTwo(activeWins: Long, otherWins: Long)
+case class Input(active: Player, other: Player)
+case class Pair(activeWins: Long, otherWins: Long)
 
 val regex = raw"Player \d starting position: (\d)".r
 
-def parseInput(input: List[String]): PairOne = {
+def parseInput(input: List[String]): Input = {
     val players = input.collect { case regex(pos) => Player(0, pos.toInt) }
-    return PairOne(players(0), players(1))
+    return Input(players(0), players(1))
 }
 
 def threeRolls(): Iterator[Int] = {
@@ -35,8 +35,8 @@ def diracThrows(): IndexedSeq[Int] = {
     } yield i + j + k)
 }
 
-def evaluatorOne(opponents: PairOne): Int = {
-    var PairOne(active, other) = opponents
+def evaluatorOne(opponents: Input): Int = {
+    var Input(active, other) = opponents
     var rounds = 0
 
     boundary {
@@ -55,28 +55,28 @@ def evaluatorOne(opponents: PairOne): Int = {
     return 3 * rounds * other.score 
 }
 
-def evaluatorTwo(opponents: PairOne): Long = {
-    val cache = Map.empty[PairOne, PairTwo]
+def evaluatorTwo(opponents: Input): Long = {
+    val cache = Map.empty[Input, Pair]
 
-    def winCounts(players: PairOne): PairTwo = {
-        if (players.other.score >= 21) return PairTwo(0L, 1L)
+    def winCounts(players: Input): Pair = {
+        if (players.other.score >= 21) return Pair(0L, 1L)
 
         return cache.getOrElseUpdate(players, {
             var (activeWins, otherWins) = (0L, 0L)
             
             for (steps <- diracThrows()) {
-                var wins = winCounts(PairOne(players.other, players.active.move(steps)))
+                var wins = winCounts(Input(players.other, players.active.move(steps)))
                 // they are switching roles here ^
                 // hence the return value needs to be swapped as well
                 activeWins += wins.otherWins
                 otherWins += wins.activeWins
             }
 
-            PairTwo(activeWins, otherWins)
+            Pair(activeWins, otherWins)
         })
     }
 
-    val PairTwo(activeWins, otherWins) = winCounts(opponents)
+    val Pair(activeWins, otherWins) = winCounts(opponents)
 
     return math.max(activeWins, otherWins)
 }

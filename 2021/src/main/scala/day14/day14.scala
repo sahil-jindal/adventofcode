@@ -4,9 +4,9 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Map => MutableMap}
 
-type Pair = (polymer: String, template: Map[(Char, Char), Char])
+type Input = (polymer: String, template: Map[(Char, Char), Char])
 
-def parseInput(input: List[String]): Pair = {
+def parseInput(input: List[String]): Input = {
     val template = input.drop(2).collect {
         case s"$ab -> $c" => (ab(0), ab(1)) -> c(0)
     }.toMap
@@ -14,7 +14,7 @@ def parseInput(input: List[String]): Pair = {
     return (input.head, template)
 }
 
-def solve(input: Pair, steps: Int): Long = {
+def solve(input: Input, steps: Int): Long = {
     val (polymer, template) = input
 
     var moleculeCount = (polymer.init zip polymer.tail).groupMapReduce(identity)(_ => 1L)(_ + _)
@@ -42,8 +42,8 @@ def solve(input: Pair, steps: Int): Long = {
     return elementCounts.values.max - elementCounts.values.min
 }
 
-def evaluatorOne(input: Pair): Long = solve(input, 10)
-def evaluatorTwo(input: Pair): Long = solve(input, 40)
+def evaluatorOne(input: Input): Long = solve(input, 10)
+def evaluatorTwo(input: Input): Long = solve(input, 40)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

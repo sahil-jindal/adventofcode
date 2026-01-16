@@ -16,7 +16,7 @@ case class Vec3D(x: Long, y: Long, z: Long) {
     }
 }
 
-type PairTwo = (first: List[Vec3D], second: IndexedSeq[Edge])
+type Input = (first: List[Vec3D], second: IndexedSeq[Edge])
 
 class DisjointUnionSets(size: Int) {
     private val parent = (0 until size).toArray
@@ -52,7 +52,7 @@ def parseInput(input: List[String]) = input.map(line => {
     Vec3D(x, y, z)
 })
 
-def preComputation(points: List[Vec3D]): PairTwo = {
+def preComputation(points: List[Vec3D]): Input = {
     val pairs = for {
         i <- 0 to points.length - 2
         j <- i + 1 to points.length - 1
@@ -61,7 +61,7 @@ def preComputation(points: List[Vec3D]): PairTwo = {
     return (points, pairs.sortBy(_.dist).map(_.edge))
 }
 
-def evaluatorOne(pair: PairTwo): Int = {
+def evaluatorOne(pair: Input): Int = {
     val (points, sortedEdges) = pair
     
     val uf = DisjointUnionSets(points.length)
@@ -72,7 +72,7 @@ def evaluatorOne(pair: PairTwo): Int = {
         .values.toSeq.sorted(using Ordering.Int.reverse).take(3).product
 }
 
-def evaluatorTwo(pair: PairTwo): Long = {
+def evaluatorTwo(pair: Input): Long = {
     val (points, sortedEdges) = pair
     
     val uf = DisjointUnionSets(points.length)

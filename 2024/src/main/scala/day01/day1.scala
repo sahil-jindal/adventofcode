@@ -3,21 +3,21 @@ package day01
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-type Pair = (first: List[Int], second: List[Int])
+type Input = (first: List[Int], second: List[Int])
 
 def parseNumbers(line: String) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toList
 
-def parseInput(input: List[String]): Pair = {
+def parseInput(input: List[String]): Input = {
     val List(num1, num2) = input.map(parseNumbers).transpose.map(_.sorted)
     return (num1, num2)
 }
 
-def evaluatorOne(input: Pair): Int = {
+def evaluatorOne(input: Input): Int = {
     val (first, second) = input
     return (first zip second).map { case (a, b) => (a - b).abs }.sum
 }
 
-def evaluatorTwo(input: Pair): Int = {
+def evaluatorTwo(input: Input): Int = {
     val (first, second) = input
     val weights = second.groupMapReduce(identity)(_ => 1)(_ + _)
 

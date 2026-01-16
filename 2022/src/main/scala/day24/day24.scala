@@ -37,13 +37,13 @@ case class Maps(private val map: List[String]) {
     }
 }
 
-case class Triplet(entry: Pos, exit: Pos, maps: Maps)
+case class Input(entry: Pos, exit: Pos, maps: Maps)
 
-def parseInput(input: List[String]): Triplet = {
+def parseInput(input: List[String]): Input = {
     val maps = Maps(input)
     val entry = Pos(0, 0, 1)
     val exit = Pos(Int.MaxValue, maps.height - 1, maps.width - 2)
-    return Triplet(entry, exit, maps)
+    return Input(entry, exit, maps)
 }
 
 def nextPositions(posInit: Pos, maps: Maps): List[Pos] = {
@@ -81,8 +81,8 @@ def walkTo(start: Pos, goal: Pos, maps: Maps): Pos = {
     throw Exception("No solution found")
 }
 
-def solver(input: Triplet): (Int, Int) = {
-    val Triplet(entry, exit, maps) = input
+def solver(input: Input): (Int, Int) = {
+    val Input(entry, exit, maps) = input
     var pos = walkTo(entry, exit, maps)
     val partOne = pos.time
 

@@ -6,14 +6,14 @@ import scala.collection.mutable.ListBuffer
 
 enum Opcode { case Adv, Bxl, Bst, Jnz, Bxc, Out, Bdv, Cdv }
 
-case class Pair(state: List[Long], program: List[Long])
+case class Input(state: List[Long], program: List[Long])
 
 def parseNums(st: String) = raw"(\d+)".r.findAllIn(st).map(_.toLong).toList
 
-def parseInput(input: List[String]): Pair = {
+def parseInput(input: List[String]): Input = {
     val state = input.take(3).flatMap(parseNums)
     val program = parseNums(input.last)
-    return Pair(state, program)
+    return Input(state, program)
 }
 
 def run(state: Array[Long], program: List[Long]): List[Long] = {
@@ -50,8 +50,8 @@ def generateA(program: List[Long], output: List[Long]): List[Long] = {
         .filter(a => run(Array(a, 0, 0), program).sameElements(output))
 }
 
-def evaluatorOne(input: Pair): String = run(input.state.toArray, input.program).mkString(",")
-def evaluatorTwo(input: Pair): Long = generateA(input.program, input.program).min
+def evaluatorOne(input: Input): String = run(input.state.toArray, input.program).mkString(",")
+def evaluatorTwo(input: Input): Long = generateA(input.program, input.program).min
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

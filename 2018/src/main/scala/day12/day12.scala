@@ -6,14 +6,14 @@ import scala.util.control.Breaks._
 
 case class State(left: Long, pots: IndexedSeq[Boolean])
 
-type Pair = (state: State, rules: Map[IndexedSeq[Boolean], Boolean])
+type Input = (state: State, rules: Map[IndexedSeq[Boolean], Boolean])
 
 def checkPot: PartialFunction[Char, Boolean] = {
     case '#' => true
     case '.' => false
 }
 
-def parseInput(input: List[String]): Pair = {
+def parseInput(input: List[String]): Input = {
     val pots = input.head.stripPrefix("initial state: ").collect(checkPot)
     
     val rules = input.drop(2).collect {
@@ -35,7 +35,7 @@ def step(state: State, rules: Map[IndexedSeq[Boolean], Boolean]): State = {
     return State(firstFlower + state.left - 3, newPots.slice(firstFlower, lastFlower + 1))
 }
 
-def iterate(input: Pair, iterations: Long): Long = {
+def iterate(input: Input, iterations: Long): Long = {
     var (state, rules) = input
     var remainingIterations = iterations
 
@@ -56,8 +56,8 @@ def iterate(input: Pair, iterations: Long): Long = {
     return state.pots.zipWithIndex.collect { case (true, i) => i + state.left }.sum
 }
 
-def evaluatorOne(input: Pair): Long = iterate(input, 20)
-def evaluatorTwo(input: Pair): Long = iterate(input, 50000000000L)
+def evaluatorOne(input: Input): Long = iterate(input, 20)
+def evaluatorTwo(input: Input): Long = iterate(input, 50000000000L)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

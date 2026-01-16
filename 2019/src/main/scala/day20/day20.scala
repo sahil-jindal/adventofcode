@@ -7,9 +7,9 @@ import scala.collection.mutable.{Queue, Set, Map => MutableMap}
 case class Pos2(y: Int, x: Int)
 case class Pos3(y: Int, x: Int, level: Int)
 case class PosD(y: Int, x: Int, dlevel: Int)
-case class Quadruple(mx: List[Array[Char]], portals: Map[Pos2, PosD], start: Pos3, end: Pos3)
+case class Input(mx: List[Array[Char]], portals: Map[Pos2, PosD], start: Pos3, end: Pos3)
 
-def explore(mx: List[Array[Char]]): Quadruple = {
+def explore(mx: List[Array[Char]]): Input = {
     val portals = MutableMap.empty[Pos2, PosD]
     val temp = MutableMap.empty[String, Pos2]
 
@@ -40,10 +40,10 @@ def explore(mx: List[Array[Char]]): Quadruple = {
         }
     }
 
-    return Quadruple(mx, portals.toMap, Pos3(temp("AA").y, temp("AA").x, 0), Pos3(temp("ZZ").y, temp("ZZ").x, 0))
+    return Input(mx, portals.toMap, Pos3(temp("AA").y, temp("AA").x, 0), Pos3(temp("ZZ").y, temp("ZZ").x, 0))
 }
 
-def parseInput(input: List[String]): Quadruple = {
+def parseInput(input: List[String]): Input = {
     val maxWidth = input.map(_.length).max
     val mx = input.map(_.padTo(maxWidth, ' ').toArray)
     return explore(mx)
@@ -56,8 +56,8 @@ def getNeighbours(pos: Pos3) = List(
     pos.copy(y = pos.y + 1)
 )
 
-def solve(input: Quadruple, partTwo: Boolean): Int = {
-    val Quadruple(mx, portals, start, end) = input
+def solve(input: Input, partTwo: Boolean): Int = {
+    val Input(mx, portals, start, end) = input
 
     def neighbours(pos: Pos3): List[Pos3] = {
         var result = getNeighbours(pos)
@@ -100,8 +100,8 @@ def solve(input: Quadruple, partTwo: Boolean): Int = {
     throw new Exception("No path found")
 }
 
-def evaluatorOne(input: Quadruple): Int = solve(input, false)
-def evaluatorTwo(input: Quadruple): Int = solve(input, true)
+def evaluatorOne(input: Input): Int = solve(input, false)
+def evaluatorTwo(input: Input): Int = solve(input, true)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

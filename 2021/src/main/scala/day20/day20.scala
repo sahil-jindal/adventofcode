@@ -6,7 +6,7 @@ import scala.collection.mutable.{Map => MutableMap}
 
 case class Point(y: Int, x: Int)
 
-type Pair = (algo: String, image: Map[Point, Boolean])
+type Input = (algo: String, image: Map[Point, Boolean])
 
 def getImage(map: List[String]): Map[Point, Boolean] = {
     return (for {
@@ -24,7 +24,7 @@ def neighbours(pos: Point): IndexedSeq[Point] = {
     } yield Point(pos.y + dy, pos.x + dx))
 }
 
-def enhanced(input: Pair, n: Int): Int = {
+def enhanced(input: Input, n: Int): Int = {
     var (algo, image) = input
 
     var (minY, maxY) = (0, image.keys.map(_.y).max)
@@ -56,8 +56,8 @@ def enhanced(input: Pair, n: Int): Int = {
     return image.values.count(identity)
 }
 
-def evaluatorOne(input: Pair): Int = enhanced(input, 2)
-def evaluatorTwo(input: Pair): Int = enhanced(input, 50)
+def evaluatorOne(input: Input): Int = enhanced(input, 2)
+def evaluatorTwo(input: Input): Int = enhanced(input, 50)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

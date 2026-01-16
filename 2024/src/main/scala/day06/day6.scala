@@ -13,8 +13,8 @@ case class Point(y: Int, x: Int) {
     def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
 }
 
-case class PairOne(pos: Point, dir: Direction)
-case class PairTwo(positions: Set[Point], isLoop: Boolean)
+case class Particle(pos: Point, dir: Direction)
+case class Pair(positions: Set[Point], isLoop: Boolean)
 
 type Grid = Map[Point, Char]
 
@@ -29,13 +29,13 @@ def parseInput(input: List[String]): (Grid, Point) = {
     return (grid, start)
 }
 
-def walker(grid: Grid, posInit: Point): PairTwo = {
-    val seen = Set.empty[PairOne]
+def walker(grid: Grid, posInit: Point): Pair = {
+    val seen = Set.empty[Particle]
 
     var (pos, dir) = (posInit, Direction(-1, 0))
 
-    while (grid.contains(pos) && !seen.contains(PairOne(pos, dir))) {
-        seen += PairOne(pos, dir)
+    while (grid.contains(pos) && !seen.contains(Particle(pos, dir))) {
+        seen += Particle(pos, dir)
 
         if (grid.getOrElse(pos + dir, ' ') == '#') {
             dir = dir.rotateRight
@@ -44,7 +44,7 @@ def walker(grid: Grid, posInit: Point): PairTwo = {
         }
     }
 
-    return PairTwo(seen.map(_.pos), seen.contains(PairOne(pos, dir)))
+    return Pair(seen.map(_.pos), seen.contains(Particle(pos, dir)))
 }
 
 def solver(input: List[String]): (Int, Int) = {

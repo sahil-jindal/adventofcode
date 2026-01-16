@@ -8,7 +8,7 @@ import scala.util.boundary, boundary.break
 enum Kind { case OR, AND, XOR }
 
 case class Gate(in1: String, kind: Kind, in2: String)
-case class Pair(inputs: Map[String, Boolean], circuit: Map[String, Gate])
+case class Input(inputs: Map[String, Boolean], circuit: Map[String, Gate])
 
 def parseKind: PartialFunction[String, Kind] = {
     case "OR" => Kind.OR
@@ -16,7 +16,7 @@ def parseKind: PartialFunction[String, Kind] = {
     case "XOR" => Kind.XOR
 }
 
-def parseInput(input: List[String]): Pair = {
+def parseInput(input: List[String]): Input = {
     val idx = input.indexWhere(_.trim.isEmpty)
     
     val inputs = input.take(idx).collect {
@@ -29,7 +29,7 @@ def parseInput(input: List[String]): Pair = {
         out -> Gate(a, parseKind(kind), b)
     }).toMap
 
-    return Pair(inputs, circuit)
+    return Input(inputs, circuit)
 }
 
 def eval(label: String, circuit: Map[String, Gate], inputs: Map[String, Boolean]): Boolean = {
@@ -89,15 +89,15 @@ def fix(circuit: MutableMap[String, Gate]): List[String] = {
     }
 }
 
-def evaluatorOne(input: Pair): Long = {
-    val Pair(inputs, circuit) = input
+def evaluatorOne(input: Input): Long = {
+    val Input(inputs, circuit) = input
     
     return circuit.keys.toSeq.filter(_.startsWith("z"))
         .sorted.map(eval(_, circuit, inputs))
         .zipWithIndex.collect { case (true, i) => 1L << i }.sum
 }
 
-def evaluatorTwo(input: Pair): String = {
+def evaluatorTwo(input: Input): String = {
     return fix(MutableMap.from(input.circuit)).sorted.mkString(",")
 }
 

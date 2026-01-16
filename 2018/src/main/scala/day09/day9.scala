@@ -5,14 +5,14 @@ import scala.io.Source
 
 case class Node(value: Int, var left: Node = null, var right: Node = null)
 
-type Pair = (length: Int, currPoints: Int)
+type Input = (length: Int, currPoints: Int)
 
-def parseInput(input: String): Pair = {
+def parseInput(input: String): Input = {
     val Seq(length, currPoints) = raw"(\d+)".r.findAllIn(input).map(_.toInt).toSeq
     return (length, currPoints)
 }
 
-def solver(input: Pair, mul: Int): Long = {
+def solver(input: Input, mul: Int): Long = {
     val (length, currPoints) = input
     val players = Array.ofDim[Long](length)
     val targetPoints = currPoints * mul
@@ -46,8 +46,8 @@ def solver(input: Pair, mul: Int): Long = {
     return players.max
 }
 
-def evaluatorOne(input: Pair): Long = solver(input, 1)
-def evaluatorTwo(input: Pair): Long = solver(input, 100)
+def evaluatorOne(input: Input): Long = solver(input, 1)
+def evaluatorTwo(input: Input): Long = solver(input, 100)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

@@ -8,7 +8,7 @@ case class Vec2D(y: Int, x: Int) {
     def -(that: Vec2D) = Vec2D(y - that.y, x - that.x)
 }
 
-case class Pair(station: Vec2D, asteroidsByDir: Map[Vec2D, List[Vec2D]])
+case class Input(station: Vec2D, asteroidsByDir: Map[Vec2D, List[Vec2D]])
 
 def gcd(a: Int, b: Int): Int = if b == 0 then a else gcd(b, a % b)
 
@@ -30,11 +30,11 @@ def getDirection(asteroid: Vec2D, station: Vec2D): Vec2D = {
     return Vec2D(yDir / g, xDir / g)
 }
 
-def lineOfSightGroups(station: Vec2D, remaining: List[Vec2D]): Pair = {
-    return Pair(station, remaining.groupBy(it => getDirection(it, station)))
+def lineOfSightGroups(station: Vec2D, remaining: List[Vec2D]): Input = {
+    return Input(station, remaining.groupBy(it => getDirection(it, station)))
 }
 
-def selectStationPosition(asteroids: List[Vec2D]): Pair = {
+def selectStationPosition(asteroids: List[Vec2D]): Input = {
     return splitAsteroidsByFocus(asteroids).map(lineOfSightGroups).maxBy(_.asteroidsByDir.size)
 }
 
@@ -43,8 +43,8 @@ def rotate(dirs: List[Vec2D]): Iterator[Vec2D] = {
     return Iterator.continually(ordered).flatten
 }
 
-def destroy(input: Pair): Iterator[Vec2D] = {
-    val Pair(station, asteroidsByDir) = input
+def destroy(input: Input): Iterator[Vec2D] = {
+    val Input(station, asteroidsByDir) = input
 
     val mutableMap = MutableMap.from(asteroidsByDir.view.mapValues(list => {
         ListBuffer.from(list.sortBy(p => (p.y - station.y).abs + (p.x - station.x).abs))
@@ -60,9 +60,9 @@ def destroy(input: Pair): Iterator[Vec2D] = {
     }
 }
 
-def evaluatorOne(input: Pair): Int = input.asteroidsByDir.size
+def evaluatorOne(input: Input): Int = input.asteroidsByDir.size
 
-def evaluatorTwo(input: Pair): Int = {
+def evaluatorTwo(input: Input): Int = {
     val asteroid = destroy(input).drop(199).next()
     asteroid.x * 100 + asteroid.y
 }

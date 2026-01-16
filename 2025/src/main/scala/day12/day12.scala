@@ -5,7 +5,7 @@ import scala.io.Source
 
 case class Region(w: Int, h: Int, counts: List[Int])
 
-type Pair = (shapeSizes: List[Int], regions: List[Region])
+type Input = (shapeSizes: List[Int], regions: List[Region])
 
 def groupLines(input: List[String]): List[List[String]] = {
     return input.foldLeft(List(List.empty[String])) {
@@ -19,7 +19,7 @@ def groupLines(input: List[String]): List[List[String]] = {
 // Therefore, whenever the total present area does not exceed the region area, 
 // a placement is guaranteed to exist, making the area check sufficient.
 
-def parseInput(input: List[String]): Pair = {
+def parseInput(input: List[String]): Input = {
     val blocks = groupLines(input)
 
     val shapeSizes = blocks.init.map(block => {
@@ -34,7 +34,7 @@ def parseInput(input: List[String]): Pair = {
     return (shapeSizes, regions)
 }
 
-def evaluatorOne(input: Pair) = {
+def evaluatorOne(input: Input) = {
     val (shapesizes, regions) = input
 
     regions.count(region => {
