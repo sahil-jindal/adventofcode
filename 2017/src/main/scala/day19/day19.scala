@@ -16,7 +16,7 @@ def parseInput(input: List[String]): Map[Point, Char] = {
     return (for {
         (line, y) <- input.zipWithIndex
         (ch, x) <- line.zipWithIndex
-        if ch != ' '
+        if !ch.isWhitespace
     } yield Point(y, x) -> ch).toMap
 }
 

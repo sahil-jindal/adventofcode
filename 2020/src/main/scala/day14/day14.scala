@@ -32,10 +32,9 @@ def parseInput(input: List[String]): List[ProgramSegment] = {
             case 'X' => Unknown
         }
 
-        val commands = group.tail.map(line => {
-            val List(a, b) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toList
-            Command(a, b.toLong)
-        })
+        val commands = group.tail.collect {
+            case s"mem[$a] = $b" => Command(a.toInt, b.toLong)
+        }
 
         ProgramSegment(mask, commands)
     })

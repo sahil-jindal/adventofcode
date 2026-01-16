@@ -2,42 +2,43 @@ package day06
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
+import scala.collection.immutable.Range.Inclusive
 
 enum Actions { case Toggle, TurnOn, TurnOff }
 
-case class Instruction(action: Actions, startx: Int, starty: Int, endx: Int, endy: Int)
+case class Instruction(action: Actions, xRange: Inclusive, yRange: Inclusive)
 
 val toggleRegex = raw"toggle (\d+),(\d+) through (\d+),(\d+)".r
 val turnOnRegex = raw"turn on (\d+),(\d+) through (\d+),(\d+)".r
 val turnOffRegex = raw"turn off (\d+),(\d+) through (\d+),(\d+)".r
 
 def parseInput(input: List[String]) = input.collect {
-    case toggleRegex(a, b, c, d) => Instruction(Actions.Toggle, a.toInt, b.toInt, c.toInt, d.toInt)
-    case turnOnRegex(a, b, c, d) => Instruction(Actions.TurnOn, a.toInt, b.toInt, c.toInt, d.toInt)
-    case turnOffRegex(a, b, c, d) => Instruction(Actions.TurnOff, a.toInt, b.toInt, c.toInt, d.toInt)
+    case toggleRegex(a, b, c, d) => Instruction(Actions.Toggle, a.toInt to c.toInt, b.toInt to d.toInt)
+    case turnOnRegex(a, b, c, d) => Instruction(Actions.TurnOn, a.toInt to c.toInt, b.toInt to d.toInt)
+    case turnOffRegex(a, b, c, d) => Instruction(Actions.TurnOff, a.toInt to c.toInt, b.toInt to d.toInt)
 }
 
 def evaluatorOne(input: List[Instruction]): Int = {
     
-    def turnOnBrightness(grid: Array[Array[Boolean]], startx: Int, starty: Int, endx: Int, endy: Int) = {
-        for { i <- starty to endy; j <- startx to endx } do grid(i)(j) = true
+    def turnOnBrightness(grid: Array[Array[Boolean]], xRange: Inclusive, yRange: Inclusive) = {
+        for { i <- yRange; j <- xRange } do grid(i)(j) = true
     }
 
-    def turnOffBrightness(grid: Array[Array[Boolean]], startx: Int, starty: Int, endx: Int, endy: Int) = {
-        for { i <- starty to endy; j <- startx to endx } do grid(i)(j) = false
+    def turnOffBrightness(grid: Array[Array[Boolean]], xRange: Inclusive, yRange: Inclusive) = {
+        for { i <- yRange; j <- xRange } do grid(i)(j) = false
     }
 
-    def toggleBrightness(grid: Array[Array[Boolean]], startx: Int, starty: Int, endx: Int, endy: Int) = {
-        for { i <- starty to endy; j <- startx to endx } do grid(i)(j) = !grid(i)(j)
+    def toggleBrightness(grid: Array[Array[Boolean]], xRange: Inclusive, yRange: Inclusive) = {
+        for { i <- yRange; j <- xRange } do grid(i)(j) = !grid(i)(j)
     }
     
     val grid = Array.ofDim[Boolean](1000, 1000)
 
-    for (Instruction(action, startx, starty, endx, endy) <- input) {
+    for (Instruction(action, xRange, yRange) <- input) {
         action match {
-            case Actions.Toggle => toggleBrightness(grid, startx, starty, endx, endy)
-            case Actions.TurnOn => turnOnBrightness(grid, startx, starty, endx, endy)
-            case Actions.TurnOff => turnOffBrightness(grid, startx, starty, endx, endy)
+            case Actions.Toggle => toggleBrightness(grid, xRange, yRange)
+            case Actions.TurnOn => turnOnBrightness(grid, xRange, yRange)
+            case Actions.TurnOff => turnOffBrightness(grid, xRange, yRange)
         }
     }
 
@@ -46,25 +47,25 @@ def evaluatorOne(input: List[Instruction]): Int = {
 
 def evaluatorTwo(input: List[Instruction]): Int = {
     
-    def turnOnBrightness(grid: Array[Array[Int]], startx: Int, starty: Int, endx: Int, endy: Int) = {
-        for { i <- starty to endy; j <- startx to endx } do grid(i)(j) += 1
+    def turnOnBrightness(grid: Array[Array[Int]], xRange: Inclusive, yRange: Inclusive) = {
+        for { i <- yRange; j <- xRange } do grid(i)(j) += 1
     }
 
-    def turnOffBrightness(grid: Array[Array[Int]], startx: Int, starty: Int, endx: Int, endy: Int) = {
-        for { i <- starty to endy; j <- startx to endx } do grid(i)(j) = math.max(0, grid(i)(j) - 1)
+    def turnOffBrightness(grid: Array[Array[Int]], xRange: Inclusive, yRange: Inclusive) = {
+        for { i <- yRange; j <- xRange } do grid(i)(j) = math.max(0, grid(i)(j) - 1)
     }
 
-    def toggleBrightness(grid: Array[Array[Int]], startx: Int, starty: Int, endx: Int, endy: Int) = {
-        for { i <- starty to endy; j <- startx to endx } do grid(i)(j) += 2
+    def toggleBrightness(grid: Array[Array[Int]], xRange: Inclusive, yRange: Inclusive) = {
+        for { i <- yRange; j <- xRange } do grid(i)(j) += 2
     }
     
     val grid = Array.ofDim[Int](1000, 1000)
 
-    for (Instruction(action, startx, starty, endx, endy) <- input) {
+    for (Instruction(action, xRange, yRange) <- input) {
         action match {
-            case Actions.Toggle => toggleBrightness(grid, startx, starty, endx, endy)
-            case Actions.TurnOn => turnOnBrightness(grid, startx, starty, endx, endy)
-            case Actions.TurnOff => turnOffBrightness(grid, startx, starty, endx, endy)
+            case Actions.Toggle => toggleBrightness(grid, xRange, yRange)
+            case Actions.TurnOn => turnOnBrightness(grid, xRange, yRange)
+            case Actions.TurnOff => turnOffBrightness(grid, xRange, yRange)
         }
     }
 

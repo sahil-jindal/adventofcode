@@ -45,7 +45,7 @@ def crateMoverOne(move: Move): Unit = {
 
 def crateMoverTwo(move: Move): Unit = {
     // Two stacks makes a Queue
-    var helper = Stack.empty[Char]
+    val helper = Stack.empty[Char]
 
     for (_ <- 0 until move.count) {
         helper.push(move.source.pop())

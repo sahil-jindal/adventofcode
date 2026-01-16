@@ -7,7 +7,7 @@ import scala.util.control.Breaks._
 
 case class Group(size: Int, c1: Int, c2: Int)
 
-case class UnionFind(nodes: Set[String]) {
+class DisjointUnionSets(nodes: Set[String]) {
     private val parent = Map.from(nodes.map(it => it -> it))
     private val size = Map.from(nodes.map(_ -> 1))
     private var componentCount = nodes.size
@@ -49,7 +49,7 @@ def parseEdge(line: String) = {
 def findCut(edges: List[(String, String)], r: Random): Group = {
     val allNodes = edges.flatMap(List(_, _)).toSet
     val shuffledEdges = r.shuffle(edges)
-    val uf = new UnionFind(allNodes)
+    val uf = new DisjointUnionSets(allNodes)
 
     breakable {
         for ((u, v) <- shuffledEdges) {
