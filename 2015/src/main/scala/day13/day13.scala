@@ -4,7 +4,9 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Map => MutableMap, Set => MutableSet}
 
-case class Graph(people: Set[String], happiness: Map[(String, String), Int])
+case class Graph(happiness: Map[(String, String), Int]) {
+    val people = happiness.keySet.flatMap(List(_,_))
+}
 
 val gainRegex = raw"(\w+) would gain (\d+) happiness units by sitting next to (\w+).".r
 val loseRegex = raw"(\w+) would lose (\d+) happiness units by sitting next to (\w+).".r
@@ -15,9 +17,7 @@ def parseInput(input: List[String]): Graph = {
         case loseRegex(person1, b, person2) => (person1, person2) -> -b.toInt
     }.toMap
 
-    val people = happiness.keySet.flatMap(List(_,_))
-
-    return Graph(people, happiness)
+    return Graph(happiness)
 }
 
 def findMaximumHappiness(graph: Graph): Int = {
@@ -31,7 +31,7 @@ def findMaximumHappiness(graph: Graph): Int = {
 
 def addYourself(graph: Graph): Graph = {
     val newHappiness = graph.people.flatMap(p => List(("You", p), (p, "You"))).map(_ -> 0).toMap
-    return Graph(graph.people.incl("You"), graph.happiness ++ newHappiness)
+    return Graph(graph.happiness ++ newHappiness)
 }
 
 def evaluatorOne(graph: Graph): Int = findMaximumHappiness(graph)

@@ -9,6 +9,10 @@ case class Pair(ingredients: Set[String], allergens: Set[String])
 case class Problem(mapping: List[Pair]) {
     val allergens = mapping.flatMap(_.allergens).toSet
     val ingredients = mapping.flatMap(_.ingredients).toSet
+
+    def getIngredientsByAllergen = allergens.map(allergen => {
+        allergen -> mapping.withFilter(_.allergens.contains(allergen)).map(_.ingredients).reduce(_ & _)
+    }).toMap
 }
 
 def parseInput(input: List[String]): Problem = {
@@ -22,17 +26,13 @@ def parseInput(input: List[String]): Problem = {
     return Problem(mapping)
 }
 
-def getIngredientsByAllergen(problem: Problem) = problem.allergens.map(allergen => {
-    allergen -> problem.mapping.withFilter(_.allergens.contains(allergen)).map(_.ingredients).reduce(_ & _)
-}).toMap
-
 def evaluatorOne(problem: Problem): Int = {
-    val suspiciousIngredients = getIngredientsByAllergen(problem).values.flatten.toSet
+    val suspiciousIngredients = problem.getIngredientsByAllergen.values.flatten.toSet
     return problem.mapping.map(_.ingredients.count(it => !suspiciousIngredients.contains(it))).sum
 }
 
 def evaluatorTwo(problem: Problem): String = {
-    val ingredientsByAllergen = getIngredientsByAllergen(problem).view.mapValues(MutableSet.from).toMap
+    val ingredientsByAllergen = problem.getIngredientsByAllergen.view.mapValues(MutableSet.from).toMap
     
     while (ingredientsByAllergen.values.exists(_.size > 1)) {
         for (allergen <- problem.allergens) {
