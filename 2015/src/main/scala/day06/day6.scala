@@ -3,10 +3,45 @@ package day06
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.immutable.Range.Inclusive
+import scala.reflect.ClassTag
 
 enum Actions { case Toggle, TurnOn, TurnOff }
 
 case class Instruction(action: Actions, xRange: Inclusive, yRange: Inclusive)
+
+trait LightGrid[A] {
+    def initial: A
+    def interpret(action: Actions)(cell: A): A
+    def aggregate(grid: Array[Array[A]]): Int
+}
+
+given LightGrid[Boolean] with {
+    def initial = false
+    
+    def interpret(action: Actions)(cell: Boolean) = action match {
+        case Actions.Toggle  => !cell
+        case Actions.TurnOn  => true
+        case Actions.TurnOff => false
+    }
+
+    def aggregate(grid: Array[Array[Boolean]]): Int = {
+        return grid.flatten.count(identity) 
+    }
+}
+
+given LightGrid[Int] with {
+    def initial = 0
+    
+    def interpret(action: Actions)(cell: Int) = action match {
+        case Actions.Toggle  => cell + 2
+        case Actions.TurnOn  => cell + 1
+        case Actions.TurnOff => (cell - 1).max(0)
+    }
+
+    def aggregate(grid: Array[Array[Int]]): Int = {
+        return grid.flatten.sum
+    }
+}
 
 val toggleRegex = raw"toggle (\d+),(\d+) through (\d+),(\d+)".r
 val turnOnRegex = raw"turn on (\d+),(\d+) through (\d+),(\d+)".r
@@ -18,59 +53,22 @@ def parseInput(input: List[String]) = input.collect {
     case turnOffRegex(a, b, c, d) => Instruction(Actions.TurnOff, a.toInt to c.toInt, b.toInt to d.toInt)
 }
 
-def evaluatorOne(input: List[Instruction]): Int = {
+def solver[A: ClassTag](input: List[Instruction])(using lg: LightGrid[A]): Int = {
+    val grid = Array.fill(1000, 1000)(lg.initial)
     
-    def turnOnBrightness(grid: Array[Array[Boolean]], xRange: Inclusive, yRange: Inclusive) = {
-        for { i <- yRange; j <- xRange } do grid(i)(j) = true
-    }
-
-    def turnOffBrightness(grid: Array[Array[Boolean]], xRange: Inclusive, yRange: Inclusive) = {
-        for { i <- yRange; j <- xRange } do grid(i)(j) = false
-    }
-
-    def toggleBrightness(grid: Array[Array[Boolean]], xRange: Inclusive, yRange: Inclusive) = {
-        for { i <- yRange; j <- xRange } do grid(i)(j) = !grid(i)(j)
-    }
-    
-    val grid = Array.ofDim[Boolean](1000, 1000)
-
     for (Instruction(action, xRange, yRange) <- input) {
-        action match {
-            case Actions.Toggle => toggleBrightness(grid, xRange, yRange)
-            case Actions.TurnOn => turnOnBrightness(grid, xRange, yRange)
-            case Actions.TurnOff => turnOffBrightness(grid, xRange, yRange)
+        val update = lg.interpret(action)
+        
+        for (i <- yRange; j <- xRange) {
+            grid(i)(j) = update(grid(i)(j))
         }
     }
 
-    return grid.flatten.count(identity)
+    return lg.aggregate(grid)
 }
 
-def evaluatorTwo(input: List[Instruction]): Int = {
-    
-    def turnOnBrightness(grid: Array[Array[Int]], xRange: Inclusive, yRange: Inclusive) = {
-        for { i <- yRange; j <- xRange } do grid(i)(j) += 1
-    }
-
-    def turnOffBrightness(grid: Array[Array[Int]], xRange: Inclusive, yRange: Inclusive) = {
-        for { i <- yRange; j <- xRange } do grid(i)(j) = math.max(0, grid(i)(j) - 1)
-    }
-
-    def toggleBrightness(grid: Array[Array[Int]], xRange: Inclusive, yRange: Inclusive) = {
-        for { i <- yRange; j <- xRange } do grid(i)(j) += 2
-    }
-    
-    val grid = Array.ofDim[Int](1000, 1000)
-
-    for (Instruction(action, xRange, yRange) <- input) {
-        action match {
-            case Actions.Toggle => toggleBrightness(grid, xRange, yRange)
-            case Actions.TurnOn => turnOnBrightness(grid, xRange, yRange)
-            case Actions.TurnOff => turnOffBrightness(grid, xRange, yRange)
-        }
-    }
-
-    return grid.flatten.sum
-}
+def evaluatorOne(input: List[Instruction]): Int = solver[Boolean](input)
+def evaluatorTwo(input: List[Instruction]): Int = solver[Int](input)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
