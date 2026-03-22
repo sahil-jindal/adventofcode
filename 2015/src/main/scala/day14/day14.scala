@@ -5,8 +5,13 @@ import scala.io.Source
 
 val raceTotalTime = 2503
 
-case class Reindeer(speed: Int, durationTime: Int, restTime: Int) {
-    val restartTime = durationTime + restTime
+case class Reindeer(speed: Int, fly: Int, rest: Int) {
+    def distance(time: Int): Int = {
+        val cycleTime = fly + rest
+        var complete = time / cycleTime
+        val partial = (time % cycleTime).min(fly)
+        return speed * (fly * complete + partial)
+    }
 }
 
 def parseInput(input: List[String]) = input.map(line => {
@@ -14,29 +19,23 @@ def parseInput(input: List[String]) = input.map(line => {
     Reindeer(a, b, c)
 })
 
-def totalDistance(reindeer: Reindeer, totalTime: Int): Int = {
-    var totalRuns = totalTime / reindeer.restartTime
-    val remainingTime = totalTime % reindeer.restartTime
-    if remainingTime >= reindeer.durationTime then totalRuns += 1
-    return reindeer.speed * reindeer.durationTime * totalRuns
+def evaluatorOne(reindeers: List[Reindeer]): Int = {
+    return reindeers.map(_.distance(raceTotalTime)).max
 }
-
-def distanceTravelledEverySecond(reindeer: Reindeer, totalTime: Int): List[Int] = {
-    val result = List.tabulate(totalTime) { i => if (i % reindeer.restartTime < reindeer.durationTime) 1 else 0 }
-    return result.scanLeft(0)(_ + _).map(_ * reindeer.speed).tail
-}
-
-def evaluatorOne(reindeers: List[Reindeer]): Int = reindeers.map(totalDistance(_, raceTotalTime)).max
 
 def evaluatorTwo(reindeers: List[Reindeer]): Int = {
-    val raceTimeStamps = reindeers.map(distanceTravelledEverySecond(_, raceTotalTime)).transpose
+    val pointsCollection = Array.ofDim[Int](reindeers.length)
 
-    val playersById = raceTimeStamps.flatMap(raceTimeStamp => {
-        val maxDistance = raceTimeStamp.max
-        raceTimeStamp.zipWithIndex.collect { case (distance, id) if distance == maxDistance => id }
-    })
+    for (t <- 1 to raceTotalTime) {
+        val distances = reindeers.map(_.distance(t))
+        val lead = distances.max
+        
+        distances.iterator.zipWithIndex
+            .collect { case (dist, id) if dist == lead => id }
+            .foreach { i => pointsCollection(i) += 1 }
+    }
 
-    return playersById.groupMapReduce(identity)(_ => 1)(_ + _).values.max
+    return pointsCollection.max
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
