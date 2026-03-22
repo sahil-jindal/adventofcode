@@ -2,31 +2,38 @@ package day09
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
+import scala.util.control.Breaks._
 
-def expand(input: String, start: Int, lim: Int, recursive: Boolean): Long = {
-    var res = 0L
-    var i = start
-
-    while (i < lim) {
-        if (input(i) == '(') {
-            val j = input.indexOf(')', i + 1)
-            val Seq(len, mul) = raw"(\d+)".r.findAllIn(input.substring(i + 1, j)).map(_.toInt).toSeq
-            val totalLength = 
-                if recursive then expand(input, j + 1, j + len + 1, recursive) * mul.toLong 
-                else (len * mul).toLong 
-            res += totalLength
-            i = j + len + 1
-        } else {
-            res += 1
-            i += 1
-        } 
-    }
-
-    return res
+def number(slice: String): (String, Long) = {
+    val (digits, rest) = slice.span(_.isDigit)
+    return (rest.tail, digits.toLong)
 }
 
-def evaluatorOne(input: String): Long = expand(input, 0, input.length, false)
-def evaluatorTwo(input: String): Long = expand(input, 0, input.length, true)
+def decompress(input: String, partTwo: Boolean): Long = {
+    var slice = input
+    var length = 0L
+
+    breakable {
+        while (true) {
+            val start = slice.indexOf('(')
+            if (start == -1) break()
+
+            val (temp1, amount) = number(slice.drop(start + 1))
+            val (temp2, repeat) = number(temp1)
+            val (first, second) = temp2.splitAt(amount.toInt)
+
+            val result = if (partTwo) decompress(first, true) else amount
+
+            slice = second
+            length += start + result * repeat
+        }
+    }
+
+    return length + slice.size
+}
+
+def evaluatorOne(input: String): Long = decompress(input, false)
+def evaluatorTwo(input: String): Long = decompress(input, true)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
