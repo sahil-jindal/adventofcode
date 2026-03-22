@@ -2,80 +2,77 @@ package day10
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{ListBuffer, Map => MutableMap}
+import scala.collection.mutable.Queue
 
 sealed trait Destination
 case class Bot(id: Int) extends Destination
 case class Output(id: Int) extends Destination
 
+case class Node(
+    low: Destination,
+    high: Destination,
+    var chip: Option[Int] = None,
+)
+
 val valuePattern = raw"value (\d+) goes to bot (\d+)".r
 val botPattern = raw"bot (\d+) gives low to (bot|output) (\d+) and high to (bot|output) (\d+)".r
 
-def parseInstructions(input: List[String]): (Map[Int, ListBuffer[Int]], Map[Int, (Destination, Destination)]) = {
-    val initialValues = MutableMap.empty[Int, ListBuffer[Int]]
-    val rules = MutableMap.empty[Int, (Destination, Destination)]
-
-    for (line <- input) {
-        line match {
-            case valuePattern(value, bot) => {
-                val botId = bot.toInt
-                initialValues.getOrElseUpdate(botId, ListBuffer.empty) += value.toInt
-            }
-            case botPattern(botId, lowType, lowId, highType, highId) => {
-                val lowDest = if (lowType == "bot") Bot(lowId.toInt) else Output(lowId.toInt)
-                val highDest = if (highType == "bot") Bot(highId.toInt) else Output(highId.toInt)
-                rules(botId.toInt) = (lowDest, highDest)
-            }
-            case _ => throw new IllegalArgumentException(s"Cannot parse instruction: $line")
+def parseInstructions(input: List[String]): (List[(Destination, Int)], Map[Int, Node]) = {
+    val initialTodos = input.collect { 
+        case valuePattern(value, bot) => (Bot(bot.toInt), value.toInt)
+    }
+    
+    val initialBots = input.collect {
+        case botPattern(botId, lowType, lowId, highType, highId) => {
+            val lowDest = if (lowType == "bot") Bot(lowId.toInt) else Output(lowId.toInt)
+            val highDest = if (highType == "bot") Bot(highId.toInt) else Output(highId.toInt)
+            botId.toInt -> Node(lowDest, highDest)
         }
     }
 
-    return (initialValues.toMap, rules.toMap)
+    return (initialTodos, initialBots.toMap)
 }
 
-def solve(input: List[String], targetLow: Int = 17, targetHigh: Int = 61): (Int, Int) = {
-    val (initialValues, rules) = parseInstructions(input)
+def solve(input: List[String]): (Int, Int) = {
+    val (initialTodos, bots) = parseInstructions(input)
 
-    val botValues = MutableMap.from(initialValues)
+    val todo = Queue.from(initialTodos)
 
-    val outputValues = MutableMap.empty[Int, ListBuffer[Int]]
-    var targetBot = -1
-    var madeProgress = true
+    var partOne = Int.MaxValue
+    var partTwo = 1
 
-    while (madeProgress) {
+    while (todo.nonEmpty) {
+        val (dest, value) = todo.dequeue()
 
-        madeProgress = false
-        
-        for ((botId, values) <- botValues.toMap if values.length == 2) {
+        dest match {
+            case Bot(index) => {
+                bots.get(index).foreach { bot =>
+                    if (bot.chip.isDefined) {
+                        val previous = bot.chip.get
 
-            madeProgress = true
-            
-            val lowValue = values.min
-            val highValue = values.max
-            
-            if (lowValue == targetLow && highValue == targetHigh) {
-                targetBot = botId
+                        val min = previous.min(value)
+                        val max = previous.max(value)
+
+                        todo.enqueue((bot.low, min))
+                        todo.enqueue((bot.high, max))
+
+                        if (min == 17 && max == 61) {
+                            partOne = index
+                        }
+                    } else {
+                        bot.chip = Some(value)
+                    }
+                }
             }
-            
-            val (lowDest, highDest) = rules(botId)
-
-            botValues(botId) = ListBuffer.empty
-
-            lowDest match {
-                case Bot(id) => botValues.getOrElseUpdate(id, ListBuffer.empty) += lowValue
-                case Output(id) => outputValues.getOrElseUpdate(id, ListBuffer.empty) += lowValue
-            }
-            
-            highDest match {
-                case Bot(id) => botValues.getOrElseUpdate(id, ListBuffer.empty) += highValue
-                case Output(id) => outputValues.getOrElseUpdate(id, ListBuffer.empty) += highValue
+            case Output(index) => {
+                if (index <= 2) {
+                    partTwo *= value
+                }
             }
         }
     }
 
-    val outputProduct = outputValues(0).head * outputValues(1).head * outputValues(2).head
-
-    return (targetBot, outputProduct)
+    (partOne, partTwo)
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
