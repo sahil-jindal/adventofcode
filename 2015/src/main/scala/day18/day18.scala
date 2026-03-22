@@ -3,86 +3,66 @@ package day18
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Direction(dy: Int, dx: Int) {
-    def +(that: Direction) = Direction(dy + that.dy, dx + that.dx)
+type Grid = List[Array[Boolean]]
+
+def parseInput(input: List[String]): Grid = {
+    return input.map(_.collect {
+        case '#' => true
+        case '.' => false
+    }.toArray)
 }
 
-case class Point(y: Int, x: Int)
+def haloPaddingGrid(input: Grid): Grid = {
+    val (h, w) = (input.length, input(0).length)
+    val grid = Array.ofDim[Boolean](h + 2, w + 2)
 
-type Grid = Array[Array[Boolean]]
+    for (y <- 0 until h; x <- 0 until w) {
+        grid(y + 1)(x + 1) = input(y)(x)
+    }
 
-val N = Direction(-1, 0)
-val S = Direction(1, 0)
-val E = Direction(0, 1)
-val W = Direction(0, -1)
-val NE = N + E
-val NW = N + W
-val SE = S + E
-val SW = S + W
+    return grid.toList
+}
 
-val topLeftCorner = List(S, SE, E) 
-val topRightCorner = List(W, SW, S)  
-val bottomLeftCorner = List(E, NE, N)
-val bottomRightCorner = List(N, NW, W) 
-
-val topBorder = List(W, SW, S, SE, E) 
-val leftBorder = List(S, SE, E, NE, N)
-val rightBorder = List(N, NW, W, SW, S) 
-val bottomBorder = List(E, NE, N, NW, W) 
-
-val insideBoxDyDx = List(NW, N, NE, E, SE, S, SW, W)
-
-def parseInput(input: List[String]) = input.map(_.map(_ == '#').toArray).toArray
-
-def lightCondition(grid: Grid, cell: Point, direction: List[Direction]): Boolean = {
-    val valid = direction.count(dir => grid(cell.y + dir.dy)(cell.x + dir.dx))
-    if grid(cell.y)(cell.x) then return valid == 2 || valid == 3
-    return valid == 3
+def lightCondition(grid: Grid, y: Int, x: Int): Boolean = {
+    val neighbours = (for {
+        dy <- -1 to 1
+        dx <- -1 to 1
+        if dy != 0 || dx != 0
+    } yield grid(y + dy)(x + dx))
+    
+    val valid = neighbours.count(identity)
+    return valid == 3 || (grid(y)(x) && valid == 2)
 }
 
 def updateGrid(grid: Grid, stuck: Boolean): Grid = {
-    val (height, width) = (grid.length, grid(0).length)
-    val nextGrid = Array.ofDim[Boolean](height, width)
+    val (r, c) = (grid.length - 1, grid(0).length - 1)
+    val nextGrid = Array.ofDim[Boolean](r + 1, c + 1)
 
-    if stuck then {
+    val newGrid = haloPaddingGrid(grid)
+
+    for (y <- 0 to r; x <- 0 to c) {
+        nextGrid(y)(x) = lightCondition(newGrid, y + 1, x + 1)
+    }
+
+    if (stuck) {
         nextGrid(0)(0) = true
-        nextGrid(0)(width - 1) = true
-        nextGrid(height - 1)(0) = true
-        nextGrid(height - 1)(width - 1) = true
-    } else {
-        nextGrid(0)(0) = lightCondition(grid, Point(0, 0), topLeftCorner)
-        nextGrid(0)(width - 1) = lightCondition(grid, Point(0, width - 1), topRightCorner)
-        nextGrid(height - 1)(0) = lightCondition(grid, Point(height - 1, 0), bottomLeftCorner)
-        nextGrid(height - 1)(width - 1) = lightCondition(grid, Point(height - 1, width - 1), bottomRightCorner)
+        nextGrid(0)(c) = true
+        nextGrid(r)(0) = true
+        nextGrid(r)(c) = true
     }
 
-    for (i <- 1 to width - 2) {
-        nextGrid(0)(i) = lightCondition(grid, Point(0, i), topBorder)
-        nextGrid(height - 1)(i) = lightCondition(grid, Point(height - 1, i), bottomBorder)
-    }
-
-    for (i <- 1 to height - 2) {
-        nextGrid(i)(0) = lightCondition(grid, Point(i, 0), leftBorder)
-        nextGrid(i)(width - 1) = lightCondition(grid, Point(i, width - 1), rightBorder)
-    }
-
-    for (i <- 1 to height - 2; j <- 1 to width - 2) {
-        nextGrid(i)(j) = lightCondition(grid, Point(i, j), insideBoxDyDx)
-    }
-
-    return nextGrid
+    return nextGrid.toList
 }
 
 def iterateGrid(grid: Grid, stuck: Boolean): Int = {
+    val (r, c) = (grid.length - 1, grid(0).length - 1)
     var copyGrid = grid.map(_.clone())
 
-    val (height, width) = (grid.length, grid(0).length)
-
-    if stuck then {
+    if (stuck) {
         copyGrid(0)(0) = true
-        copyGrid(0)(width - 1) = true
-        copyGrid(height - 1)(0) = true
-        copyGrid(height - 1)(width - 1) = true
+        copyGrid(0)(c) = true
+        copyGrid(r)(0) = true
+        copyGrid(r)(c) = true
     }
     
     for (_ <- 1 to 100) { copyGrid = updateGrid(copyGrid, stuck) }
