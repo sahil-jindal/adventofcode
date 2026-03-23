@@ -3,89 +3,103 @@ package day22
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Node(y: Int, x: Int, size: Int, var used: Int) {
-    var goal = false
-    def avail = size - used
-}
+//! # Grid Computing
+//!
+//! Part two is a decoy that can be solved in constant time with some analysis.
+//! Printing the actual node layout shows a structure similar to:
+//!
+//! ```none
+//!     O......G
+//!     ........
+//!     ..######
+//!     ........
+//!     .....-..
+//! ```
+//!
+//! * `O` is our destination
+//! * `G` is the data
+//! * `#` are large nodes that can't be moved to neighbors, effectively acting as walls.
+//! * `-` is the empty node.
+//!
+//! First we move the empty spot in front of the data:
+//!
+//! ```none
+//!     O>>>>>>G
+//!     .^......
+//!     .^######
+//!     .^......
+//!     .<<<<-..
+//! ```
+//!
+//! Then we move the data into the empty spot.
+//!
+//! ```none
+//!     O.....G_
+//!     ........
+//!     ..######
+//!     ........
+//!     ........
+//! ```
+//!
+//! Finally, we move the data to the origin by repeating the same sequence of 5 moves.
+//! First moving the empty spot back around to in front of the data in 4 moves.
+//!
+//! ```none
+//!     O....^G_
+//!     .....^<v
+//!     ..######
+//!     ........
+//!     ........
+//! ```
+//!
+//! Then moving the data another spot to the left.
+//!
+//! ```none
+//!     O....G_.
+//!     ........
+//!     ..######
+//!     ........
+//!     ........
+//! ```
+//!
+//! To find the minimum number of steps we only need to find the `(x, y)` coordinates of the empty
+//! spot and the width of the wall, then add up the sequence of moves.
 
-case class Grid(nodes: Array[Array[Node]]) {
-    private val unused = nodes.flatten.find(_.used == 0).get
-    var yEmpty = unused.y
-    var xEmpty = unused.x
-    var moves = 0
+case class Node(x: Int, y: Int, used: Int)
 
-    val (height, width) = (nodes.length, nodes(0).length)
-
-    def wall(y: Int, x: Int): Boolean = {
-        nodes(y)(x).used > nodes(yEmpty)(xEmpty).size
-    }
-
-    def move(dy: Int, dx: Int): Unit = {
-        require(dy.abs + dx.abs == 1, "Invalid move")
-
-        val yT = yEmpty + dy
-        val xT = xEmpty + dx
-
-        require(yT >= 0 && yT < height, "Row out of bounds")
-        require(xT >= 0 && xT < width, "Column out of bounds")
-        require(nodes(yT)(xT).used <= nodes(yEmpty)(xEmpty).avail, "Move not possible")
-
-        nodes(yEmpty)(xEmpty).used = nodes(yT)(xT).used
-        nodes(yEmpty)(xEmpty).goal = nodes(yT)(xT).goal
-
-        nodes(yT)(xT).used = 0  
-        nodes(yT)(xT).goal = false
-
-        yEmpty = yT
-        xEmpty = xT
-        moves += 1
-    }
-}
-
-
-def parseInput(input: List[String]): Array[Array[Node]] = {
-    val nodes = input.drop(2).map(line => {
-        val nums = raw"(\d+)".r.findAllIn(line).map(_.toInt).toList
-        Node(nums(1), nums(0), nums(2), nums(3))
+def parseInput(input: List[String]): List[Node] = {
+    return input.drop(2).map(line => {
+        val nums = raw"(\d+)".r.findAllIn(line).map(_.toInt).toVector
+        Node(nums(0), nums(1), nums(3))
     })
-
-    val height = nodes.map(_.y).max + 1
-    val width = nodes.map(_.x).max + 1
-
-    val grid = Array.ofDim[Node](height, width)
-
-    for (n <- nodes) { grid(n.y)(n.x) = n }
-    
-    grid(0)(width - 1).goal = true
-    
-    return grid
 }
 
-def evaluatorOne(nodes: Array[Array[Node]]): Int = {
-    return nodes.flatten.combinations(2).count { case Array(nodeA, nodeB) => 
-        (nodeA.used > 0 && nodeB.avail > nodeA.used) || (nodeB.used > 0 && nodeA.avail > nodeB.used)
-    }
+// No need to actually check node pairs: only the empty node can receive data, 
+// and all but the wall nodes can pair with the empty node but not each other.
+def evaluatorOne(nodes: List[Node]): Int = {
+    return nodes.map(_.used).count((1 until 100).contains)
 }
 
-def evaluatorTwo(nodes: Array[Array[Node]]): Int = {
-    val grid = new Grid(nodes)
+def evaluatorTwo(nodes: List[Node]): Int = {
+    val unused = nodes.find(_.used == 0).get
+    val xEmpty = unused.x
+    val yEmpty = unused.y
 
-    while (grid.yEmpty != 0) {
-        if (!grid.wall(grid.yEmpty - 1, grid.xEmpty)) grid.move(-1, 0)
-        else grid.move(0, -1)
-    }
+    val xWall = nodes.withFilter(_.used >= 100).map(_.x - 1).min
+    val width = nodes.map(_.x + 1).max
 
-    while (grid.xEmpty != grid.width - 1) grid.move(0, 1)
+    // Move left to avoid wall.
+    val a = xEmpty - xWall
+    // Move up to first row.
+    val b = yEmpty
+    // Move right to spot in front of data.
+    val c = width - 2 - xWall
+    // Move data into empty spot.
+    val d = 1
+    // Repeatedly move empty spot 4 places around from behind data then move data one spot left.
+    val e = 5 * (width - 2)
 
-    while (!nodes(0)(0).goal) {
-        grid.move(1, 0)
-        grid.move(0, -1)
-        grid.move(0, -1)
-        grid.move(-1, 0)
-        grid.move(0, 1)
-    }
-
-    return grid.moves
+    return a + b + c + d + e
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
