@@ -2,14 +2,13 @@ package day24
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{PriorityQueue, Map => MutableMap, Set => MutableSet}
+import scala.collection.mutable.{PriorityQueue, Set => MutableSet}
 
 case class Point(y: Int, x: Int)
-case class State(cost: Int, pos: Int, visited: Int)
 
-type Graph = Map[(Int, Int), Int]
+type Input = (locations: Map[Int, Point], walls: Set[Point])
 
-def parseInput(grid: List[String]): (Map[Int, Point], Set[Point]) = {
+def parseInput(grid: List[String]): Input = {
     val pairs = (for {
         (line, y) <- grid.zipWithIndex
         (ch, x) <- line.zipWithIndex
@@ -17,9 +16,10 @@ def parseInput(grid: List[String]): (Map[Int, Point], Set[Point]) = {
     
     val walls = pairs.collect { case ('#', pt) => pt }.toSet
 
-    val locations = pairs.withFilter(_._1.isDigit).map {
-        case (d, pt) => (d.asDigit, pt)
-    }.toMap
+    val locations = (for {
+        (d, pt) <- pairs
+        if d.isDigit
+    } yield d.asDigit -> pt).toMap
     
     return (locations, walls)
 }
@@ -58,48 +58,30 @@ def aStar(start: Point, goal: Point, walls: Set[Point]): Int = {
     return Int.MaxValue
 }
 
-// Precompute shortest distances between all numbered locations
-def precomputeDistances(locations: Map[Int, Point], walls: Set[Point]): Graph = {
-    val keys = locations.keySet
-    val result = MutableMap.empty[(Int, Int), Int]
+def solver(input: Input): (Int, Int) = {
+    val (locations, walls) = input
+
+    val dist = (for {
+        (i, p1) <- locations
+        (j, p2) <- locations - i
+    } yield (i, j) -> aStar(p1, p2, walls)).toMap 
     
-    for { i <- keys; j <- keys if i != j } result((i, j)) = aStar(locations(i), locations(j), walls)
-    
-    return result.toMap
-}
+    require(locations.contains(0))
 
-// A* for solving TSP using state-space search
-def tspAStar(numLocations: Int, dist: Graph, returnToStart: Boolean): Int = {
-    val pq = PriorityQueue.empty(using Ordering.by[State, Int](_.cost).reverse)
-    val best = MutableMap.empty[(Int, Int), Int].withDefaultValue(Int.MaxValue)
-    var minCost = Int.MaxValue
+    val remaining = (locations.keySet - 0).toSeq
+    var (partOne, partTwo) = (Int.MaxValue, Int.MaxValue)
 
-    pq.enqueue(State(0, 0, 1))
+    for (slice <- remaining.permutations) {
+        val first = dist((0, slice.head))
+        val middle = (slice.init zip slice.tail).map(dist).sum
+        val last = dist((slice.last, 0))
 
-    while (pq.nonEmpty) {
-        val State(cost, pos, visited) = pq.dequeue()
-        
-        if (visited == (1 << numLocations) - 1) {
-            val finalCost = if (returnToStart) cost + dist((pos, 0)) else cost
-            minCost = math.min(minCost, finalCost)
-        } else {
-            for (next <- 0 until numLocations if (visited & (1 << next)) == 0) {
-                val newCost = cost + dist((pos, next))
-                val newVisited = visited | (1 << next)
-                
-                if (newCost < best((next, newVisited))) {
-                    best((next, newVisited)) = newCost
-                    pq.enqueue(State(newCost, next, newVisited))
-                }
-            }
-        }
+        partOne = partOne.min(first + middle)
+        partTwo = partTwo.min(first + middle + last)
     }
 
-    return minCost
+    return (partOne, partTwo)
 }
-
-def evaluatorOne(noOfLocations: Int, dist: Graph): Int = tspAStar(noOfLocations, dist, false)
-def evaluatorTwo(noOfLocations: Int, dist: Graph): Int = tspAStar(noOfLocations, dist, true)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -107,10 +89,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day24.txt") match {
         case Success(lines) => {
-            val (locations, walls) = parseInput(lines)
-            val dist = precomputeDistances(locations, walls)
-            println(s"Part One: ${evaluatorOne(locations.size, dist)}")
-            println(s"Part Two: ${evaluatorTwo(locations.size, dist)}")
+            val (partOne, partTwo) = solver(parseInput(lines))
+            println(s"Part One: $partOne")
+            println(s"Part Two: $partTwo")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
