@@ -1,26 +1,25 @@
 package day25
 
-/*
-    Actual simplified code for my input looks like this:
+import scala.util.{Try, Success, Failure, Using}
+import scala.io.Source
 
-    d = a + (4*643)  <----->  d = a + 2572
+def parseInput(input: List[String]): Int = {
+    val first = raw"cpy (-?\d+) c".r.findFirstMatchIn(input(1)).get.group(1).toInt
+    val second = raw"cpy (-?\d+) b".r.findFirstMatchIn(input(2)).get.group(1).toInt
+    return first * second
+}
 
-    while true {
-        a = d
-        while a != 0 {
-            b = a % 2
-            a /= 2
-            output b
-        }
+def solver(offset: Int): Int = {
+    return Iterator.iterate(0)(it => (it << 2) | 2)
+        .dropWhile(_ < offset).next() - offset
+}
+
+def readLinesFromFile(filePath: String): Try[List[String]] =
+    Using(Source.fromResource(filePath))(_.getLines().toList)
+
+def hello(): Unit = {
+    readLinesFromFile("day25.txt") match {
+        case Success(lines) => println(s"Answer: ${solver(parseInput(lines))}")
+        case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
     }
-
-    As you can see, output returns the binary representation of d and repeated over and over again.
-    The best way to do it is to solve it manually, and write the code to verify it.
-    Here, the number which is greater than 2572, and returns 1,0.1,0,1....... is 2730,
-    which look like this "101010101010". Hence, a = 2730 - 2572 = 158
-
-*/
-
-def solve(a: Int): String = (a + 2572).toBinaryString
-
-def hello(): Unit = println(s"Answer: ${solve(158)}")
+}
