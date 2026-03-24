@@ -2,26 +2,29 @@ package day14
 
 def knotHash(input: String): List[Int] = {
     val suffix = List(17, 31, 73, 47, 23)
-    val chars = input.map(_.toInt) ++ suffix
-    val output = (0 until 256).toArray
-    var (current, skip) = (0, 0)
+    val chars = input.map(_.toInt).toList ++ suffix
+    var knot = (0 until 256).toVector
+    var (position, skip) = (0, 0)
 
-    for (_ <- 0 until 64) {
-        for (len <- chars) {
-            for (i <- 0 until len / 2) {
-                val from = (current + i) % output.length
-                val to = (current + len - 1 - i) % output.length
-                val temp = output(from)
-                output(from) = output(to)
-                output(to) = temp
-            }
-            
-            current += len + skip
-            skip += 1
-        }
+    for (_ <- 0 until 64; len <- chars) {
+        val next = len + skip
+
+        // Reverse the vector from 0 until length
+        val (a, b) = knot.splitAt(len)
+        knot = a.reverse ++ b
+
+        // Rotating the vector to the left by (next % 256)
+        val (c, d) = knot.splitAt(next % 256)
+        knot = d ++ c
+
+        position += next
+        skip += 1
     }
   
-    return output.grouped(16).map(_.reduce(_ ^ _)).toList
+    val temp = position % 256
+    val hash = knot.takeRight(temp) ++ knot.dropRight(temp)
+
+    return hash.grouped(16).map(_.reduce(_ ^ _)).toList
 }
 
 def extract(input: String): IndexedSeq[List[Boolean]] = {
