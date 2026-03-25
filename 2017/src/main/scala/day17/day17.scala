@@ -1,35 +1,55 @@
 package day17
 
-import scala.collection.mutable.ArrayBuffer
+import scala.util.control.Breaks._
 
-def evaluatorOne(step: Int): Int = {
-    val nums = ArrayBuffer(0)
-    var pos = 0
-
-    for (i <- 1 until 2018) {
-        pos = (pos + step) % nums.length + 1
-        nums.insert(pos, i)
+extension (a: Int) {
+    def divCeil(b: Int): Int = {
+        val (d, r) = (a / b, a % b)
+        if (r == 0) return d
+        if ((a ^ b) >= 0) return d + 1
+        return d
     }
-
-    return nums((pos + 1) % nums.length)
 }
 
-def evaluatorTwo(step: Int): Int = {
-    var pos = 0
-    var numsCount = 1
-    var res = 0
+def solver(input: Int): (Int, Int) = {
+    val step = input + 1
+    
+    def helper(index: Int, len: Int) = (index + step) % len
 
-    for (i <- 1 until 50000001) {
-        pos = (pos + step) % numsCount + 1
-        if (pos == 1) res = i
-        numsCount += 1
+    val indexes = (1 to 2017).scanLeft(0)(helper).tail
+    var index = indexes.last
+    
+    var next = (index + 1) % 2017
+    var partOne = 0
+    
+    breakable {
+        for ((o, i) <- indexes.zipWithIndex.reverse) {
+            if (o == next) {
+                partOne = i + 1
+                break()
+            }
+            if (o < next) { 
+                next -= 1 
+            }
+        }
     }
 
-    return res
+    var n = 2017
+    var partTwo = 0
+
+    while (n <= 50_000_000) {
+        if (index == 0) { partTwo = n }
+        val skip = (n - index).divCeil(step - 1)
+        n += skip
+        index = index + skip * step - n
+    }
+
+    return (partOne, partTwo)
 }
 
 def hello(): Unit = {
     val inputLine = 354
-    println(s"Part One: ${evaluatorOne(inputLine)}")
-    println(s"Part Two: ${evaluatorTwo(inputLine)}")
+    val (partOne, partTwo) = solver(inputLine)
+    println(s"Part One: $partOne")
+    println(s"Part Two: $partTwo")
 }
