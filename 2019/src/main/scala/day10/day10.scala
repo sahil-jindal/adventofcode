@@ -5,6 +5,7 @@ import scala.io.Source
 import scala.collection.mutable.{ListBuffer, Map => MutableMap}
 
 case class Vec2D(y: Int, x: Int) {
+    def +(that: Vec2D) = Vec2D(y + that.y, x + that.x)
     def -(that: Vec2D) = Vec2D(y - that.y, x - that.x)
 }
 
@@ -38,33 +39,68 @@ def selectStationPosition(asteroids: List[Vec2D]): Input = {
     return splitAsteroidsByFocus(asteroids).map(lineOfSightGroups).maxBy(_.asteroidsByDir.size)
 }
 
-def rotate(dirs: List[Vec2D]): Iterator[Vec2D] = {
-    val ordered = dirs.sortBy(dir => -math.atan2(dir.x.toDouble, dir.y.toDouble))
-    return Iterator.continually(ordered).flatten
+def quadrant(point: Vec2D): Int = {
+    (point.x >= 0, point.y >= 0) match {
+        case (true, false) => 0  // x >= 0, y < 0
+        case (true, true) => 1   // x >= 0, y >= 0
+        case (false, true) => 2  // x < 0, y >= 0
+        case (false, false) => 3 // x < 0, y < 0
+    }
 }
 
-def destroy(input: Input): Iterator[Vec2D] = {
-    val Input(station, asteroidsByDir) = input
+def angle(a: Vec2D, b: Vec2D): Int = {
+    // Cross product: positive if b is clockwise from a
+    (b.x * a.y) - (b.y * a.x)
+}
 
-    val mutableMap = MutableMap.from(asteroidsByDir.view.mapValues(list => {
-        ListBuffer.from(list.sortBy(p => (p.y - station.y).abs + (p.x - station.x).abs))
-    }))
-
-    return rotate(mutableMap.keySet.toList).flatMap { dir =>
-        mutableMap.get(dir).flatMap { list =>
-            if (list.nonEmpty) Some(list.remove(0)) else {
-                mutableMap.remove(dir)
-                None
-            }
-        }
-    }
+def distance(point: Vec2D): Int = {
+    point.x * point.x + point.y * point.y
 }
 
 def evaluatorOne(input: Input): Int = input.asteroidsByDir.size
 
 def evaluatorTwo(input: Input): Int = {
-    val asteroid = destroy(input).drop(199).next()
-    asteroid.x * 100 + asteroid.y
+    val Input(station, asteroidsByDir) = input
+     
+    // Sort by clockwise order: quadrant, then angle, then distance
+    implicit val clockwiseOrdering: Ordering[Vec2D] = new Ordering[Vec2D] {
+        def compare(a: Vec2D, b: Vec2D): Int = {
+            val qcmp = quadrant(a).compare(quadrant(b))
+            if (qcmp != 0) return qcmp
+            
+            val acmp = angle(a, b)
+            if (acmp != 0) return acmp
+            
+            return distance(a).compare(distance(b))
+        }
+    }
+    
+    val sorted = asteroidsByDir.values.flatten.map(_ - station).toList.sorted
+    
+    // Build groups with (position_in_group, group_number, array_index)
+    val groups = ListBuffer.empty[(Int, Int, Int)]
+    var first = 0
+    var second = 0
+    
+    groups += ((first, second, 0))
+    
+    for (i <- 1 until sorted.length) {
+        if (angle(sorted(i), sorted(i - 1)) > 0) {
+            // Different angle/direction
+            first = 0
+            second += 1
+        } else {
+            // Same angle/direction, further away
+            first += 1
+        }
+
+        groups += ((first, second, i))
+    }
+    
+    // Sort groups by (position_in_group, group_number) to get destruction order
+    // Map back to absolute positions
+    val asteroid = station + sorted(groups.sorted.apply(199)._3)
+    return asteroid.x * 100 + asteroid.y
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
