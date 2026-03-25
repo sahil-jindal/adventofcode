@@ -4,74 +4,82 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Queue, Map => MutableMap}
 
-case class Chemical(name: String, amount: Long)
+extension (a: Long) {
+    def divCeil(b: Long): Long = {
+        val (d, r) = (a / b, a % b)
+        if (r == 0) return d
+        if ((a ^ b) >= 0) return d + 1
+        return d
+    }
+}
 
-type ChemicalReactions = Map[String, (Long, List[Chemical])]
+case class Chemical(name: String, amount: Long)
+case class Reaction(name: String, amount: Long, ingredients: List[Chemical])
 
 def parseReagent(st: String): Chemical = {
     val Array(a, b) = st.split(" ")
     return Chemical(b, a.toLong)
 }
 
-def parseRules(rule: String) = {
+def parseInput(input: List[String]) = input.map(rule => {
     val Array(inputPart, outputPart) = rule.split(" => ")
     val inputs = inputPart.split(", ").map(parseReagent).toList
     val output = parseReagent(outputPart)
-    output.name -> (output.amount, inputs)
-}
+    Reaction(output.name, output.amount, inputs)
+})
 
-def parseInput(input: List[String]) = input.map(parseRules).toMap
+// Sort reactions in topological order from FUEL at the root to ORE at the leaves. Reactions may
+// occur more than once at different depths in the graph, so we take the maximum depth.
+def topologicalSort(input: List[Reaction]): List[Reaction] = {
+    val reactions = input.map(it => it.name -> it.ingredients).toMap
+    val order = MutableMap.empty[String, Int].withDefaultValue(0)
 
-def helper(reactions: ChemicalReactions): Long => Long = {
-    return fuel => {
-        var ore = 0L
-        val inventory = MutableMap.from(reactions.keys.map(_ -> 0L))
-        val productionList = Queue(Chemical("FUEL", fuel))
+    def computeDepth(chemical: String, depth: Int): Unit = {
+        order(chemical) = order(chemical).max(depth)
+        if (!reactions.contains(chemical)) return
 
-        while (productionList.nonEmpty) {
-            val Chemical(chemical, amount) = productionList.dequeue()
-
-            if (chemical == "ORE") {
-                ore += amount
-            } else {
-                val (outputAmmount, inputs) = reactions(chemical)
-
-                val useFromInventory = math.min(amount, inventory(chemical))
-                val remainingAmount = amount - useFromInventory
-                inventory(chemical) -= useFromInventory
-
-                if (remainingAmount > 0) {
-                    var multiplier = remainingAmount / outputAmmount
-                    if (remainingAmount % outputAmmount > 0) then multiplier += 1
-
-                    inventory(chemical) = multiplier * outputAmmount - remainingAmount
-
-                    for (Chemical(reagent, qty) <- inputs) {
-                        productionList.enqueue(Chemical(reagent, qty * multiplier))
-                    }
-                }
-            }
+        for (ingredient <- reactions(chemical)) {
+            computeDepth(ingredient.name, depth + 1)
         }
-
-        ore
     }
+
+    computeDepth("FUEL", 0)
+    return input.sortBy(it => order(it.name))
 }
 
-def evaluatorOne(input: ChemicalReactions): Long = helper(input)(1)
+// Run the reactions to find ore needed. Each chemical is processed only once, 
+// so we don't need to track excess values of intermediate chemicals.
+def oreFromFuel(reactions: List[Reaction], amount: Long): Long = {
+    val total = MutableMap(("FUEL", amount)).withDefaultValue(0L)
 
-def evaluatorTwo(input: ChemicalReactions): Long = {
-    val oreForFuel = helper(input)
+    for (reaction <- reactions) {
+        val multiplier = total(reaction.name).divCeil(reaction.amount)
 
-    val ore = 1_000_000_000_000L
-    var fuel = 1L
-
-    while (true) {
-        val newFuel = (ore.toDouble / oreForFuel(fuel) * fuel).toLong
-        if (newFuel == fuel) return newFuel
-        fuel = newFuel
+        for (ingredient <- reaction.ingredients) {
+            total(ingredient.name) += multiplier * ingredient.amount
+        }
     }
 
-    return fuel
+    return total("ORE")
+}
+
+def evaluatorOne(input: List[Reaction]) = oreFromFuel(input, 1)
+
+def evaluatorTwo(input: List[Reaction]): Long = {
+    val threshold = 1_000_000_000_000L
+    var (start, end) = (1L, threshold)
+
+    while (start != end) {
+        val middle = (start + end).divCeil(2)
+
+        if (oreFromFuel(input, middle) > threshold) {
+            end = middle - 1
+        } else {
+            start = middle
+        }
+    }
+
+    return start
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -80,7 +88,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day14.txt") match {
         case Success(lines) => {
-            val input = parseInput(lines)
+            val input = topologicalSort(parseInput(lines))
             println(s"Part One: ${evaluatorOne(input)}")
             println(s"Part Two: ${evaluatorTwo(input)}")
         }
