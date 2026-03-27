@@ -5,8 +5,8 @@ import scala.io.Source
 
 case class Direction(dy: Int, dx: Int) {
     def unary_- = Direction(-dy, -dx)
-    def rotateLeft = Direction(dx, -dy)
-    def rotateRight = Direction(-dx, dy)
+    def rotateLeft = Direction(-dx, dy)
+    def rotateRight = Direction(dx, -dy)
     def *(num: Int) = Direction(dy * num, dx * num)
     def +(dir: Direction) = Direction(dy + dir.dy, dx + dir.dx)
 }
@@ -15,37 +15,54 @@ case class Point(y: Int, x: Int) {
     def +(dir: Direction) = Point(y + dir.dy, x + dir.dx)
 }
 
-case class State(pos: Point, dir: Direction)
-case class Pair(action: Char, arg: Int)
+type Pair = (action: Char, arg: Int)
 
-def parseInput(input: List[String]) = input.map(line => Pair(line.head, line.tail.toInt))
+def parseInput(input: List[String]) = input.map(line => (line.head, line.tail.toInt))
 
-def moveShip(pairs: List[Pair], partOne: Boolean): Int = {
-    val initialState = State(pos = Point(0, 0), dir = if (partOne) Direction(0, 1) else Direction(1, 10))
-    
-    val finalState = pairs.foldLeft(initialState) { case (state, Pair(action, arg)) =>
-        (action, arg) match {
-            case ('N', value) if partOne => state.copy(pos = state.pos + Direction(value, 0))
-            case ('N', value)            => state.copy(dir = state.dir + Direction(value, 0))
-            case ('S', value) if partOne => state.copy(pos = state.pos + Direction(-value, 0))
-            case ('S', value)            => state.copy(dir = state.dir + Direction(-value, 0))
-            case ('E', value) if partOne => state.copy(pos = state.pos + Direction(0, value))
-            case ('E', value)            => state.copy(dir = state.dir + Direction(0, value))
-            case ('W', value) if partOne => state.copy(pos = state.pos + Direction(0, -value))
-            case ('W', value)            => state.copy(dir = state.dir + Direction(0, -value))
-            case ('F', value)            => state.copy(pos = state.pos + state.dir * value)
-            case ('L', 90)  | ('R', 270) => state.copy(dir = state.dir.rotateLeft)
-            case ('L', 270) | ('R', 90)  => state.copy(dir = state.dir.rotateRight)
-            case ('L', 180) | ('R', 180) => state.copy(dir = -state.dir)
-            case _ => throw new Exception("Invalid input")
+def rotate(dir: Direction, amount: Int): Direction = {
+    return math.floorMod(amount, 360) match {
+        case 90 => dir.rotateRight
+        case 180 => -dir
+        case 270 => dir.rotateLeft
+        case _: Int => throw Exception()
+    }
+}
+
+def evaluatorOne(input: List[Pair]): Int = {
+    var (pos, dir) = (Point(0, 0), Direction(0, 1))
+
+    for ((command, amount) <- input) {
+        command match {
+            case 'N' => pos += Direction(-amount, 0)
+            case 'S' => pos += Direction(amount, 0)
+            case 'E' => pos += Direction(0, amount)
+            case 'W' => pos += Direction(0, -amount)
+            case 'L' => dir = rotate(dir, -amount)
+            case 'R' => dir = rotate(dir, amount)
+            case 'F' => pos += dir * amount
         }
     }
 
-    return finalState.pos.x.abs + finalState.pos.y.abs
+    return pos.x.abs + pos.y.abs
 }
 
-def evaluatorOne(input: List[Pair]): Int = moveShip(input, true)
-def evaluatorTwo(input: List[Pair]): Int = moveShip(input, false)
+def evaluatorTwo(input: List[Pair]): Int = {
+    var (pos, way) = (Point(0, 0), Direction(-1, 10))
+
+    for ((command, amount) <- input) {
+        command match {
+            case 'N' => way += Direction(-amount, 0)
+            case 'S' => way += Direction(amount, 0)
+            case 'E' => way += Direction(0, amount)
+            case 'W' => way += Direction(0, -amount)
+            case 'L' => way = rotate(way, -amount)
+            case 'R' => way = rotate(way, amount)
+            case 'F' => pos += way * amount
+        }
+    }
+
+    return pos.x.abs + pos.y.abs
+}
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
