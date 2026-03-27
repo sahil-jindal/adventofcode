@@ -2,48 +2,75 @@ package day07
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Map, Set}
 
-case class Bags(count: Int, bag: String)
-case class Pair(bag: String, children: List[Bags])
+case class Bag(amount: Int, next: Int)
+case class Haversack(shinyGold: Int, bags: Vector[IndexedSeq[Bag]])
 
-val bagPattern = raw"^[a-z]+ [a-z]+ bag".r
-val childrenPattern = raw"(\d+) ([a-z]+ [a-z]+ bag)".r
+val bagPattern = raw"(^[a-z]+) ([a-z]+) bag".r
+val childrenPattern = raw"(\d+) ([a-z]+) ([a-z]+) bag".r
 
-def parseInput(input: List[String]) = input.map(line => {
-    val bag = bagPattern.findFirstIn(line).get
-    
-    val children = childrenPattern.findAllMatchIn(line).map(m => 
-        Bags(m.group(1).toInt, m.group(2))
-    ).toList
-    
-    Pair(bag, children)
-})
+val adjectives = Vector(
+    "bright", "clear", "dark", "dim", "dotted", "drab", "dull", "faded", "light",
+    "mirrored", "muted", "pale", "plaid", "posh", "shiny", "striped", "vibrant", "wavy"
+)
 
-def evaluatorOne(input: List[Pair]): Int = {
-    val parentsOf = Map.empty[String, Set[String]]
+val colors = Vector(
+    "aqua", "beige", "blue", "black", "brown", "bronze", "chartreuse", "coral", "crimson", "cyan", "fuchsia",
+    "gold", "green", "gray", "indigo", "lavender", "lime", "maroon", "magenta", "olive", "orange", "plum",
+    "purple", "red", "salmon", "silver", "tan", "teal", "tomato", "turquoise", "violet", "white", "yellow"
+)
 
-    for (descr <- input; it <- descr.children) {
-        parentsOf.getOrElseUpdate(it.bag, Set.empty) += descr.bag
-    }
-
-    def pathsToRoot(bag: String): Set[String] = {
-        return parentsOf.getOrElse(bag, Set.empty).flatMap(pathsToRoot) += bag
-    }
-
-    return pathsToRoot("shiny gold bag").size - 1
+def perfectMinimalHash(first: String, second: String): Int = {
+    val firstIndex = adjectives.indexOf(first)
+    val secondIndex = colors.indexOf(second)
+    return secondIndex * 18 + firstIndex
 }
 
-def evaluatorTwo(input: List[Pair]): Long = {
-    val childrenOf = input.map { case Pair(bag, children) => bag -> children }.toMap
+def parseInput(input: List[String]): Haversack = {
+    val bags = Array.ofDim[IndexedSeq[Bag]](594)
 
-    def countWithChildren(bag: String): Long = {
-        return 1 + childrenOf.getOrElse(bag, List.empty).map { 
-            case Bags(count, bag) => count * countWithChildren(bag) 
-        }.sum
+    for (line <- input) {
+        val m = bagPattern.findFirstMatchIn(line).get
+        val outer = perfectMinimalHash(m.group(1), m.group(2))
+    
+        bags(outer) = childrenPattern.findAllMatchIn(line).map(m => { 
+            val List(amount, first, second) = m.subgroups
+            Bag(amount.toInt, perfectMinimalHash(first, second))
+        }).toIndexedSeq
     }
 
-    return countWithChildren("shiny gold bag") - 1
+    val shinyGold = perfectMinimalHash("shiny", "gold")
+    return Haversack(shinyGold, bags.toVector)
+}
+
+def evaluatorOne(input: Haversack): Int = {
+    val Haversack(shinyGold, bags) = input
+
+    val cache = Array.fill[Option[Boolean]](594)(None)
+    cache(shinyGold) = Some(true)
+
+    def helper(key: Int): Boolean = {
+        if (cache(key).isDefined) { return cache(key).get }
+        val value = bags(key).exists(it => helper(it.next))
+        cache(key) = Some(value)
+        return value
+    }
+
+    return bags.indices.count(helper) - 1
+}
+
+def evaluatorTwo(input: Haversack): Int = {
+    val Haversack(shinyGold, bags) = input
+    val cache = Array.fill[Option[Int]](594)(None)
+
+    def helper(key: Int): Int = {
+        if (cache(key).isDefined) { return cache(key).get }
+        val value = 1 + bags(key).map(it => it.amount * helper(it.next)).sum
+        cache(key) = Some(value)
+        return value
+    }
+
+    return helper(shinyGold) - 1
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
