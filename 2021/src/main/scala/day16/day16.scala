@@ -4,7 +4,9 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.ListBuffer
 
-case class Packet(version: Int, ptype: Int, payload: Long, packets: List[Packet])
+sealed trait Packet
+case class Literal(version: Int, payload: Long) extends Packet
+case class Operator(version: Int, ptype: Int, packets: Vector[Packet]) extends Packet
 
 case class BitSequenceReader(private val bits: IndexedSeq[Boolean]) {
     private var ptr = 0
@@ -34,46 +36,54 @@ def getReader(input: String) = BitSequenceReader(
 def getPacket(reader: BitSequenceReader): Packet = {
     val version = reader.readInt(3)
     val ptype = reader.readInt(3)
-    val packets = ListBuffer.empty[Packet]
-    var payload = 0L
 
     if (ptype == 4) {
         var continue = true
+        var payload = 0L
+
         while (continue) {
-            val isLast = reader.readInt(1) == 0
-            payload = payload * 16 + reader.readInt(4)
-            continue = !isLast
+            continue = reader.readInt(1) == 1
+            payload = (payload << 4) + reader.readInt(4)
         }
-    } else if (reader.readInt(1) == 0) {
+
+        return Literal(version, payload)
+    } 
+    
+    val packets = ListBuffer.empty[Packet]
+    
+    if (reader.readInt(1) == 0) {
         val length = reader.readInt(15)
         val subPackages = reader.getBitSequenceReader(length)
-        while (subPackages.nonEmpty) {
-            packets += getPacket(subPackages)
-        }
+        while (subPackages.nonEmpty) { packets += getPacket(subPackages) }
     } else {
         val packetCount = reader.readInt(11)
         packets ++= (for (_ <- 0 until packetCount) yield getPacket(reader))
     }
 
-    return Packet(version, ptype, payload, packets.toList)
+    return Operator(version, ptype, packets.toVector)
 }
 
-def evaluatorOne(packet: Packet): Int = {
-    return packet.version + packet.packets.map(evaluatorOne).sum
+def evaluatorOne(packet: Packet): Int = packet match {
+    case Literal(version, _) => version 
+    case Operator(version, _, packets) => {
+        version + packets.map(evaluatorOne).sum
+    }
 }
 
-def evaluatorTwo(packet: Packet): Long = {
-    val parts = packet.packets.map(evaluatorTwo)
+def evaluatorTwo(packet: Packet): Long = packet match {
+    case Literal(_, payload) => payload
+    case Operator(_, ptype, packets) => {
+        val parts = packets.map(evaluatorTwo)
 
-    return packet.ptype match {
-        case 0 => parts.sum
-        case 1 => parts.product
-        case 2 => parts.min
-        case 3 => parts.max
-        case 4 => packet.payload
-        case 5 => if parts(0) > parts(1) then 1 else 0
-        case 6 => if parts(0) < parts(1) then 1 else 0
-        case 7 => if parts(0) == parts(1) then 1 else 0
+        ptype match {
+            case 0 => parts.sum
+            case 1 => parts.product
+            case 2 => parts.min
+            case 3 => parts.max
+            case 5 => if parts(0) > parts(1) then 1 else 0
+            case 6 => if parts(0) < parts(1) then 1 else 0
+            case 7 => if parts(0) == parts(1) then 1 else 0
+        }
     }
 }
 
