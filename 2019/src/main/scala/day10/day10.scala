@@ -65,16 +65,16 @@ def evaluatorOne(input: Input): Int = input.asteroidsByDir.size
 def evaluatorTwo(input: Input): Int = {
     val Input(station, asteroidsByDir) = input
 
+    // Using the fact that the problem is based on finite world
     val dirSizes = asteroidsByDir.view.mapValues(_.size).toMap
 
-    // Using the fact that the problem is based on finite world
     require(dirSizes.values.sum >= 200)
 
     val (dirIdx, gcdIdx) = findPosition(dirSizes.values.toList, 200)
 
-    // Great Place to use quickstand here, or a built-in that gives n-th smallest element
-    val dir = dirSizes.collect { case (d, s) if s >= gcdIdx + 1 => d }.toList.sortBy(angle).apply(dirIdx)
-    val gcd = asteroidsByDir(dir).toList.sorted.apply(gcdIdx)
+    // Great Place to use quickselect here, or a built-in that gives n-th smallest element
+    val dir = dirSizes.collect { case (d, s) if s > gcdIdx => d }.toVector.sortBy(angle).apply(dirIdx)
+    val gcd = asteroidsByDir(dir).toVector.sorted.apply(gcdIdx)
     
     val Vec2D(y, x) = station + dir * gcd
     return x * 100 + y
