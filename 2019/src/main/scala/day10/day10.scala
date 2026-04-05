@@ -2,7 +2,7 @@ package day10
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.util.boundary, boundary.break
+import scala.util.control.Breaks._
 
 case class Vec2D(y: Int, x: Int) {
     def *(num: Int) = Vec2D(num * y, num * x)
@@ -41,36 +41,40 @@ def angle(dir: Vec2D): Double = {
     return if (result < 0) { result + 360 } else { result }
 }
 
-def findPosition(numbers: List[Int], position: Int): (Int, Int) = {
+def getRingSizes(numbers: List[Int]): Vector[Int] = {
     val length = numbers.max
-    var currPosition = position
-
+    
     val freq = Array.ofDim[Int](length + 1)
     numbers.foreach { it => freq(it) += 1 }
 
-    val ringSizes = freq.scanRight(0)(_ + _).slice(1, length + 1)
-
-    boundary {
-        for ((ringSize, i) <- ringSizes.zipWithIndex) {
-            if (currPosition <= ringSize) break((currPosition - 1, i))
-            else { currPosition -= ringSize }
-        }
-
-        (-1, -1)
-    }
+    return freq.scanRight(0)(_ + _).slice(1, length + 1).toVector
 }
 
 def evaluatorOne(input: Input): Int = input.asteroidsByDir.size
 
 def evaluatorTwo(input: Input): Int = {
     val Input(station, asteroidsByDir) = input
+    var currPosition = 200
 
     // Using the fact that the problem is based on finite world
     val dirSizes = asteroidsByDir.view.mapValues(_.size).toMap
 
-    require(dirSizes.values.sum >= 200)
+    require(dirSizes.values.sum >= currPosition)
+    
+    val ringSizes = getRingSizes(dirSizes.values.toList)
 
-    val (dirIdx, gcdIdx) = findPosition(dirSizes.values.toList, 200)
+    var (dirIdx, gcdIdx) = (-1, -1)
+    
+    breakable {
+        for ((ringSize, i) <- ringSizes.zipWithIndex) {
+            if (currPosition <= ringSize) {
+                dirIdx = currPosition - 1; gcdIdx = i
+                break()
+            } else { 
+                currPosition -= ringSize 
+            }
+        }
+    }
 
     // Great Place to use quickselect here, or a built-in that gives n-th smallest element
     val dir = dirSizes.collect { case (d, s) if s > gcdIdx => d }.toVector.sortBy(angle).apply(dirIdx)
