@@ -3,28 +3,37 @@ package day01
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
+// Computes both parts together. Part two left (or negative) turns are easier to handle
+// if we first "reverse" the dial, then treat it as a right turn. The [`rem_euclid`] method
+// is a modulo operator that handles negative values. For example `-1.rem_euclid(100)` is 99.
+
 case class Step(pos: Int, zeroHits: Int)
 
-def parseInput(input: List[String]) = input.collect {
-    case s"L$amount" => -amount.toInt
-    case s"R$amount" =>  amount.toInt
+sealed trait Move { def rotate(dial: Int): Step }
+
+case class Left(amount: Int) extends Move {
+    override def rotate(dial: Int): Step = {
+        val newDial = dial + amount
+        return Step(newDial % 100, newDial / 100)
+    }
 }
 
-def preComputation(numbers: List[Int]): List[Step] = {
-    return numbers.scanLeft(Step(50, 0)) { (prev, move) =>
-        val start = prev.pos
-        val absDist = move.abs
-        val raw = start + move
-        val end = ((raw % 100) + 100) % 100
-
-        // compute first k (1..100) when we hit zero during this rotation
-        val k0raw = if (move >= 0) ((100 - start) % 100) else (start % 100)
-        val k0 = if (k0raw == 0) 100 else k0raw
-
-        val passes = if (absDist < k0) 0 else 1 + (absDist - k0) / 100
-
-        Step(end, passes)
+case class Right(amount: Int) extends Move {
+    override def rotate(dial: Int): Step = {
+        val reversed = (100 - dial) % 100
+        val pos = Math.floorMod(dial - amount, 100)
+        val zeroHits = (reversed + amount) / 100
+        return Step(pos, zeroHits)
     }
+}
+
+def parseInput(input: List[String]) = input.collect {
+    case s"L$amount" => Left(amount.toInt)
+    case s"R$amount" => Right(amount.toInt)
+}
+
+def preComputation(moves: List[Move]): List[Step] = {
+    return moves.scanLeft(Step(50, 0)) { (prev, move) => move.rotate(prev.pos) }
 } 
 
 def evaluatorOne(steps: List[Step]) = steps.count(_.pos == 0)
