@@ -3,41 +3,46 @@ package day07
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-def runManiFold(grid: List[String]) = {
-    // Dynamic programming over the grid:
-    //
-    // Each cell in row i depends only on the values from row i-1 directly above it.
-    // We propagate a vector of "timeline counts" downward row by row instead of
-    // keeping a full 2D DP table, which reduces memory to O(columns).
-    //
-    // At forks ('^'), a timeline splits into left/right branches, and we count a
-    // "split" whenever an active timeline actually forks (>0 incoming paths).
+//! Examining the input shows that it consists of a triangular Christmas tree shape with both every
+//! second line and second space blank. Two splitters will never occur immediately next to each
+//! other. This structure speeds up and simplifies the solution, and we compute both parts together.
+//!
+//! The key insight to part two is that we only need the *total count* of paths, not each
+//! separate path. This means that if 2 paths enter a tile from the left and another 2 from the
+//! right, then we can simply sum the paths to 4. A dynamic programming approach counts the total
+//! number of paths one row at a time.
+//!
+//! When a beam hits a splitter, the count underneath the splitter will be zero, and the number
+//! of beams to either side is incremented by the count of the beams hitting the splitter.
 
-    val height = grid.length
+def runManiFold(grid: List[String]): (Int, Long) = {
     val width = grid.head.length
+    val center = width >> 1
+
+    val positions = (for {
+        (line, idx) <- grid.drop(2).zipWithIndex
+        if (idx & 1) == 0
+        y = idx >> 1
+        x <- center - y to center + y by 2
+        if line(x) == '^'
+    } yield x)
 
     var splits = 0
-    var timelines = Array.ofDim[Long](width)
+    val timelines = Array.ofDim[Long](width)
+    timelines(center) = 1
 
-    for (r <- 0 until height) {
-        val nextTimelines = Array.ofDim[Long](width)
+    for (x <- positions) {
+        val count = timelines(x)
 
-        for (c <- 0 until width) {
-            if (grid(r)(c) == 'S') {
-                nextTimelines(c) = 1
-            } else if (grid(r)(c) == '^') {
-                splits += (if timelines(c) > 0 then 1 else 0)
-                nextTimelines(c - 1) += timelines(c)
-                nextTimelines(c + 1) += timelines(c)
-            } else {
-                nextTimelines(c) += timelines(c)
-            }
+        if (count > 0) {
+            splits += 1
+            timelines(x) = 0
+            timelines(x - 1) += count
+            timelines(x + 1) += count
         }
-
-        timelines = nextTimelines
     }
 
-    (splits, timelines.sum)
+    return (splits, timelines.sum)
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
