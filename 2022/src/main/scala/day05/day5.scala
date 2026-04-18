@@ -4,9 +4,9 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Stack
 
-case class Command(count: Int, from: Int, to: Int)
-case class Input(crates: List[List[Char]], commands: List[Command])
-case class Move(count: Int, source: Stack[Char], target: Stack[Char])
+type Command = (count: Int, from: Int, to: Int)
+type Input = (crates: Vector[List[Char]], commands: List[Command])
+type Move = (count: Int, source: Stack[Char], target: Stack[Char])
 
 def parseInput(input: List[String]): Input = {
     val idx = input.indexWhere(_.trim.isEmpty)
@@ -17,42 +17,46 @@ def parseInput(input: List[String]): Input = {
 
     val crates = stackDefs.init.reverse
         .map(_.padTo(maxlen, ' ').grouped(4).map(_(1)).toList)
-        .transpose.map(_.takeWhile(_.isLetter))
+        .transpose.map(_.takeWhile(_.isLetter)).toVector
             
-    val commands = moveDefs.map(line => {
-        val Seq(count, start, end) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toSeq
-        Command(count, start - 1, end - 1)
-    })   
+    val commands = moveDefs.collect {
+        case s"move $a from $b to $c" => (a.toInt, b.toInt - 1, c.toInt - 1)
+    }   
     
-    return Input(crates, commands)
+    return (crates, commands)
 }
 
 def moveCrates(input: Input, crateMover: Move => Unit): String = {
-    val stacks = input.crates.map(it => Stack.from(it.reverse))
+    val (crates, commands) = input
+    val stacks = crates.map(it => Stack.from(it.reverse))
 
-    for (Command(count, from, to) <- input.commands) {
-        crateMover(Move(count, stacks(from), stacks(to)))
+    for ((count, from, to) <- commands) {
+        crateMover((count, stacks(from), stacks(to)))
     }
 
     return stacks.map(_.pop()).mkString
 }
 
 def crateMoverOne(move: Move): Unit = {
-    for (_ <- 0 until move.count) {
-        move.target.push(move.source.pop())
+    val (count, source, target) = move
+
+    for (_ <- 0 until count) {
+        target.push(source.pop())
     }
 }
 
 def crateMoverTwo(move: Move): Unit = {
+    val (count, source, target) = move
+
     // Two stacks makes a Queue
     val helper = Stack.empty[Char]
 
-    for (_ <- 0 until move.count) {
-        helper.push(move.source.pop())
+    for (_ <- 0 until count) {
+        helper.push(source.pop())
     }
 
-    for (_ <- 0 until move.count) {
-        move.target.push(helper.pop())
+    for (_ <- 0 until count) {
+        target.push(helper.pop())
     }
 }
 
