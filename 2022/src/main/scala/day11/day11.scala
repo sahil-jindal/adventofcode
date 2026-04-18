@@ -5,13 +5,14 @@ import scala.io.Source
 import scala.collection.mutable.Queue
 
 case class Monkey(
-    val items: Queue[Long],
-    val operation: Long => Long,
+    val id: Int,
     val mod: Int,
-    val passToMonkeyIfDivides: Int,
-    val passToMonkeyOtherwise: Int,
-    var inspectedItems: Long = 0
+    val operation: Long => Long,
+    val chooseMonkeytoPass: Long => Int,
+    val items: Queue[Long] = Queue.empty
 )
+
+type Pair = (List[Long], Monkey)
 
 def groupLines(input: List[String]): List[List[String]] = {
     return input.foldLeft(List(List.empty[String])) {
@@ -20,51 +21,53 @@ def groupLines(input: List[String]): List[List[String]] = {
     }.filter(_.nonEmpty)
 }
 
-def parseMonkey(input: List[String]): Monkey = {
-    val items = Queue.from(input(1).trim().stripPrefix("Starting items: ").split(", ").map(_.toLong))
-    val Array(operand, b) = input(2).trim().stripPrefix("Operation: new = old ").split(" ")
+def parseMonkey(input: List[String]): Pair = {
+    val monkeyId = input(0).trim().stripPrefix("Monkey ").stripSuffix(":").toInt
+    val items = input(1).trim().stripPrefix("Starting items: ").split(", ").map(_.toLong).toList
+    val line = input(2).trim().stripPrefix("Operation: new = ")
 
-    var operation: Long => Long = identity
-
-    if (operand == "+") {
-        operation = old => old + b.toLong
-    } else if (operand == "*") {
-        if (b == "old") {
-            operation = old => old * old
-        } else {
-            operation = old => old * b.toLong
-        }
+    val operation: Long => Long = line match {
+        case s"old * old" => old => old * old
+        case s"old * $b" => old => old * b.toLong
+        case s"old + $b" => old => old + b.toLong
+        case other => identity
     }
 
     val mod = input(3).trim().stripPrefix("Test: divisible by ").toInt
     val passToMonkeyIfDivides = input(4).trim().stripPrefix("If true: throw to monkey ").toInt
     val passToMonkeyOtherwise = input(5).trim().stripPrefix("If false: throw to monkey ").toInt
 
-    return Monkey(items, operation, mod, passToMonkeyIfDivides, passToMonkeyOtherwise)
+    val decideWhichMonkeytoPass: Long => Int = { item =>
+        if (item % mod == 0) then passToMonkeyIfDivides else passToMonkeyOtherwise
+    }
+
+    return (items, Monkey(monkeyId, mod, operation, decideWhichMonkeytoPass))
 }
 
-def parseMonkeys(input: List[String]) = groupLines(input).map(parseMonkey)
+def parseMonkeys(input: List[String]) = groupLines(input).map(parseMonkey).toVector
 
-def run(monkeys: List[Monkey], rounds: Int, updateWorryLevel: Long => Long): List[Long] = {
+def run(input: Vector[Pair], rounds: Int, updateWorryLevel: Long => Long): List[Long] = {
+    val monkeys = input.map { case (numbers, monkey) => 
+        monkey.copy(items = Queue.from(numbers))    
+    }
+
+    val inspectedItemsCount = Array.ofDim[Long](monkeys.size)
+    
     for (_ <- 1 to rounds; monkey <- monkeys) {
         while (monkey.items.nonEmpty) {
-            monkey.inspectedItems += 1
+            inspectedItemsCount(monkey.id) += 1
 
             var item = monkey.items.dequeue()
             item = monkey.operation(item)
             item = updateWorryLevel(item)
 
-            val target = if (item % monkey.mod == 0) {
-                monkey.passToMonkeyIfDivides
-            } else {
-                monkey.passToMonkeyOtherwise
-            }
+            val target = monkey.chooseMonkeytoPass(item)
 
             monkeys(target).items.enqueue(item)
         }
     }
 
-    return monkeys.map(_.inspectedItems)
+    return inspectedItemsCount.toList
 }
 
 def getMonkeyBusinessLevel(monkeyTransfers: List[Long]): Long = {
@@ -83,15 +86,13 @@ def getMonkeyBusinessLevel(monkeyTransfers: List[Long]): Long = {
     return topMost.get * secondMost.get
 }
 
-def evaluatorOne(input: List[String]): Long = {
-    val monkeys = parseMonkeys(input)
-    return getMonkeyBusinessLevel(run(monkeys, 20, _ / 3))
+def evaluatorOne(input: Vector[Pair]): Long = {
+    return getMonkeyBusinessLevel(run(input, 20, _ / 3))
 }
 
-def evaluatorTwo(input: List[String]): Long = {
-    val monkeys = parseMonkeys(input)
-    val mod = monkeys.map(_.mod).product
-    return getMonkeyBusinessLevel(run(monkeys, 10000, _ % mod))
+def evaluatorTwo(input: Vector[Pair]): Long = {
+    val mod = input.map(_._2.mod).product
+    return getMonkeyBusinessLevel(run(input, 10000, _ % mod))
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -100,8 +101,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day11.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseMonkeys(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
