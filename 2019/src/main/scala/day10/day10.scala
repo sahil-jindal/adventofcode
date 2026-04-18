@@ -2,7 +2,6 @@ package day10
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.util.control.Breaks._
 
 case class Vec2D(y: Int, x: Int) {
     def *(num: Int) = Vec2D(num * y, num * x)
@@ -47,33 +46,27 @@ def getRingSizes(numbers: List[Int]): Vector[Int] = {
     val freq = Array.ofDim[Int](length + 1)
     numbers.foreach { it => freq(it) += 1 }
 
-    return freq.scanRight(0)(_ + _).slice(1, length + 1).toVector
+    return freq.scanRight(0)(_ + _).init.toVector
 }
 
 def evaluatorOne(input: Input): Int = input.asteroidsByDir.size
 
 def evaluatorTwo(input: Input): Int = {
     val Input(station, asteroidsByDir) = input
-    var currPosition = 200
+    val currPosition = 200
 
     // Using the fact that the problem is based on finite world
     val dirSizes = asteroidsByDir.view.mapValues(_.size).toMap
 
     require(dirSizes.values.sum >= currPosition)
     
-    val ringSizes = getRingSizes(dirSizes.values.toList)
+    val ringSizes = getRingSizes(dirSizes.values.map(_ - 1).toList)
 
-    var (dirIdx, gcdIdx) = (-1, -1)
+    var (dirIdx, gcdIdx) = (currPosition - 1, 0)
     
-    breakable {
-        for ((ringSize, i) <- ringSizes.zipWithIndex) {
-            if (currPosition <= ringSize) {
-                dirIdx = currPosition - 1; gcdIdx = i
-                break()
-            } else { 
-                currPosition -= ringSize 
-            }
-        }
+    while (gcdIdx < ringSizes.size && dirIdx >= ringSizes(gcdIdx)) {
+        dirIdx -= ringSizes(gcdIdx)
+        gcdIdx += 1
     }
 
     // Great Place to use quickselect here, or a built-in that gives n-th smallest element
