@@ -2,42 +2,39 @@ package day25
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.ListBuffer
 
 def snafuToLong(snafu: String): Long = {
     val snafuNumbers = snafu.collect {
-        case '=' => -2L
-        case '-' => -1L
-        case it => it.asDigit.toLong
+        case '=' => -2
+        case '-' => -1
+        case '0' => 0
+        case '1' => 1
+        case '2' => 2
     }
 
-    return snafuNumbers.reduce { case (acc, item) => acc * 5L + item }
+    return snafuNumbers.foldLeft(0L) { case (acc, item) => acc * 5 + item }
 }
 
-// Snafu numbers have digits -2, -1, 0, 1 and 2, so this is almost 
-// standard base 5 conversion, but when dealing with digits 3 and 4 we 
-// need to increment the higher decimal place so that we have
-// something to subtract 2 and 1 from.
+// Convert to decimal by first finding the result modulus 5 for each digit.
+// If the answer is 3 or 4 then we must add a carry to the next digit to account for the
+// subtraction.
 
 def longToSnafu(num: Long): String = {
-    var d = num
-    var res = ListBuffer.empty[Char]
+    // If the remainder of n is 3 or higher then this will add a carry digit to account
+    // for the subtraction.
+    val update: Long => Long = n => (n + 2) / 5
 
-    while (d > 0) {
-        (d % 5) match {
-            case 0 => res.prepend('0')
-            case 1 => res.prepend('1')
-            case 2 => res.prepend('2')
-            // add 5 and emit -2 because 3 = 5 -2
-            case 3 => d += 5; res.prepend('=')
-            // add 5 and emit -1 because 4 = 5 -1
-            case 4 => d += 5; res.prepend('-')
-        }
-
-        d /= 5
+    val mapChar: PartialFunction[Long, Char] = { 
+        case 0 => '0'
+        case 1 => '1'
+        case 2 => '2'
+        case 3 => '='
+        case 4 => '-'
     }
     
-    return res.mkString
+    return LazyList.iterate(num)(update)
+        .takeWhile(_ > 0).map(_ % 5)
+        .collect(mapChar).reverse.mkString
 }
 
 def solver(input: List[String]): String = longToSnafu(input.map(snafuToLong).sum)
