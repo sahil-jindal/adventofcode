@@ -2,7 +2,7 @@ package day09
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Queue, Set}
+import scala.collection.mutable.{Queue, Set, PriorityQueue}
 
 case class Point(y: Int, x: Int)
 
@@ -35,7 +35,7 @@ def basicInSize(grid: Grid, point: Point): Int = {
         
         for (nbr <- getNeighbours(current).filter(grid.contains)) {
             if (!filled.contains(nbr) && grid(nbr) != 9) {
-                filled.add(nbr)
+                filled += nbr
                 queue.enqueue(nbr)
             }
         }
@@ -49,11 +49,20 @@ def evaluatorOne(grid: Grid): Int = {
 }
 
 def evaluatorTwo(grid: Grid): Int = {
-    return getLowPoints(grid)
-        .map(p => basicInSize(grid, p))
-        .sorted(using Ordering.Int.reverse)
-        .take(3)
-        .product
+    val sizes = getLowPoints(grid).map(p => basicInSize(grid, p))
+    val (initial, remaining) = sizes.splitAt(3)
+
+    // Min-heap (smallest element at the top)
+    val pq = PriorityQueue.from(initial)(using Ordering.Int.reverse)
+
+    for (num <- remaining) {
+        if (num > pq.head) {
+            pq.dequeue()
+            pq.enqueue(num)
+        }
+    }
+
+    return pq.dequeueAll.product
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
