@@ -2,41 +2,78 @@ package day17
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.ListBuffer
-import scala.util.control.Breaks._
 
-def solve(input: String): List[Int] = {
+type Input = (Int, Int, Int, Int)
+
+def parseInput(input: String): Input = {
     val Seq(xMin, xMax, yMin, yMax) = raw"(-?\d+)".r.findAllIn(input).map(_.toInt).toSeq
-    
-    // Bounds for the initial horizontal and vertical speeds:
-    val vx0Min = 0      // Because vx is non negative
-    val vx0Max = xMax   // For bigger values we jump too much to the right in the first step
-    val vy0Min = yMin   // For smaller values we jump too deep in the first step
-    val vy0Max = -yMin  // when the falling probe reaches y = 0, it's speed is -vy0, which should not be deeper than yMin.
+    return (xMin, xMax, yMin, yMax)
+}
 
-    val res = ListBuffer.empty[Int]
+def evaluatorOne(input: Input): Int = {
+    val (_, _, bottom, _) = input
+    val n = -(bottom + 1)
+    return (n * (n + 1)) / 2
+}
 
-    for (vx0 <- vx0Min to vx0Max; vy0 <- vy0Min to vy0Max) {
-        var (x, y, vx, vy) = (0, 0, vx0, vy0)
-        var maxY = 0
+def evaluatorTwo(input: Input): Int = {
+    val (left, right, bottom, top) = input
 
-        breakable {
-            while (x <= xMax && y >= yMin) {
-                x += vx
-                y += vy
-                vy -= 1
-                vx = math.max(0, vx - 1)
-                maxY = math.max(y, maxY)
+    // Minimum dx: smallest n where triangular number n*(n+1)/2 >= left
+    val minDx = (1 until left).find(n => n * (n + 1) / 2 >= left).get
+    val maxDx = right + 1
+    val minDy = bottom
+    val maxDy = -bottom
+    val maxT  = (1 - 2 * bottom)
 
-                if (x >= xMin && x <= xMax && y >= yMin && y <= yMax) {
-                    res += maxY
-                    break()
+    val newArr = Array.fill(maxT)(0)
+    val continuing = Array.fill(maxT)(0)
+
+    for (initDx <- minDx until maxDx) {
+        var x = 0
+        var dx = initDx
+        var first = true
+
+        for (t <- 0 until maxT if x <= right) {
+            if (x >= left) {
+                if (first) {
+                    first = false
+                    newArr(t) += 1
+                } else {
+                    continuing(t) += 1
                 }
             }
+            
+            x  += dx
+            dx = (dx - 1).max(0)
         }
     }
 
-    return res.toList
+    var total = 0
+
+    for (initDy <- minDy until maxDy) {
+        var y = 0
+        var dy = initDy
+        var t = 0
+        var first = true
+
+        while (y >= bottom) {
+            if (y <= top) {
+                if (first) {
+                    first  = false
+                    total += continuing(t)
+                }
+                
+                total += newArr(t)
+            }
+            
+            y += dy
+            dy -= 1
+            t += 1
+        }
+    }
+
+    return total
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
@@ -45,9 +82,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day17.txt") match {
         case Success(lines) => {
-            val result = solve(lines.head)
-            println(s"Part One: ${result.max}")
-            println(s"Part Two: ${result.size}")
+            val input = parseInput(lines.head)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
