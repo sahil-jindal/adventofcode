@@ -5,8 +5,8 @@ import scala.io.Source
 
 case class Bus(period: Long, delay: Int)
 case class Input(earliestDepart: Int, buses: List[Bus])
-case class PairOne(pause: Long, bus: Long)
-case class PairTwo(mod: Long, a: Long)
+case class BusWait(pause: Long, bus: Long)
+case class Congruence(mod: Long, rem: Long)
 
 def parseInput(input: List[String]): Input = {
     val buses = input(1).split(",").zipWithIndex.collect {
@@ -18,31 +18,32 @@ def parseInput(input: List[String]): Input = {
 
 def modInv(a: Long, m: Long): Long = BigInt(a).modInverse(m).toLong
 
-def chineseRemainderTheorem(items: List[PairTwo]): Long = {
+def chineseRemainderTheorem(items: List[Congruence]): Long = {
     val prod = items.map(_.mod).product
     
     val sum = items.map(item => { 
         val p = prod / item.mod
-        item.a * modInv(p, item.mod) * p
+        item.rem * p * modInv(p, item.mod)
     }).sum
 
     return sum % prod
 }
 
 def evaluatorOne(problem: Input): Long = {
-    val max = PairOne(Long.MaxValue, Long.MaxValue)
+    val Input(earliestDepart, buses) = problem
 
-    val min = problem.buses.foldLeft(max) { case (min, bus) => 
-        val wait = bus.period - (problem.earliestDepart % bus.period)
-        if (wait < min.pause) then PairOne(wait, bus.period) else min
-    }
+    val buswaits = buses.map(bus => { 
+        val p = bus.period
+        BusWait(p - (earliestDepart % p), p)
+    })
 
+    val min = buswaits.minBy(_.pause)
     return min.pause * min.bus
 }
 
 def evaluatorTwo(problem: Input): Long = {
     return chineseRemainderTheorem(problem.buses.map {
-        case Bus(period, delay) => PairTwo(period, period - delay)
+        case Bus(period, delay) => Congruence(period, period - delay)
     })
 }
 
