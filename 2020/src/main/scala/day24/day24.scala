@@ -3,20 +3,20 @@ package day24
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Direction(dy: Int, dx: Int)
+case class Direction(dx: Int, dy: Int, dz: Int)
 
-case class Tile(y: Int, x: Int) {
-    def +(dir: Direction) = Tile(y + dir.dy, x + dir.dx)
+case class Tile(x: Int, y: Int, z: Int) {
+  def +(dir: Direction) = Tile(x + dir.dx, y + dir.dy, z + dir.dz)
 }
 
 val HexDirections = Map(
-    "e"  -> Direction(0, 2),  "w"  -> Direction(0, -2),
-    "ne" -> Direction(1, 1),  "nw" -> Direction(1, -1),
-    "se" -> Direction(-1, 1), "sw" -> Direction(-1, -1)
+    "e"  -> Direction(1, -1, 0), "w"  -> Direction(-1, 1, 0),
+    "ne" -> Direction(1, 0, -1), "nw" -> Direction(0, 1, -1),
+    "se" -> Direction(0, -1, 1), "sw" -> Direction(-1, 0, 1)
 )
 
 def walk(line: String): Tile = {
-    var pos = Tile(0, 0)
+    var pos = Tile(0, 0, 0)
     var remaining = line
     
     while (remaining.nonEmpty) {
@@ -29,17 +29,21 @@ def walk(line: String): Tile = {
 }
 
 def parseBlackTiles(input: List[String]): Set[Tile] = {
-    val tiles = input.map(walk).groupMapReduce(identity)(_ => 1)(_ + _)
-    return tiles.collect { case (tile, n) if n % 2 == 1 => tile }.toSet
+    val tiles = input.groupMapReduce(walk)(_ => true)(_ ^ _)
+    return tiles.collect { case (tile, true) => tile }.toSet
 }
 
-def neighbourhood(tile: Tile) = HexDirections.values.map(tile + _).toSet + tile
+def neighbourhood(tile: Tile) = HexDirections.values.map(tile + _).toSet
 
 def flip(blackTiles: Set[Tile]): Set[Tile] = {
-    return blackTiles.flatMap(neighbourhood).filter(tile => {
-        val blacks = neighbourhood(tile).count(blackTiles.contains)
-        blacks == 2 || (blacks == 3 && blackTiles.contains(tile))
-    })
+    val neighborCounts = blackTiles.toSeq
+        .flatMap(neighbourhood)
+        .groupMapReduce(identity)(_ => 1)(_ + _)
+
+    return neighborCounts.collect {
+        case (tile, 2) => tile
+        case (tile, 1) if blackTiles(tile) => tile
+    }.toSet
 }
 
 def evaluatorOne(input: Set[Tile]): Int = input.size
@@ -51,7 +55,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day24.txt") match {
         case Success(lines) => {
-            var input = parseBlackTiles(lines)
+            val input = parseBlackTiles(lines)
             println(s"Part One: ${evaluatorOne(input)}")
             println(s"Part One: ${evaluatorTwo(input)}")
         }
