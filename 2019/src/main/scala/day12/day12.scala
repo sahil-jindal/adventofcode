@@ -11,43 +11,46 @@ case class Vec3D(x: Int, y: Int, z: Int) {
     def -(that: Vec3D) = Vec3D(x - that.x, y - that.y, z - that.z)
 }
 
-case class Planet(var pos: Vec3D, var vel: Vec3D) {
-    def move() = pos += vel
-}
-
-def step(planets: List[Planet]): List[Planet] = {
-    for (planetA <- planets; planetB <- planets) {
-        planetA.vel += (planetB.pos - planetA.pos).sign
+case class Planet(pos: Vec3D, vel: Vec3D) {
+    def move(acc: Vec3D): Planet = {
+        val newVel = vel + acc
+        val newPos = pos + newVel
+        return Planet(newPos, newVel)
     }
-
-    planets.foreach(_.move())
-
-    return planets
-}
-
-def simulate(input: List[String]): Iterator[List[Planet]] = {
-    val planets = input.map(line => {
-        val List(x, y, z) = raw"(-?\d+)".r.findAllIn(line).map(_.toInt).toList
-        Planet(Vec3D(x, y, z), Vec3D(0, 0, 0))
-    })
-
-    return Iterator.iterate(planets)(step)
 }
 
 def gcd(a: Long, b: Long): Long = if (b == 0) a else gcd(b, a % b)
 def lcm(a: Long, b: Long): Long = a * (b / gcd(a, b))
 
-def evaluatorOne(input: List[String]): Int = {
-    return simulate(input).drop(1000).next().map(planet => planet.pos.abs * planet.vel.abs).sum
+def parseInput(input: List[String]) = input.map(line => {
+    val List(x, y, z) = raw"(-?\d+)".r.findAllIn(line).map(_.toInt).toList
+    Planet(Vec3D(x, y, z), Vec3D(0, 0, 0))
+})
+
+def step(planets: List[Planet]) = planets.map(pA => {
+    var acc = Vec3D(0, 0, 0) 
+    
+    for (pB <- planets; if pB != pA) {
+        acc += (pB.pos - pA.pos).sign
+    }
+
+    pA.move(acc)
+})
+
+def simulate(planets: List[Planet]) = Iterator.iterate(planets)(step)
+
+def evaluatorOne(input: List[Planet]): Int = {
+    return simulate(input).drop(1000).next().map(it => it.pos.abs * it.vel.abs).sum
 }
 
-def evaluatorTwo(input: List[String]): Long = {
+def evaluatorTwo(input: List[Planet]): Long = {
     def findCycle(dimExtract: Planet => (Int, Int)): Long = {
         val states = Set.empty[List[Int]]
-        return simulate(input).indexWhere { planets =>
+
+        return simulate(input).indexWhere(planets => {
             val state = planets.map(dimExtract).flatMap(List(_, _))
             !states.add(state)
-        }
+        })
     }
 
     val statesByX = findCycle(p => (p.pos.x, p.vel.x))
@@ -63,8 +66,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day12.txt") match {
         case Success(lines) => {
-            println(s"Part One: ${evaluatorOne(lines)}")
-            println(s"Part Two: ${evaluatorTwo(lines)}")
+            val input = parseInput(lines)
+            println(s"Part One: ${evaluatorOne(input)}")
+            println(s"Part Two: ${evaluatorTwo(input)}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
