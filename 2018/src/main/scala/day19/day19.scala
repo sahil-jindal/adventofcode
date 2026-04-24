@@ -7,12 +7,12 @@ import scala.io.Source
 //
 // There are two parts to this problem:
 // * Reverse engineering the assembly in order to figure out what the program is doing.
-// * Implementing the program more efficiently in Rust.
+// * Implementing the program more efficiently in Scala.
 //
 // ## Reverse Engineering
 //
 // ```none
-//     Raw              | Pseudo-Assembly                  | Pseudo-Rust
+//     Raw              | Pseudo-Assembly                  | Pseudo-Scala
 //     -----------------+----------------------------------+-----------------------------------
 //     #ip 1            | # a = 0 b = 2 c = 3 d = 4 e = 5  |
 //     addi 1 16 1      |           goto hotel             |
@@ -70,14 +70,10 @@ import scala.io.Source
 // when `n` is prime. However for most composite numbers the largest prime factor will be much
 // smaller, on the order of 100,000 for an approximate complexity of `√100000 = 316`.
 
-case class State(regs: Vector[Int], ip: Int, ipReg: Int)
-case class Input(first: Int, second: Int)
-
-def parseInput(input: List[String]): Input = {
+def parseInput(input: List[String]): Int = {
     val first = raw"addi 3 (-?\d+) 3".r.findFirstMatchIn(input(22)).get.group(1).toInt
     val second = raw"addi 3 (-?\d+) 3".r.findFirstMatchIn(input(24)).get.group(1).toInt
-    val base = 22*first + second
-    return Input(base + 836, base + 10551236)
+    return 22*first + second + 836
 }
 
 /// Returns the sum of the divisors of an integer `n`, including 1 and `n` itself.
@@ -112,8 +108,8 @@ def divisorSum(input: Int): Int = {
     return if n == 1 then sum else sum * (1 + n)
 }
 
-def evaluatorOne(input: Input) = divisorSum(input.first)
-def evaluatorTwo(input: Input) = divisorSum(input.second)
+def evaluatorOne(input: Int) = divisorSum(input)
+def evaluatorTwo(input: Int) = divisorSum(input + 10550400)
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

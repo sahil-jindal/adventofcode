@@ -4,11 +4,11 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.Set
 
-case class Rectangle(claimId: Int, startX: Int, startY: Int, w: Int, h: Int)
+type Rectangle = (claimId: Int, startX: Int, startY: Int, w: Int, h: Int)
 
 def parseInput(input: List[String]) = input.map(line => {
     val Seq(a, b, c, d, e) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toSeq
-    Rectangle(a, b, c, d, e)
+    (a, b, c, d, e)
 })
 
 def solver(input: List[Rectangle]): (Int, Int) = {
@@ -16,7 +16,7 @@ def solver(input: List[Rectangle]): (Int, Int) = {
     val ids = Set.empty[Int]
     var overlapArea = 0
 
-    for (Rectangle(claimId, startX, startY, w, h) <- input) {
+    for ((claimId, startX, startY, w, h) <- input) {
         ids.add(claimId)
 
         for(i <- startX until (startX + w); j <- startY until (startY + h)) {
