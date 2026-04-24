@@ -4,26 +4,31 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.util.matching.Regex
 
-case class Game(id: Int, red: Int, green: Int, blue: Int)
+type Game = (id: Int, red: Int, green: Int, blue: Int)
 
 def parseInts(st: String, rx: Regex): List[Int] = {
     return rx.findAllMatchIn(st).map(_.group(1).toInt).toList
 }
 
 def parseInput(input: List[String]) = input.map(line => {
-    new Game(
-        parseInts(line, raw"Game (\d+)".r).head,
-        parseInts(line, raw"(\d+) red".r).max,
-        parseInts(line, raw"(\d+) green".r).max,
-        parseInts(line, raw"(\d+) blue".r).max
-    )
+    val id = parseInts(line, raw"Game (\d+)".r).head
+    val r = parseInts(line, raw"(\d+) red".r).max
+    val g = parseInts(line, raw"(\d+) green".r).max
+    val b = parseInts(line, raw"(\d+) blue".r).max
+
+    (id, r, g, b)
 })
 
 def evaluatorOne(games: List[Game]): Int = {
-    return games.withFilter(g => g.red <= 12 && g.green <= 13 && g.blue <= 14).map(_.id).sum
+    return (for {
+        (id, r, g, b) <- games
+        if r <= 12 && g <= 13 && b <= 14
+    } yield id).sum
 }
 
-def evaluatorTwo(games: List[Game]): Int = games.map(g => g.red * g.green * g.blue).sum
+def evaluatorTwo(games: List[Game]): Int = {
+    return games.map { case (_, r, g, b) => r * g * b }.sum
+}
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)

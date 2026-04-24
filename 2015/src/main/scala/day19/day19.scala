@@ -3,11 +3,11 @@ package day19
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Fabrication(rules: List[(String, String)], molecule: String)
+type Fabrication = (rules: List[(String, String)], molecule: String)
 
 def parseInput(input: List[String]): Fabrication = {
     val rules = input.dropRight(2).collect { case s"$a => $b" => (a, b) }
-    return Fabrication(rules, input.last)
+    return (rules, input.last)
 }
 
 def Replace(molecule: String, from: Int, length: Int, to: String): String = {
@@ -15,7 +15,7 @@ def Replace(molecule: String, from: Int, length: Int, to: String): String = {
 }
 
 def evaluatorOne(fab: Fabrication): Int = {
-    val Fabrication(rules, molecule) = fab
+    val (rules, molecule) = fab
 
     return (for {
         (from, to) <- rules
@@ -26,7 +26,7 @@ def evaluatorOne(fab: Fabrication): Int = {
 }
 
 def evaluatorTwo(fab: Fabrication): Int = {
-    val molecule = fab.molecule
+    val (_, molecule) = fab
     
     val elements = molecule.count(_.isUpper)
     val rn = molecule.sliding(2).count(_ == "Rn")

@@ -7,7 +7,7 @@ import scala.reflect.ClassTag
 
 enum Actions { case Toggle, TurnOn, TurnOff }
 
-case class Instruction(action: Actions, xRange: Inclusive, yRange: Inclusive)
+type Instruction = (action: Actions, xRange: Inclusive, yRange: Inclusive)
 
 trait LightGrid[A] {
     def initial: A
@@ -48,15 +48,15 @@ val turnOnRegex = raw"turn on (\d+),(\d+) through (\d+),(\d+)".r
 val turnOffRegex = raw"turn off (\d+),(\d+) through (\d+),(\d+)".r
 
 def parseInput(input: List[String]) = input.collect {
-    case toggleRegex(a, b, c, d) => Instruction(Actions.Toggle, a.toInt to c.toInt, b.toInt to d.toInt)
-    case turnOnRegex(a, b, c, d) => Instruction(Actions.TurnOn, a.toInt to c.toInt, b.toInt to d.toInt)
-    case turnOffRegex(a, b, c, d) => Instruction(Actions.TurnOff, a.toInt to c.toInt, b.toInt to d.toInt)
+    case toggleRegex(a, b, c, d) => (Actions.Toggle, a.toInt to c.toInt, b.toInt to d.toInt)
+    case turnOnRegex(a, b, c, d) => (Actions.TurnOn, a.toInt to c.toInt, b.toInt to d.toInt)
+    case turnOffRegex(a, b, c, d) => (Actions.TurnOff, a.toInt to c.toInt, b.toInt to d.toInt)
 }
 
 def solver[A: ClassTag](input: List[Instruction])(using lg: LightGrid[A]): Int = {
     val grid = Array.fill(1000, 1000)(lg.initial)
     
-    for (Instruction(action, xRange, yRange) <- input) {
+    for ((action, xRange, yRange) <- input) {
         val update = lg.interpret(action)
         
         for (i <- yRange; j <- xRange) {

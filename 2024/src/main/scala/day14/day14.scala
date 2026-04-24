@@ -3,48 +3,52 @@ package day14
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Vec2D(x: Int, y: Int) {
-    def +(that: Vec2D) = Vec2D(x + that.x, y + that.y)
+case class Vec2D(y: Int, x: Int) {
+    def +(that: Vec2D) = Vec2D(y + that.y, x + that.x)
 }
 
-case class Robot(pos: Vec2D, vel: Vec2D)
+case class BoundedSpace(width: Int, height: Int) {
+    def wrap(pos: Vec2D) = Vec2D(
+        y = Math.floorMod(pos.y, height),
+        x = Math.floorMod(pos.x, width) 
+    )
 
-val (height, width) = (103, 101)
+    // returns the direction (-1/0/1) of the robot to the center of the room
+    def getQuadrant(robot: Robot) = Vec2D(
+        (robot.pos.y - height / 2).sign,
+        (robot.pos.x - width / 2).sign 
+    )
+
+    def plot(robots: List[Robot]): String = {
+        val res = Array.fill(height, width)(' ')
+        robots.map(_.pos).foreach { case Vec2D(y, x) => res(y)(x) = '#' }
+        return res.map(_.mkString).mkString("\n")
+    }
+}
+
+case class Robot(pos: Vec2D, vel: Vec2D) {
+    def step(using space: BoundedSpace): Robot = {
+        return copy(pos = space.wrap(pos + vel))
+    }
+}
+
+given BoundedSpace = BoundedSpace(101, 103)
 
 def parseInput(input: List[String]) = input.map(line =>{
     val Seq(px, py, vx, vy) = raw"(-?\d+)".r.findAllIn(line).map(_.toInt).toSeq
-    Robot(Vec2D(px, py), Vec2D(vx, vy))
+    Robot(Vec2D(py, px), Vec2D(vy, vx))
 })
 
-// advance a robot by its velocity taking care of the 'teleportation'
-def step(robot: Robot): Robot = {
-    val newPos = robot.pos + robot.vel
-    robot.copy(pos = Vec2D((newPos.x + width) % width, (newPos.y + height) % height))
-}
-
-// an infinite simulation of robot movement
-def simulate(robots: List[Robot]) = Iterator.iterate(robots)(_.map(step))
-
-// returns the direction (-1/0/1) of the robot to the center of the room
-def getQuadrant(robot: Robot) = Vec2D((robot.pos.x - width / 2).sign, (robot.pos.y - height / 2).sign)
-
-def plot(robots: List[Robot]): String = {
-    val res = Array.fill(height, width)(' ')
-
-    robots.map(_.pos).foreach { case Vec2D(x, y) => res(y)(x) = '#' }
-
-    return res.map(_.mkString).mkString("\n")
-}
-
-def evaluatorOne(robots: List[Robot]): Int = {
-    return simulate(robots).drop(100).next()
-        .map(getQuadrant).filter(pos => pos.x.abs == 1 && pos.y.abs == 1)
+def evaluatorOne(robots: List[Robot])(using space: BoundedSpace): Int = {
+    return Iterator.iterate(robots)(_.map(_.step)).drop(100).next()
+        .map(space.getQuadrant).filter(pos => pos.x.abs == 1 && pos.y.abs == 1)
         .groupMapReduce(identity)(_ => 1)(_ + _).values.product
 }
 
 // I figured that the xmas tree pattern has a long horizontal ### pattern in it
-def evaluatorTwo(robots: List[Robot]): Int = {
-    return simulate(robots).map(plot).indexWhere(_.contains("#################"))
+def evaluatorTwo(robots: List[Robot])(using space: BoundedSpace): Int = {
+    return Iterator.iterate(robots)(_.map(_.step)).map(space.plot)
+        .indexWhere(_.contains("#################"))
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
