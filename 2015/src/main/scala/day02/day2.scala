@@ -3,15 +3,15 @@ package day02
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Box(l: Int, b: Int, h: Int)
+type Box = (l: Int, b: Int, h: Int)
 
 def parseInput(input: List[String]) = input.map(line => {
     val Array(l, b, h) = line.split("x").map(_.toInt).sorted
-    Box(l, b, h)
+    (l, b, h)
 })
 
-def evaluatorOne(boxes: List[Box]): Int = boxes.map { case Box(a, b, c) => 3*a*b + 2*a*c + 2*b*c }.sum
-def evaluatorTwo(boxes: List[Box]): Int = boxes.map { case Box(a, b, c) => 2*(a + b) + a*b*c }.sum
+def evaluatorOne(boxes: List[Box]): Int = boxes.map { case (a, b, c) => 3*a*b + 2*a*c + 2*b*c }.sum
+def evaluatorTwo(boxes: List[Box]): Int = boxes.map { case (a, b, c) => 2*(a + b) + a*b*c }.sum
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
