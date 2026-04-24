@@ -4,7 +4,7 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Map => MutableMap}
 
-case class Instruction(reg1: String, op: Int => Int, reg2: String, comp: Int => Boolean)
+type Instruction = (reg1: String, op: Int => Int, reg2: String, comp: Int => Boolean)
 
 val comparators = Map[String, Int => Int => Boolean](
     (">=", y => x => x >= y), ("<=", y => x => x <= y),
@@ -18,17 +18,17 @@ val operations = Map[String, Int => Int => Int](
 
 def parseInput(input: List[String]) = input.map(line => {
     val Array(a, b, c, _, e, f, g) = line.split(' ')
-    Instruction(a, operations(b)(c.toInt), e, comparators(f)(g.toInt))
+    (a, operations(b)(c.toInt), e, comparators(f)(g.toInt))
 })
 
 def solve(prg: List[Instruction]): (Int, Int) = {
     val regs = MutableMap.empty[String, Int].withDefaultValue(0)
     var maxEver = Int.MinValue
 
-    for (Instruction(a, op, b, comp) <- prg) {
+    for ((a, op, b, comp) <- prg) {
         if (comp(regs(b))) {
             regs(a) = op(regs(a))
-            maxEver = Math.max(maxEver, regs(a))
+            maxEver = maxEver.max(regs(a))
         }   
     }
     
