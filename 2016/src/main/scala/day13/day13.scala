@@ -2,8 +2,6 @@ package day13
 
 import scala.collection.mutable.Queue
 
-case class Triplet(x: Int, y: Int, stepCount: Int)
-
 def solver(favorite: Int): (Int, Int) = {
     val maze = Array.ofDim[Boolean](52, 52)
 
@@ -14,11 +12,11 @@ def solver(favorite: Int): (Int, Int) = {
 
     var (partOne, partTwo) = (0, 0)
 
-    val todo = Queue(Triplet(1, 1, 0))
+    val todo = Queue((1, 1, 0))
     maze(1)(1) = false
 
     while (todo.nonEmpty) {
-        val Triplet(x, y, cost) = todo.dequeue()
+        val (x, y, cost) = todo.dequeue()
 
         if (x == 31 && y == 39) {
             partOne = cost
@@ -29,22 +27,22 @@ def solver(favorite: Int): (Int, Int) = {
         }
 
         if (x > 0 && maze(x - 1)(y)) {
-            todo.enqueue(Triplet(x - 1, y, cost + 1))
+            todo.enqueue((x - 1, y, cost + 1))
             maze(x - 1)(y) = false
         }
 
         if (y > 0 && maze(x)(y - 1)) {
-            todo.enqueue(Triplet(x, y - 1, cost + 1))
+            todo.enqueue((x, y - 1, cost + 1))
             maze(x)(y - 1) = false
         }
 
         if (x < 51 && maze(x + 1)(y)) {
-            todo.enqueue(Triplet(x + 1, y, cost + 1))
+            todo.enqueue((x + 1, y, cost + 1))
             maze(x + 1)(y) = false
         }
 
         if (y < 51 && maze(x)(y + 1)) {
-            todo.enqueue(Triplet(x, y + 1, cost + 1))
+            todo.enqueue((x, y + 1, cost + 1))
             maze(x)(y + 1) = false
         }
     }
