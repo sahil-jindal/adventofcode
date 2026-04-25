@@ -7,7 +7,8 @@ import scala.collection.mutable.{Queue, Set, Map => MutableMap}
 case class Pos2(y: Int, x: Int)
 case class Pos3(y: Int, x: Int, level: Int)
 case class PosD(y: Int, x: Int, dlevel: Int)
-case class Input(mx: List[Array[Char]], portals: Map[Pos2, PosD], start: Pos3, end: Pos3)
+
+type Input = (mx: List[Array[Char]], portals: Map[Pos2, PosD], start: Pos3, end: Pos3)
 
 def explore(mx: List[Array[Char]]): Input = {
     val portals = MutableMap.empty[Pos2, PosD]
@@ -40,7 +41,9 @@ def explore(mx: List[Array[Char]]): Input = {
         }
     }
 
-    return Input(mx, portals.toMap, Pos3(temp("AA").y, temp("AA").x, 0), Pos3(temp("ZZ").y, temp("ZZ").x, 0))
+    val Pos2(ay, ax) = temp("AA")
+    val Pos2(zy, zx) = temp("ZZ")
+    return (mx, portals.toMap, Pos3(ay, ax, 0), Pos3(zy, zx, 0))
 }
 
 def parseInput(input: List[String]): Input = {
@@ -57,7 +60,7 @@ def getNeighbours(pos: Pos3) = List(
 )
 
 def solve(input: Input, partTwo: Boolean): Int = {
-    val Input(mx, portals, start, end) = input
+    val (mx, portals, start, end) = input
 
     def neighbours(pos: Pos3): List[Pos3] = {
         var result = getNeighbours(pos)
