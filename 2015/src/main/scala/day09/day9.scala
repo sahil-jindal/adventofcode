@@ -2,25 +2,18 @@ package day09
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Map => MutableMap, Set => MutableSet}
 
-case class Graph(locations: Set[String], distances: Map[(String, String), Int])
-
-def parseLines(input: List[String]): Graph = {
-    val locations = MutableSet.empty[String]
-    val distances = MutableMap.empty[(String, String), Int]
-
-    for (line <- input) {
-        val Array(pair, cost) = line.split(" = ")
-        val Array(place_1, place_2) = pair.split(" to ")
-
-        locations ++= Set(place_1, place_2)
-        distances((place_1, place_2)) = cost.toInt
-        distances((place_2, place_1)) = cost.toInt
-    }
-
-    return Graph(locations.toSet, distances.toMap)
+case class Graph(distances: Map[(String, String), Int]) {
+    val locations = distances.keySet.flatMap(Set(_, _))
 }
+
+def parseLine(line: String): List[((String, String), Int)] = {
+    val Array(pair, cost) = line.split(" = ")
+    val Array(posA, posB) = pair.split(" to ")
+    return List(((posA, posB), cost.toInt), ((posB, posA), cost.toInt))
+}
+
+def parseInput(input: List[String]) = Graph(input.flatMap(parseLine).toMap)
 
 def allPossiblePathCost(graph: Graph): List[Int] = {
     return graph.locations.toSeq.permutations.map { route => 
@@ -34,7 +27,7 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day09.txt") match {
         case Success(lines) => {
-            val allPossibleCost = allPossiblePathCost(parseLines(lines))
+            val allPossibleCost = allPossiblePathCost(parseInput(lines))
             println(s"Part One: ${allPossibleCost.min}")
             println(s"Part Two: ${allPossibleCost.max}")
         }

@@ -14,8 +14,10 @@ val armors = List(Item(13, 0, 1), Item(31, 0, 2), Item(53, 0, 3), Item(75, 0, 4)
 val rings = List(Item(25, 1, 0), Item(50, 2, 0), Item(100, 3, 0), Item(20, 0, 1), Item(40, 0, 2), Item(80, 0, 3))
 
 def parseInput(input: List[String]): Opponent = {
-    val properties = input.map(_.split(": ")(1).toInt)
-    return Opponent(properties(0), properties(1), properties(2))
+    val p1 = input(0).stripPrefix("Hit Points: ").toInt
+    val p2 = input(1).stripPrefix("Damage: ").toInt
+    val p3 = input(2).stripPrefix("Armor: ").toInt
+    return Opponent(p1, p2, p3)
 }
 
 def Buy(): List[Item] = {
@@ -34,10 +36,10 @@ def defeatsBoss(player: Opponent, boss: Opponent): Boolean = {
     var bossHp = boss.hitPoints
 
     while (true) {
-        bossHp -= math.max(player.damage - boss.armor, 1)
+        bossHp -= (player.damage - boss.armor).max(1)
         if (bossHp <= 0) return true
 
-        playerHp -= math.max(boss.damage - player.armor, 1)
+        playerHp -= (boss.damage - player.armor).max(1)
         if (playerHp <= 0) return false
     }
     
