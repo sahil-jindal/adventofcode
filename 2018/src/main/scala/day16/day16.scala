@@ -3,6 +3,7 @@ package day16
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.util.control.Breaks._
+import scala.collection.mutable.{Set => MutableSet}
 
 // # Chronal Classification
 //
@@ -28,8 +29,10 @@ import scala.util.control.Breaks._
 // solving simultaneous equation, we eliminate one unknown at a time, removing it from the other
 // possibilities. This causes a domino effect, continuing until all unknowns are resolved.
 
-case class Pair(unknown: Int, mask: Int)
-case class Input(samples: List[Pair], prg: List[List[Int]])
+case class Pair(unknown: Int, options: Set[Int])
+case class Input(samples: List[Pair], prg: List[Program])
+
+type Program = (unknown: Int, b: Int, c: Int, d: Int)
 
 def groupLines(input: List[String]): List[List[String]] = {
     return input.foldLeft(List(List.empty[String])) {
@@ -38,29 +41,31 @@ def groupLines(input: List[String]): List[List[String]] = {
     }.filter(_.nonEmpty)
 }
 
-def ints(input: String) = raw"(\d+)".r.findAllIn(input).map(_.toInt).toList
+def ints(input: String) = raw"(\d+)".r.findAllIn(input).map(_.toInt).toVector
 
 def parseInput(input: List[String]): Input = {
     val blocks = groupLines(input)
 
     val samples = blocks.init.map(group => {
         val List(before, instruction, after) = group.map(ints)
-        val List(unknown, b, c, d) = instruction
+        val Vector(unknown, b, c, d) = instruction
 
-        val mask = (for {
-            opcode <- 0 until 16
-            if cpu(opcode, b, c, before.toArray) == after(d)
-        } yield 1 << opcode).sum
+        val options = (0 until 16).filter(opcode => {
+            cpu(opcode, b, c, before.toVector) == after(d)
+        })
 
-        Pair(unknown, mask)
+        Pair(unknown, options.toSet)
     })
 
-    val prg = blocks.last.map(ints)
+    val prg = blocks.last.map(line => {
+        val Vector(unknown, b, c, d) = ints(line)
+        (unknown, b, c, d)
+    })
 
     return Input(samples, prg)
 }
 
-def cpu(opcode: Int, b: Int, c: Int, regs: Array[Int]): Int = {
+def cpu(opcode: Int, b: Int, c: Int, regs: Vector[Int]): Int = {
     return opcode match {
         case 0 => regs(b) + regs(c)
         case 1 => regs(b) + c
@@ -83,15 +88,17 @@ def cpu(opcode: Int, b: Int, c: Int, regs: Array[Int]): Int = {
 }
 
 def evaluatorOne(input: Input): Int = {
-    return input.samples.count(it => Integer.bitCount(it.mask) >= 3)
+    return input.samples.map(_.options.size).count(_ >= 3)
 }
 
 def evaluatorTwo(input: Input): Int = {
-    // Take intersection of samples, reducing each unknown opcode to a single set of possibilities.
-    val masks = Array.fill(16)(0xffff)
+    val Input(samples, prg) = input
 
-    input.samples.groupMapReduce(_.unknown)(_.mask)(_ & _).foreachEntry {
-        case (unknown, mask) => masks(unknown) &= mask
+    // Take intersection of samples, reducing each unknown opcode to a single set of possibilities.
+    val masks = Array.fill(16)(MutableSet.empty[Int])
+
+    samples.groupMapReduce(_.unknown)(_.options)(_ & _).foreachEntry {
+        case (unknown, options) => masks(unknown) ++= options
     }
 
     // To uniquely determine the mapping, there must be at least 1 opcode during each iteration
@@ -100,26 +107,24 @@ def evaluatorTwo(input: Input): Int = {
 
     breakable {
         while (true) {
-            val index = masks.indexWhere(n => Integer.bitCount(n) == 1)
+            val index = masks.indexWhere(_.size == 1)
             if (index == -1) break()
 
-            val mask = masks(index)
+            val opcode = masks(index).head
 
             // This opcode has only 1 possible mapping, so remove possibility from other opcodes.
-            for (j <- masks.indices) {
-                masks(j) &= ~mask
-            }
+            masks.withFilter(_.nonEmpty).foreach(_ -= opcode)
 
             // Add mapping.
-            convert(index) = Integer.numberOfTrailingZeros(mask)
+            convert(index) = opcode
         }
     }
     
     // Run the program now that we know the mapping.
     val regs = Array.fill(4)(0)
     
-    for (List(unknown, b, c, d) <- input.prg) { 
-        regs(d) = cpu(convert(unknown), b, c, regs)
+    for ((unknown, b, c, d) <- prg) { 
+        regs(d) = cpu(convert(unknown), b, c, regs.toVector)
     }
 
     return regs(0)
