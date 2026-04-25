@@ -3,15 +3,15 @@ package day15
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Generator(start: Long, generateNumber: Long => Long) {
-    def numbers = Iterator.iterate(start)(generateNumber)
+case class Generator(start: Long, mul: Long) {
+    def numbers = Iterator.iterate(start)(state => (state * mul) % 2147483647)
 }
 
 type Pair = (Generator, Generator)
 
 def parseGenerator(line: String, mul: Long) = {
     val start = raw"Generator \w starts with (\d+)".r.findFirstMatchIn(line).get.group(1).toLong
-    Generator(start, state => (state * mul) % 2147483647) 
+    Generator(start, mul) 
 }
 
 def parseInput(input: List[String]): Pair = {
