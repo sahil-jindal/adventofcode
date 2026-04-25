@@ -3,8 +3,7 @@ package day12
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Region(w: Int, h: Int, counts: List[Int])
-
+type Region = (w: Int, h: Int, counts: List[Int])
 type Input = (shapeSizes: List[Int], regions: List[Region])
 
 def groupLines(input: List[String]): List[List[String]] = {
@@ -28,19 +27,18 @@ def parseInput(input: List[String]): Input = {
 
     val regions = blocks.last.map(line => {
         val nums = raw"(\d+)".r.findAllIn(line).map(_.toInt).toList
-        Region(nums(0), nums(1), nums.drop(2))
+        (nums(0), nums(1), nums.drop(2))
     })
 
     return (shapeSizes, regions)
 }
 
-def evaluatorOne(input: Input) = {
+def evaluatorOne(input: Input): Int = {
     val (shapesizes, regions) = input
 
-    regions.count(region => {
-        val totalRegionArea = (region.counts zip shapesizes).map(_ * _).sum
-        totalRegionArea <= (region.w * region.h)
-    })
+    return regions.count { case (w, h, counts) =>
+        w * h >= (counts zip shapesizes).map(_ * _).sum
+    }
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
