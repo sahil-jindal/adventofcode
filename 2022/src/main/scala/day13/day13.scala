@@ -43,7 +43,7 @@ def groupLines(input: List[String]): List[List[String]] = {
 }
 
 def parseInput(input: List[String]): List[Pair] = {
-    return groupLines(input).map(it => (Json.parse(it(0)), Json.parse(it(1))))
+    return groupLines(input).collect { case List(a, b) => (Json.parse(a), Json.parse(b)) }
 }
 
 def evaluatorOne(packets: List[Pair]): Int = packets.zipWithIndex.collect { 
