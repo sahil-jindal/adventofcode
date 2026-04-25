@@ -6,7 +6,7 @@ import scala.io.Source
 case class Position(y: Int, x: Int)
 case class Triplet(galaxies: List[Position], isRowEmpty: Int => Boolean, isColEmpty: Int => Boolean)
 
-def emptyRows(map: List[List[Char]]) = map.zipWithIndex.collect {
+def emptyRows(grid: List[String]) = grid.zipWithIndex.collect {
     case (row, idx) if row.forall(_ == '.') => idx
 }
 
@@ -19,18 +19,16 @@ def findAll(map: List[String]): List[Position] = {
 }
 
 def parseInput(input: List[String]): Triplet = {
-    val map = input.map(_.toList)
-
-    val isRowEmpty = emptyRows(map).toSet.contains
-    val isColEmpty = emptyRows(map.transpose).toSet.contains
+    val isRowEmpty = emptyRows(input).toSet.contains
+    val isColEmpty = emptyRows(input.transpose.map(_.mkString)).toSet.contains
 
     return Triplet(findAll(input), isRowEmpty, isColEmpty)
 }
 
 def distance(i1: Int, i2: Int, expansion: Int, isEmpty: Int => Boolean): Long = {
-    val a = math.min(i1, i2)
-    val d = math.abs(i1 - i2)
-    return d + expansion * (a until a + d).count(isEmpty)
+    val d = (i1 - i2).abs
+    val (start, end) = (i1.min(i2), i1.max(i2))
+    return d + expansion * (start until end).count(isEmpty)
 }
 
 def solve(input: Triplet, expansion: Int): Long = {
