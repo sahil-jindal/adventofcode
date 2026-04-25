@@ -37,13 +37,13 @@ case class Maps(private val map: List[String]) {
     }
 }
 
-case class Input(entry: Pos, exit: Pos, maps: Maps)
+type Input = (entry: Pos, exit: Pos, maps: Maps)
 
 def parseInput(input: List[String]): Input = {
     val maps = Maps(input)
     val entry = Pos(0, 0, 1)
     val exit = Pos(Int.MaxValue, maps.height - 1, maps.width - 2)
-    return Input(entry, exit, maps)
+    return (entry, exit, maps)
 }
 
 def nextPositions(posInit: Pos, maps: Maps): List[Pos] = {
@@ -82,7 +82,7 @@ def walkTo(start: Pos, goal: Pos, maps: Maps): Pos = {
 }
 
 def solver(input: Input): (Int, Int) = {
-    val Input(entry, exit, maps) = input
+    val (entry, exit, maps) = input
     var pos = walkTo(entry, exit, maps)
     val partOne = pos.time
 
