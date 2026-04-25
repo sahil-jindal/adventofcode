@@ -8,8 +8,8 @@ sealed trait Bit
 case object Unknown extends Bit
 case class Value(a: Boolean) extends Bit
 
-case class Command(baseAddr: Int, value: Long)
-case class ProgramSegment(mask: IndexedSeq[Bit], commands: List[Command])
+type Command = (baseAddr: Int, value: Long)
+type ProgramSegment = (mask: IndexedSeq[Bit], commands: List[Command])
 
 def parseBinaryToLong(str: IndexedSeq[Bit]): Long = {
     require(str.forall(_.isInstanceOf[Value]))
@@ -33,10 +33,10 @@ def parseInput(input: List[String]): List[ProgramSegment] = {
         }
 
         val commands = group.tail.collect {
-            case s"mem[$a] = $b" => Command(a.toInt, b.toLong)
+            case s"mem[$a] = $b" => (a.toInt, b.toLong)
         }
 
-        ProgramSegment(mask, commands)
+        (mask, commands)
     })
 }
 
@@ -56,10 +56,10 @@ def evaluatorOne(input: List[ProgramSegment]): Long = {
     val mem = Map.empty[Int, Long]
     
     for {
-        ProgramSegment(mask, commands) <- input
+        (mask, commands) <- input
         andMask = parseBinaryToLong(mask.map(it => if (it == Unknown) Value(true) else it))
         orMask = parseBinaryToLong(mask.map(it => if (it == Unknown) Value(false) else it))
-        Command(baseAddr, value) <- commands
+        (baseAddr, value) <- commands
     } mem(baseAddr) = (value & andMask) | orMask
     
     return mem.values.sum
@@ -69,8 +69,8 @@ def evaluatorTwo(input: List[ProgramSegment]): Long = {
     val mem = Map.empty[Long, Long]
     
     for {
-        ProgramSegment(mask, commands) <- input
-        Command(baseAddr, value) <- commands
+        (mask, commands) <- input
+        (baseAddr, value) <- commands
         addr <- addresses(baseAddr, mask)
     } mem(addr) = value
     

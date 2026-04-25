@@ -4,7 +4,8 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
 case class Bag(amount: Int, next: Int)
-case class Haversack(shinyGold: Int, bags: Vector[IndexedSeq[Bag]])
+
+type Haversack = (shinyGold: Int, bags: Vector[IndexedSeq[Bag]])
 
 val bagPattern = raw"(^[a-z]+) ([a-z]+) bag".r
 val childrenPattern = raw"(\d+) ([a-z]+) ([a-z]+) bag".r
@@ -40,11 +41,11 @@ def parseInput(input: List[String]): Haversack = {
     }
 
     val shinyGold = perfectMinimalHash("shiny", "gold")
-    return Haversack(shinyGold, bags.toVector)
+    return (shinyGold, bags.toVector)
 }
 
 def evaluatorOne(input: Haversack): Int = {
-    val Haversack(shinyGold, bags) = input
+    val (shinyGold, bags) = input
 
     val cache = Array.fill[Option[Boolean]](594)(None)
     cache(shinyGold) = Some(true)
@@ -60,7 +61,7 @@ def evaluatorOne(input: Haversack): Int = {
 }
 
 def evaluatorTwo(input: Haversack): Int = {
-    val Haversack(shinyGold, bags) = input
+    val (shinyGold, bags) = input
     val cache = Array.fill[Option[Int]](594)(None)
 
     def helper(key: Int): Int = {
