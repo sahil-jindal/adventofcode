@@ -12,14 +12,14 @@ case class Player(score: Int, pos: Int) {
     }
 }
 
-case class Input(active: Player, other: Player)
-case class Pair(activeWins: Long, otherWins: Long)
+type Input = (active: Player, other: Player)
+type Pair = (activeWins: Long, otherWins: Long)
 
 val regex = raw"Player \d starting position: (\d)".r
 
 def parseInput(input: List[String]): Input = {
     val players = input.collect { case regex(pos) => Player(0, pos.toInt) }
-    return Input(players(0), players(1))
+    return (players(0), players(1))
 }
 
 def threeRolls(): Iterator[Int] = {
@@ -36,7 +36,7 @@ def diracThrows(): IndexedSeq[Int] = {
 }
 
 def evaluatorOne(opponents: Input): Int = {
-    var Input(active, other) = opponents
+    var (active, other) = opponents
     var rounds = 0
 
     boundary {
@@ -59,26 +59,28 @@ def evaluatorTwo(opponents: Input): Long = {
     val cache = Map.empty[Input, Pair]
 
     def winCounts(players: Input): Pair = {
-        if (players.other.score >= 21) return Pair(0L, 1L)
+        val (active, other) = players
+        
+        if (other.score >= 21) return (0L, 1L)
 
         return cache.getOrElseUpdate(players, {
             var (activeWins, otherWins) = (0L, 0L)
             
             for (steps <- diracThrows()) {
-                var wins = winCounts(Input(players.other, players.active.move(steps)))
+                val (activeScore, otherScore) = winCounts((other, active.move(steps)))
                 // they are switching roles here ^
                 // hence the return value needs to be swapped as well
-                activeWins += wins.otherWins
-                otherWins += wins.activeWins
+                activeWins += otherScore
+                otherWins += activeScore
             }
 
-            Pair(activeWins, otherWins)
+            (activeWins, otherWins)
         })
     }
 
-    val Pair(activeWins, otherWins) = winCounts(opponents)
+    val (activeWins, otherWins) = winCounts(opponents)
 
-    return math.max(activeWins, otherWins)
+    return activeWins.max(otherWins)
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
