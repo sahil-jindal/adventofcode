@@ -3,29 +3,34 @@ package day06
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Problem(columns: List[String], op: List[Long] => Long)
+type Problem = (columns: List[String], op: List[Long] => Long)
 
 def parseInput(lines: List[String]): List[Problem] = {
-    val maxLength = lines.init.map(_.length).max
+    val (numberLines, operators) = (lines.init, lines.last)
 
-    val indices = (0 until maxLength).filter(idx => {
-        lines.init.forall(_(idx).isWhitespace)
-    })
+    val maxLength = numberLines.map(_.length).max
+    val numberStrings = numberLines.map(_.padTo(maxLength, ' '))
 
-    val worksheet = (-1 +: indices :+ maxLength).sliding(2).collect { 
-        case Seq(start, end) => lines.init.map(_.substring(start + 1, end))
-    }.toList
-
-    val operations = lines.last.split(" ").filterNot(_.isEmpty).collect {
-        case "+" => (it: List[Long]) => it.sum
-        case "*" => (it: List[Long]) => it.product
+    val indices = numberStrings.transpose.zipWithIndex.collect {
+        case (line, id) if line.forall(_.isWhitespace) => id
     }
 
-    return (worksheet zip operations).map(Problem(_, _))
+    val allIndices = (-1 +: indices :+ maxLength)
+
+    val worksheet = (allIndices.init zip allIndices.tail).map { 
+        case (start, end) => numberStrings.map(_.substring(start + 1, end))
+    }
+
+    val operations = operators.filterNot(_.isWhitespace).collect {
+        case '+' => (it: List[Long]) => it.sum
+        case '*' => (it: List[Long]) => it.product
+    }
+
+    return (worksheet zip operations)
 }
 
 def helper(problems: List[Problem], parser: List[String] => List[Long]): Long = {
-    problems.map { case Problem(columns, operation) => operation(parser(columns)) }.sum
+    problems.map { case (columns, operation) => operation(parser(columns)) }.sum
 }
 
 def parserOne(problem: List[String]) = problem.map(_.trim.toLong)
