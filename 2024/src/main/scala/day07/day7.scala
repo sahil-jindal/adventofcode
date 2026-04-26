@@ -15,6 +15,7 @@ def filterNums(input: List[Pair], matchFn: (Long, Long, List[Long]) => Boolean):
 }
 
 def canMatchOne(target: Long, acc: Long, nums: List[Long]): Boolean = {
+    if (acc > target) return false
     if (nums.isEmpty) return acc == target
 
     val (next, rest) = (nums.head, nums.tail)

@@ -2,7 +2,7 @@ package day10
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Queue, ListBuffer}
+import scala.collection.mutable.{Queue, Map => MutableMap}
 
 case class Point(y: Int, x: Int)
 
@@ -22,29 +22,31 @@ def getNeighbours(pos: Point) = List(
     pos.copy(y = pos.y + 1),
 )
 
-def getTrailsFrom(grid: Grid, trailHead: Point): List[Point] = {
+def getTrailsFrom(grid: Grid, trailHead: Point): List[Int] = {
     val positions = Queue(trailHead)
-    val trails = ListBuffer.empty[Point]
+    val scoreMap = MutableMap.empty[Point, Int].withDefaultValue(0)
 
     while (positions.nonEmpty) {
-        val point = positions.dequeue()
+        val pos = positions.dequeue()
 
-        if (grid(point) == 9) {
-            trails += point
+        if (grid(pos) == 9) {
+            scoreMap(pos) += 1
         } else {
-            for (newPos <- getNeighbours(point).filter(grid.contains)) {
-                if (grid(newPos) == grid(point) + 1) {
+            for (newPos <- getNeighbours(pos).filter(grid.contains)) {
+                if (grid(newPos) == grid(pos) + 1) {
                     positions.enqueue(newPos)
                 }
             }
         }
     }
 
-    return trails.toList
+    return scoreMap.values.toList
 }
 
-def evaluatorOne(allTrails: List[List[Point]]): Int = allTrails.flatMap(_.distinct).size
-def evaluatorTwo(allTrails: List[List[Point]]): Int = allTrails.flatten.size
+def preComputation(grid: Grid): List[Int] = {
+    val trailHeads = grid.collect { case (pos, ch) if ch == 0 => pos }.toList
+    return trailHeads.flatMap(pos => getTrailsFrom(grid, pos))
+}
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
@@ -52,11 +54,9 @@ def readLinesFromFile(filePath: String): Try[List[String]] =
 def hello(): Unit = {
     readLinesFromFile("day10.txt") match {
         case Success(lines) => {
-            val grid = parseInput(lines)
-            val trailHeads = grid.collect { case (pos, ch) if ch == 0 => pos }.toList
-            val allTrails = trailHeads.map(pos => getTrailsFrom(grid, pos))
-            println(s"Part One: ${evaluatorOne(allTrails)}")
-            println(s"Part Two: ${evaluatorTwo(allTrails)}")
+            val input = preComputation(parseInput(lines))
+            println(s"Part One: ${input.size}")
+            println(s"Part Two: ${input.sum}")
         }
         case Failure(exception) => {
             println(s"Error reading file: ${exception.getMessage}")
