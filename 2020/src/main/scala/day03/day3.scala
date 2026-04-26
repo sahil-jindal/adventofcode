@@ -3,17 +3,15 @@ package day03
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Vec2D(y: Int, x: Int) {
-    def +(that: Vec2D) = Vec2D(y + that.y, x + that.x)
-}
+case class Vec2D(y: Int, x: Int)
 
 def treeCount(input: List[String], slopes: Vec2D*): Long = {
     val (height, width) = (input.length, input(0).length)
     
     def countTrees(dir: Vec2D): Long = { 
-        return Iterator.iterate(Vec2D(0, 0))(_ + dir)
-            .takeWhile(_.y < height).drop(1)
-            .count { case Vec2D(y, x) => input(y)(x % width) == '#' }.toLong
+        return (0 until height / dir.y)
+            .map(i => Vec2D(i * dir.y, (i * dir.x) % width))
+            .count { case Vec2D(y, x) => input(y)(x) == '#' }.toLong
     }
 
     return slopes.map(countTrees).product

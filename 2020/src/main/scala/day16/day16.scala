@@ -2,17 +2,17 @@ package day16
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.{Set => MutableSet}
 
-case class Range(start: Int, end: Int) {
+case class Inclusive(start: Int, end: Int) {
     def contains(n: Int) = start <= n && n <= end
 }
 
-case class Rule(fieldName: String, r1: Range, r2: Range) {
+case class Rule(fieldName: String, r1: Inclusive, r2: Inclusive) {
     def check(n: Int) = r1.contains(n) || r2.contains(n)
 }
 
-case class Problem(rules: List[Rule], yourTicket: Vector[Int], ticketsByColumnByColumn: List[List[Int]])
+case class Problem(rules: List[Rule], yourTicket: Vector[Int], ticketsByColumn: List[List[Int]])
 
 def groupLines(input: List[String]): List[List[String]] = {
     return input.foldLeft(List(List.empty[String])) {
@@ -29,7 +29,7 @@ def parseInput(input: List[String]): Problem = {
     val rules = first.map(line => {
         val Array(fieldName, ranges) = line.split(":", 2)
         val Vector(s1, e1, s2, e2) = parseNumbers(ranges)
-        Rule(fieldName, Range(s1, e1), Range(s2, e2))
+        Rule(fieldName, Inclusive(s1, e1), Inclusive(s2, e2))
     })
 
     val yourTicket = parseNumbers(second.last)
@@ -44,11 +44,11 @@ def solvePartOne(rules: List[Rule], ticketsByColumn: List[List[Int]]) = {
     val (current, remaining) = (sortedRanges.head, sortedRanges.tail)
     
     val mergedRanges = remaining.foldLeft(List(current)) { (merged, current) =>
-        val Range(lastStart, lastEnd) = merged.last
-        val Range(currStart, currEnd) = current
+        val Inclusive(lastStart, lastEnd) = merged.last
+        val Inclusive(currStart, currEnd) = current
 
         if (currStart <= lastEnd + 1) {
-            merged.init :+ Range(lastStart, lastEnd max currEnd)
+            merged.init :+ Inclusive(lastStart, lastEnd max currEnd)
         } else {
             merged :+ current
         }
@@ -72,7 +72,7 @@ def solvePartTwo(problem: Problem, valid: List[Boolean]): Long = {
 
     val rulesByColumn = ticketsByColumn.map(column => {
         val validValues = (valid zip column).collect { case (true, n) => n }
-        ListBuffer.from(rules.filter(rule => validValues.forall(rule.check)))
+        MutableSet.from(rules.filter(rule => validValues.forall(rule.check)))
     })
 
     var product = 1L
@@ -80,15 +80,13 @@ def solvePartTwo(problem: Problem, valid: List[Boolean]): Long = {
     while (rulesByColumn.exists(_.size > 1)) {
         for ((column, i) <- rulesByColumn.zipWithIndex) {
             if (column.size == 1) {
-                val found = column.remove(0)
+                val found = column.head
                 
                 if (found.fieldName.startsWith("departure")) {
                     product *= yourTicket(i)
                 }
 
-                for (remaining <- rulesByColumn) {
-                    remaining.filterInPlace(_ != found)
-                }
+                rulesByColumn.withFilter(_.nonEmpty).foreach(_ -= found)
             }
         } 
     }
@@ -97,7 +95,7 @@ def solvePartTwo(problem: Problem, valid: List[Boolean]): Long = {
 }
 
 def solver(problem: Problem): (Int, Long) = {
-    val (total, valid) = solvePartOne(problem.rules, problem.ticketsByColumnByColumn)
+    val (total, valid) = solvePartOne(problem.rules, problem.ticketsByColumn)
     return (total, solvePartTwo(problem, valid))
 }
 

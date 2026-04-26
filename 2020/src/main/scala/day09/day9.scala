@@ -2,20 +2,39 @@ package day09
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
+import scala.util.boundary, boundary.break
 
-def parseInput(input: List[String]) = input.map(_.toLong)
+def parseInput(input: List[String]) = input.map(_.toLong).toVector
 
-def findFirstInvalidNumber(nums: List[Long], preambleSize: Int): Option[Long] = {
+def findFirstInvalidNumber(nums: Vector[Long], preambleSize: Int): Option[Long] = {
     return nums.sliding(preambleSize + 1).collectFirst { 
         case (preamble :+ target) if preamble.combinations(2).forall(_.sum != target) => target  
     }
 }
 
-def findEncryptionWeakness(nums: List[Long], target: Long): Option[Long] = {
-    return (2 to nums.length).iterator.flatMap(nums.sliding).find(_.sum == target).map(it => it.min + it.max)
+def findEncryptionWeakness(nums: Vector[Long], target: Long): Option[Long] = {
+    var (left, sum) = (0, 0L)
+    
+    boundary {
+        for ((num, right) <- nums.zipWithIndex) {
+            sum += num
+
+            while (sum > target && left <= right) {
+                sum -= nums(left)
+                left += 1
+            }
+
+            if (sum == target) {
+                val slice = nums.slice(left, right + 1)
+                break(Some(slice.min + slice.max))
+            }
+        }
+
+        return None
+    }
 }
 
-def solver(input: List[Long]): (Long, Long) = {
+def solver(input: Vector[Long]): (Long, Long) = {
     val preambleSize = 25
     val invalidNumber = findFirstInvalidNumber(input, preambleSize).get
     val encryptionWeakness = findEncryptionWeakness(input, invalidNumber).get
