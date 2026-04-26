@@ -6,6 +6,7 @@ import scala.io.Source
 case class Vec3D(x: Int, y: Int, z: Int) {
     def len = x.abs + y.abs + z.abs
     def +(that: Vec3D) = Vec3D(x + that.x, y + that.y, z + that.z)
+    def -(that: Vec3D) = Vec3D(x - that.x, y - that.y, z - that.z)
 }
 
 case class Particle(id: Int, pos: Vec3D, vel: Vec3D, acc: Vec3D) {
@@ -15,36 +16,37 @@ case class Particle(id: Int, pos: Vec3D, vel: Vec3D, acc: Vec3D) {
         return copy(pos = newPos, vel = newVel)
     }
 
-    def collisionTime(particle: Particle): List[Int] = {
-        return (for {
-            tx <- collisionTimeOnAxis(particle.acc.x - acc.x, particle.vel.x - vel.x, particle.pos.x - pos.x)
-            ty <- collisionTimeOnAxis(particle.acc.y - acc.y, particle.vel.y - vel.y, particle.pos.y - pos.y)
-            tz <- collisionTimeOnAxis(particle.acc.z - acc.z, particle.vel.z - vel.z, particle.pos.z - pos.z)
-            if tx == ty && ty == tz
-        } yield tx)
+    def collisionTime(that: Particle): Set[Int] = {
+        val (dp, dv, da) = (that.pos - pos, that.vel - vel, that.acc - acc)
+
+        val tx = collisionTimeOnAxis(da.x, dv.x, dp.x)
+        val ty = collisionTimeOnAxis(da.y, dv.y, dp.y)
+        val tz = collisionTimeOnAxis(da.z, dv.z, dp.z)
+        
+        return tx & ty & tz
     }
 
-    def collisionTimeOnAxis(da: Int, dv: Int, dp: Int): List[Int] = {
-        return solveIntEq(da / 2, dv, dp)
+    private def collisionTimeOnAxis(da: Int, dv: Int, dp: Int): Set[Int] = {
+        return solveIntEq(da, 2*dv + da, 2*dp)
     }
 
-    def solveIntEq(a: Int, b: Int, c: Int): List[Int] = {
+    private def solveIntEq(a: Int, b: Int, c: Int): Set[Int] = {
         if (a == 0) {
-            if (b != 0) return List(-c / b)
-            if (c == 0) return List(0)
-            return List.empty    
+            if (b != 0) return Set(-c / b)
+            if (c == 0) return Set(0)
+            return Set.empty    
         }
 
         val d = b * b - 4 * a * c
             
-        if (d < 0) return List.empty
-        if (d == 0) return List(-b / (2 * a))
+        if (d < 0) return Set.empty
+        if (d == 0) return Set(-b / (2 * a))
             
-        val ds = math.sqrt(d)
+        val ds = math.sqrt(d).toInt
             
-        if (ds * ds != d) return List.empty
+        if (ds * ds != d) return Set.empty
             
-        return List(((-b + ds) / (2 * a)).toInt, ((-b - ds) / (2 * a)).toInt)
+        return Set(((-b + ds) / (2 * a)).toInt, ((-b - ds) / (2 * a)).toInt)
     }
 }
 

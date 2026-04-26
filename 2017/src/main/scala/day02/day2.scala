@@ -4,14 +4,22 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
 def parseInput(input: List[String]) = input.map(line => {
-    raw"(\d+)".r.findAllIn(line).map(_.toInt).toList
+    raw"(\d+)".r.findAllIn(line).map(_.toInt).toVector.sorted
 })
 
-def evaluatorOne(input: List[List[Int]]): Int = input.map(it => it.max - it.min).sum
+def evaluatorOne(input: List[Vector[Int]]): Int = {
+    return input.map(it => it.last - it.head).sum
+}
 
-def evaluatorTwo(input: List[List[Int]]): Int = input.flatMap { numbers =>
-    for { a <- numbers; b <- numbers; if a > b && a % b == 0 } yield a / b
-}.sum
+def evaluatorTwo(input: List[Vector[Int]]): Int = {
+    return input.flatMap(values => {
+        (for { 
+            smaller <- values
+            larger <- values.reverseIterator.takeWhile(_ >= 2*smaller)
+            if larger % smaller == 0 
+        } yield larger / smaller)
+    }).sum
+}
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
