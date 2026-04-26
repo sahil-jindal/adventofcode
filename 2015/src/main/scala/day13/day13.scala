@@ -12,21 +12,22 @@ val gainRegex = raw"(\w+) would gain (\d+) happiness units by sitting next to (\
 val loseRegex = raw"(\w+) would lose (\d+) happiness units by sitting next to (\w+).".r
 
 def parseInput(input: List[String]): Graph = {
-    val happiness = input.collect {
+    return Graph(input.collect {
         case gainRegex(person1, b, person2) => (person1, person2) -> b.toInt
         case loseRegex(person1, b, person2) => (person1, person2) -> -b.toInt
-    }.toMap
-
-    return Graph(happiness)
+    }.toMap)
 }
 
 def findMaximumHappiness(graph: Graph): Int = {
-    return graph.people.toSeq.permutations.map { arrangement =>
-        val leftRotated = arrangement.tail :+ arrangement.head 
-        (arrangement zip leftRotated).map { case (a, b) => 
+    val people = graph.people.toSeq
+    val (fixed, remaining) = (people.head, people.tail)
+
+    return remaining.permutations.map(arrangement => {
+        val route = fixed +: arrangement :+ fixed 
+        (route.init zip route.tail).map { case (a, b) => 
             graph.happiness((a, b)) + graph.happiness((b, a))
         }.sum
-    }.max
+    }).max
 }
 
 def addYourself(graph: Graph): Graph = {
