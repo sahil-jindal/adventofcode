@@ -5,9 +5,20 @@ import scala.io.Source
 import scala.collection.mutable.Map
 import scala.util.control.Breaks._
 
-type Grid = Array[Array[Char]]
+sealed abstract class Rock(val ch: Char)
+case object Round extends Rock('O')
+case object Cubed extends Rock('#')
+case object Empty extends Rock('.')
 
-def parseInput(input: List[String]) = input.map(_.toCharArray).toArray
+type Grid = Array[Array[Rock]]
+
+def parseInput(input: List[String]): Grid = {
+    return input.map(_.collect {
+        case 'O' => Round
+        case '#' => Cubed
+        case '.' => Empty
+    }.toArray).toArray
+}
 
 // Tilt the platform north
 def tiltNorth(platform: Grid): Grid = {
@@ -18,13 +29,13 @@ def tiltNorth(platform: Grid): Grid = {
         var nextEmptyRow = 0
         for (y <- 0 until height) {
             result(y)(x) match {
-                case '#' => nextEmptyRow = y + 1
-                case 'O' => {
-                    result(y)(x) = '.'
-                    result(nextEmptyRow)(x) = 'O'
+                case Cubed => nextEmptyRow = y + 1
+                case Round => {
+                    result(y)(x) = Empty
+                    result(nextEmptyRow)(x) = Round
                     nextEmptyRow += 1
                 }
-                case _ =>
+                case Empty =>
             }
         }
     }
@@ -35,7 +46,7 @@ def tiltNorth(platform: Grid): Grid = {
 // Rotate the platform 90 degrees clockwise
 def rotateClockwise(platform: Grid): Grid = {
     val (height, width) = (platform.length, platform(0).length)
-    val rotated = Array.ofDim[Char](width, height)
+    val rotated = Array.ofDim[Rock](width, height)
     
     for (y <- 0 until height; x <- 0 until width) {
         rotated(x)(height - y - 1) = platform(y)(x)
@@ -63,7 +74,7 @@ def runCycles(platform: Grid): Grid = {
     
     breakable {
         for (i <- 0 until numCycles) {
-            val platformKey = current.flatten.mkString
+            val platformKey = current.flatten.map(_.ch).mkString
         
             if (seen.contains(platformKey)) {
                 // Found a cycle, calculate the final state
@@ -90,7 +101,7 @@ def runCycles(platform: Grid): Grid = {
 // Calculate the load on the north support beams
 def calculateLoad(platform: Grid): Int = {
     return platform.reverseIterator.zipWithIndex.map { case (line, y) => 
-        line.count(_ == 'O') * (y + 1)
+        line.count(_ == Round) * (y + 1)
     }.sum
 }
 
