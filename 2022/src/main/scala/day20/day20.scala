@@ -20,7 +20,7 @@ def mix(numsWithIdxInit: List[Data]): List[Data] = {
         val srcIdx = numsWithIdx.map(_.idx).indexOf(idx)
         val num = numsWithIdx(srcIdx)
 
-        val dstIdx = ((srcIdx + num.value) % mod + mod) % mod
+        val dstIdx = math.floorMod(srcIdx + num.value, mod)
 
         numsWithIdx.remove(srcIdx)
         numsWithIdx.insert(dstIdx.toInt, num)
