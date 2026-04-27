@@ -6,7 +6,7 @@ import scala.io.Source
 def parseInput(input: String) = input.split(",").map(_.toInt).toList
 
 def fishCountAfterNDays(fish: List[Int], days: Int): Long = {
-    val fishCountByInternalTimer = Array.fill(9)(0L)
+    val fishCountByInternalTimer = Array.ofDim[Long](9)
 
     for (timer <- fish) {
         fishCountByInternalTimer(timer) += 1
