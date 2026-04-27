@@ -14,7 +14,7 @@ def solve(digits: IndexedSeq[Int], maxLabel: Int, rotate: Int): LazyList[Long] =
 
     var current = digits.head
 
-    for (i <- 0 until rotate) {
+    for (_ <- 0 until rotate) {
         val removed1 = next(current)
         val removed2 = next(removed1)
         val removed3 = next(removed2)
