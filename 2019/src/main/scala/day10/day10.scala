@@ -23,8 +23,9 @@ def parseInput(input: List[String]): Set[Vec2D] = {
 }
 
 def getDirection(dir: Vec2D): Pair = {
-    val g = gcd(dir.y, dir.x).abs
-    return Pair(Vec2D(dir.y / g, dir.x / g), g)
+    val Vec2D(y, x) = dir
+    val g = gcd(y.abs, x.abs)
+    return Pair(Vec2D(y / g, x / g), g)
 }
 
 def groupByDirection(station: Vec2D, remaining: Set[Vec2D]): Input = {
