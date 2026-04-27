@@ -3,7 +3,6 @@ package day23
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.PriorityQueue
-import scala.math.BigInt
 
 case class Vec3D(x: Int, y: Int, z: Int) {
     def len = x.abs + y.abs + z.abs
@@ -12,9 +11,9 @@ case class Vec3D(x: Int, y: Int, z: Int) {
 
 case class Drone(pos: Vec3D, r: Int) {
     def intersects(box: Box): Boolean = {
-        val dx = math.max(0, math.max(box.min.x - pos.x, pos.x - box.max.x))
-        val dy = math.max(0, math.max(box.min.y - pos.y, pos.y - box.max.y))
-        val dz = math.max(0, math.max(box.min.z - pos.z, pos.z - box.max.z))
+        val dx = (box.min.x - pos.x).max(pos.x - box.max.x).max(0)
+        val dy = (box.min.y - pos.y).max(pos.y - box.max.y).max(0)
+        val dz = (box.min.z - pos.z).max(pos.z - box.max.z).max(0)
         return dx + dy + dz <= r
     }
 }
