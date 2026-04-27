@@ -3,20 +3,20 @@ package day04
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Range(start: Int, end: Int) {
-    def contains(r2: Range) = start <= r2.start && r2.end <= end
-    def overlaps(r2: Range) = r2.start <= end && start <= r2.end
+case class Inclusive(start: Int, end: Int) {
+    def contains(r2: Inclusive) = start <= r2.start && r2.end <= end
+    def overlaps(r2: Inclusive) = r2.start <= end && start <= r2.end
 }
 
-type Pair = (Range, Range)
+type Pair = (Inclusive, Inclusive)
 
 def parseInput(input: List[String]) = input.map(line => {
     val Seq(sf, ef, ss, es) = raw"(\d+)".r.findAllIn(line).map(_.toInt).toSeq
-    (Range(sf, ef), Range(ss, es))
+    (Inclusive(sf, ef), Inclusive(ss, es))
 })
 
-def partOne(r1: Range, r2: Range) = r1.contains(r2) || r2.contains(r1)
-def partTwo(r1: Range, r2: Range) = r1.overlaps(r2)
+def partOne(r1: Inclusive, r2: Inclusive) = r1.contains(r2) || r2.contains(r1)
+def partTwo(r1: Inclusive, r2: Inclusive) = r1.overlaps(r2)
 
 def evaluatorOne(input: List[Pair]): Int = input.count(partOne)
 def evaluatorTwo(input: List[Pair]): Int = input.count(partTwo)
