@@ -20,7 +20,7 @@ def getAllNeighbours(pos: Point): IndexedSeq[Point] = {
 def getCoordinates(n: Int): Point = {
     if (n == 1) return startPoint
 
-    val ringNo = math.ceil((math.sqrt(n) - 1) / 2).toInt
+    val ringNo = ((math.sqrt(n) - 1) / 2).ceil.toInt
     val start = (2 * ringNo - 1) * (2 * ringNo - 1)
     val offset = n - start - 1
     val side = offset / (2 * ringNo)

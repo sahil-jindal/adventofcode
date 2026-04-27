@@ -69,8 +69,8 @@ object Mtx {
         val size = math.sqrt(cleanStr.length).toInt
         val res = new Mtx(size)
         
-        for (i <- cleanStr.indices) {
-            res(i / size, i % size) = cleanStr(i) == '#'
+        for ((ch, i) <- cleanStr.zipWithIndex) {
+            res(i / size, i % size) = ch == '#'
         }
         
         return res
