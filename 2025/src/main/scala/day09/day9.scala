@@ -5,20 +5,20 @@ import scala.io.Source
 
 case class Point(x: Long, y: Long)
 
+case class Inclusive(start: Long, end: Long) {
+    val length: Long = end - start + 1
+    def strictOverlaps(that: Inclusive) = start < that.end && that.start < end 
+}
+
 case class Rectangle(a: Point, b: Point) {
-    val top = math.min(a.y, b.y)
-    val bottom = math.max(a.y, b.y)
-    val left = math.min(a.x, b.x)
-    val right = math.max(a.x, b.x)
+    val xRange = Inclusive(a.x.min(b.x), a.x.max(b.x))
+    val yRange = Inclusive(a.y.min(b.y), a.y.max(b.y))
     
-    def area = (bottom - top + 1) * (right - left + 1)
+    def area = yRange.length * xRange.length
 
     def aabbCollision(that: Rectangle): Boolean = {
-        var aIsToTheLeft = right <= that.left
-        var aIsToTheRight = left >= that.right
-        var aIsAbove = bottom <= that.top
-        var aIsBelow = top >= that.bottom
-        return !(aIsToTheRight || aIsToTheLeft || aIsAbove || aIsBelow)
+        xRange.strictOverlaps(that.xRange) &&
+        yRange.strictOverlaps(that.yRange)
     }
 }
 
@@ -27,7 +27,7 @@ def parseInput(input: List[String]) = input.collect {
 }
 
 def allPossibleRectangles(points: List[Point]): List[Rectangle] = {
-    return points.combinations(2).map(it => Rectangle(it(0), it(1))).toList
+    return points.combinations(2).collect { case List(a, b) => Rectangle(a, b) }.toList
 }
 
 def boundary(points: List[Point]): List[Rectangle] = {
