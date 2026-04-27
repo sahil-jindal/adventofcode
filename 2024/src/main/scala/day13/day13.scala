@@ -5,7 +5,6 @@ import scala.io.Source
 
 case class Vec2D(x: Long, y: Long) {
     def *(num: Long) = Vec2D(x * num, y * num)
-    def +(num: Long) = Vec2D(x + num, y + num)
     def +(that: Vec2D) = Vec2D(x + that.x, y + that.y)
 }
 
@@ -49,7 +48,7 @@ def getPrize(m: Machine): Long = {
 }
 
 def solver(machines: List[Machine], shift: Long): Long = {
-    return machines.map(m => m.copy(p = m.p + shift)).map(getPrize).sum
+    return machines.map(m => m.copy(p = m.p + Vec2D(shift, shift))).map(getPrize).sum
 }
 
 def evaluatorOne(machines: List[Machine]): Long = solver(machines, 0L)
