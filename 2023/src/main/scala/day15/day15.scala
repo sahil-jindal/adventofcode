@@ -18,7 +18,7 @@ def evaluatorOne(input: List[String]): Int = input.map(hash).sum
 
 def evaluatorTwo(input: List[String]): Int = {
     val steps = input.map(parseStep)
-    val boxes = List.fill(256)(ArrayBuffer.empty[Lens])
+    val boxes = Vector.fill(256)(ArrayBuffer.empty[Lens])
 
     for (step <- steps) {
         val box = boxes(hash(step.label))
