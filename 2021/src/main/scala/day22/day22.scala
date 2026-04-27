@@ -3,16 +3,16 @@ package day22
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
-case class Range(start: Int, end: Int) {
+case class Inclusive(start: Int, end: Int) {
     def isEmpty: Boolean = start > end
     def length: Long = if isEmpty then 0 else end - start + 1
 
-    def intersect(that: Range): Range = {
-        return Range(math.max(start, that.start), math.min(end, that.end))
+    def intersect(that: Inclusive): Inclusive = {
+        return Inclusive(start.max(that.start), end.min(that.end))
     } 
 }
 
-case class Region(x: Range, y: Range, z: Range) {
+case class Region(x: Inclusive, y: Inclusive, z: Inclusive) {
     def isEmpty: Boolean = x.isEmpty || y.isEmpty || z.isEmpty
     def volume: Long = x.length * y.length * z.length
 
@@ -21,32 +21,34 @@ case class Region(x: Range, y: Range, z: Range) {
     }
 }
 
-case class Cmd(turnOff: Boolean, region: Region)
+type Cmd = (turnOff: Boolean, region: Region)
 
 def parseInput(input: List[String]) = input.map(line => {
     val Seq(sx, ex, sy, ey, sz, ez) = raw"(-?\d+)".r.findAllIn(line).map(_.toInt).toSeq
-    Cmd(line.startsWith("off"), Region(Range(sx, ex), Range(sy, ey), Range(sz, ez)))
+    (line.startsWith("off"), Region(Inclusive(sx, ex), Inclusive(sy, ey), Inclusive(sz, ez)))
 })
 
 def activeCubesInRange(cmds: List[Cmd], range: Int): Long = {
     // Recursive approach
     // If we can determine the number of active cubes in subregions
     // we can compute the effect of the i-th cmd as well:
-    def activeCubesAfterIcmd(icmd: Int, region: Region): Long = {
-        if (region.isEmpty || icmd < 0) return 0
+    def activeCubesAfterIcmd(commands: List[Cmd], region: Region): Long = {
+        if (region.isEmpty || commands.isEmpty) return 0
         
-        val intersection = region.intersect(cmds(icmd).region)
-        val activeInRegion = activeCubesAfterIcmd(icmd - 1, region)
-        val activeInIntersection = activeCubesAfterIcmd(icmd - 1, intersection)
+        val (turnOff, otherRegion) = commands.last
+
+        val intersection = region.intersect(otherRegion)
+        val activeInRegion = activeCubesAfterIcmd(commands.init, region)
+        val activeInIntersection = activeCubesAfterIcmd(commands.init, intersection)
         val activeOutsideIntersection = activeInRegion - activeInIntersection
 
         // outside the intersection is unaffected, the rest is either on or off:  
-        return activeOutsideIntersection + (if cmds(icmd).turnOff then 0 else intersection.volume)
+        return activeOutsideIntersection + (if turnOff then 0 else intersection.volume)
     }
 
-    val side = Range(-range, range)
+    val side = Inclusive(-range, range)
 
-    return activeCubesAfterIcmd(cmds.length - 1, Region(side, side, side))
+    return activeCubesAfterIcmd(cmds, Region(side, side, side))
 }
 
 def evaluatorOne(cmds: List[Cmd]): Long = activeCubesInRange(cmds, 50)
