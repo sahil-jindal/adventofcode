@@ -4,12 +4,12 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Queue, ListBuffer}
 
-case class Range(start: Long, end: Long) {
-    def contains(that: Range) = start <= that.start && that.end <= end
-    def overlaps(that: Range) = start <= that.end && that.start <= end 
+case class Inclusive(start: Long, end: Long) {
+    def contains(that: Inclusive) = start <= that.start && that.end <= end
+    def overlaps(that: Inclusive) = start <= that.end && that.start <= end 
 }
 
-type Input = (numbers: List[Long], maps: List[Map[Range, Range]])
+type Input = (numbers: List[Long], maps: List[Map[Inclusive, Inclusive]])
 
 def groupLines(input: List[String]): List[List[String]] = {
     return input.foldLeft(List(List.empty[String])) {
@@ -23,15 +23,15 @@ def parseNumbers(input: String) = raw"(\d+)".r.findAllIn(input).map(_.toLong).to
 def parseInput(input: List[String]): Input = {
     val maps = groupLines(input.drop(2)).map(_.tail.map(line => {
         val List(sA, sB, len) = parseNumbers(line)
-        Range(sB, sB + len - 1) -> Range(sA, sA + len - 1)
+        Inclusive(sB, sB + len - 1) -> Inclusive(sA, sA + len - 1)
     }).toMap)
 
     return (parseNumbers(input.head), maps)
 }
 
-def project(inputRanges: List[Range], map: Map[Range, Range]): List[Range] = {
+def project(inputRanges: List[Inclusive], map: Map[Inclusive, Inclusive]): List[Inclusive] = {
     val input = Queue.from(inputRanges)
-    val output = ListBuffer.empty[Range]
+    val output = ListBuffer.empty[Inclusive]
 
     while (input.nonEmpty) {
         val range = input.dequeue()
@@ -51,13 +51,13 @@ def project(inputRanges: List[Range], map: Map[Range, Range]): List[Range] = {
             if (src.contains(range)) {
                 val dst = map(src)
                 val shift = dst.start - src.start
-                output += Range(range.start + shift, range.end + shift)
+                output += Inclusive(range.start + shift, range.end + shift)
             } else if (range.start < src.start) {
-                input.enqueue(Range(range.start, src.start - 1))
-                input.enqueue(Range(src.start, range.end))
+                input.enqueue(Inclusive(range.start, src.start - 1))
+                input.enqueue(Inclusive(src.start, range.end))
             } else {
-                input.enqueue(Range(range.start, src.end))
-                input.enqueue(Range(src.end + 1, range.end))
+                input.enqueue(Inclusive(range.start, src.end))
+                input.enqueue(Inclusive(src.end + 1, range.end))
             }
         }
     }
@@ -65,16 +65,16 @@ def project(inputRanges: List[Range], map: Map[Range, Range]): List[Range] = {
     return output.toList
 }
 
-def solve(input: Input, parseSeeds: List[Long] => List[Range]): Long = {
+def solve(input: Input, parseSeeds: List[Long] => List[Inclusive]): Long = {
     val (numbers, maps) = input
     val seedRanges = parseSeeds(numbers)
     return maps.foldLeft(seedRanges)(project).map(_.start).min
 }
 
-def partOneRanges(numbers: List[Long]): List[Range] = numbers.map(n => Range(n, n))
+def partOneRanges(numbers: List[Long]) = numbers.map(n => Inclusive(n, n))
 
-def partTwoRanges(numbers: List[Long]): List[Range] = {
-    return numbers.grouped(2).map(n => Range(n(0), n(0) + n(1) - 1)).toList
+def partTwoRanges(numbers: List[Long]): List[Inclusive] = {
+    return numbers.grouped(2).map(n => Inclusive(n(0), n(0) + n(1) - 1)).toList
 }
 
 def evaluatorOne(input: Input): Long = solve(input, partOneRanges)
