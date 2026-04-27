@@ -25,7 +25,8 @@ def neighbours(pos: Point): IndexedSeq[Point] = {
 }
 
 def enhanced(input: Input, n: Int): Int = {
-    var (algo, image) = input
+    val (algo, currImage) = input
+    var image = currImage
 
     var (minY, maxY) = (0, image.keys.map(_.y).max)
     var (minX, maxX) = (0, image.keys.map(_.x).max)

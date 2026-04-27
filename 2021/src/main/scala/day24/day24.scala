@@ -25,11 +25,11 @@ def getSerials(input: List[String]): (String, String) = {
     }
 
     // A stack will contain the index of an `a` digit when we find its corresponding `b`.
-    var stack = Stack.empty[Int]
+    val stack = Stack.empty[Int]
     
     // We will fill up the result when `b` is found.
-    var max = Array.fill(14)(Int.MinValue)
-    var min = Array.fill(14)(Int.MaxValue)
+    val max = Array.fill(14)(Int.MinValue)
+    val min = Array.fill(14)(Int.MaxValue)
     
     for (j <- 0 until 14) {
         if (stmBlocks(j).contains("div z 1")) { 

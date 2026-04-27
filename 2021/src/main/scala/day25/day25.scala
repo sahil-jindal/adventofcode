@@ -16,7 +16,7 @@ def solver(input: List[String]): Int = {
     def movesRight(y: Int, x: Int): Boolean = map(y)(x) == '>' && map(y)(right(x)) == '.'
     def movesDown(y: Int, x: Int): Boolean = map(y)(x) == 'v' && map(down(y))(x) == '.'
 
-    return Iterator.from(1).find(steps => {
+    return Iterator.from(1).find(_ => {
         var anyMoves = false
         var newMap = Array.ofDim[String](height)
 

@@ -81,7 +81,7 @@ def tryToLocate(scannerA: Scanner, scannerB: Scanner): Option[Scanner] = {
         for ((beaconInA, beaconInB) <- potentialMatchingBeacons(scannerA, scannerB)) {
             var rotatedB = scannerB
 
-            for (rotation <- 0 until 24) {    
+            for (_ <- 0 until 24) {    
                 val beaconInRotatedB = rotatedB.transform(beaconInB)
 
                 val locatedB = rotatedB.translate(beaconInA - beaconInRotatedB)
@@ -105,7 +105,7 @@ def locateScanners(input: List[Scanner]): Set[Scanner] = {
     val pq = Queue(firstScanner)
     val locatedScanners = Set(firstScanner)
 
-    scanners.remove(firstScanner)
+    scanners -= firstScanner
 
     while (pq.nonEmpty) {
         val scannerA = pq.dequeue()
@@ -114,9 +114,9 @@ def locateScanners(input: List[Scanner]): Set[Scanner] = {
             val maybeLocatedScanner = tryToLocate(scannerA, scannerB)
 
             if (maybeLocatedScanner.isDefined) {
-                locatedScanners.add(maybeLocatedScanner.get)
+                locatedScanners += maybeLocatedScanner.get
                 pq.enqueue(maybeLocatedScanner.get)
-                scanners.remove(scannerB)
+                scanners -= scannerB
             }
         }
     }

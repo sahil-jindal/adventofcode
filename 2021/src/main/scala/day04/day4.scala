@@ -52,8 +52,7 @@ def boardsInOrderOfCompletion(input: List[String]): List[Int] = {
             boards(i).addNumber(number)
 
             if (boards(i).score > 0) {
-                result += boards(i).score
-                boards.remove(i)
+                result += boards.remove(i).score
             } else {
                 i += 1
             }

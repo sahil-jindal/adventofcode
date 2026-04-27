@@ -42,9 +42,9 @@ def evaluatorOne(input: Input): Set[Point] = {
 }
 
 def evaluatorTwo(input: Input): String = {
-    var (points, lines) = input
+    val (currPoints, lines) = input
 
-    points = lines.foldLeft(points) { case (pts, line) => pts.map(line.fold) }
+    val points = lines.foldLeft(currPoints) { case (pts, line) => pts.map(line.fold) }
 
     val (height, width) = (points.map(_.y).max, points.map(_.x).max)
     val grid = Array.fill(height + 1, width + 1)(' ')
