@@ -6,7 +6,7 @@ import scala.io.Source
 def parseInput(input: List[String]) = input.map(_.toInt)
 
 def getStepCount(inputInit: List[Int], update: Int => Int): Int = {
-    var input = inputInit.toArray
+    val input = inputInit.toArray
     var i = 0
     var stepCount = 0
 
