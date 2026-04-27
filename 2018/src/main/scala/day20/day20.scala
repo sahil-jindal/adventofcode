@@ -37,7 +37,7 @@ def solver(input: String): (Int, Int) = {
         val (pos, d) = queue.dequeue()
         
         if (seen.add(pos) && grid.contains(pos)) {
-            dMax = math.max(dMax, d)
+            dMax = dMax.max(d)
             
             if (d >= 1000) distantRooms += 1
 
