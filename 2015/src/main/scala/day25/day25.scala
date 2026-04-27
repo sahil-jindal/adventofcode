@@ -7,11 +7,11 @@ def solver(input: String): Int = {
     val Seq(rowDst, colDst) = raw"(\d+)".r.findAllIn(input).map(_.toInt).toSeq
 
     val d = rowDst + colDst - 1
-    val k = (d * (d - 1)) / 2 + colDst // Anti-diagonal encoding
+    val k = (d * (d + 1)) / 2 - rowDst // Anti-diagonal encoding
 
-    val m = BigInt(33554393)
+    val m = 33554393
     
-    return (BigInt(20151125) * BigInt(252533).modPow(k - 1, m)).mod(m).intValue()
+    return (BigInt(20151125) * BigInt(252533).modPow(k, m)).mod(m).intValue()
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
