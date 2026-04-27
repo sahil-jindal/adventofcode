@@ -70,7 +70,7 @@ def findMaxPressureBitmask(
                 if (newTime > 0) {
                     val pressure = newTime * valves(nextValveName).flowRate
                     val newRemainingMask = remainingMask ^ lowestBit
-                    maxPressure = math.max(maxPressure, pressure + dfs(nextValveName, newRemainingMask, newTime))
+                    maxPressure = maxPressure.max(pressure + dfs(nextValveName, newRemainingMask, newTime))
                 }
                 
                 mask ^= lowestBit
@@ -107,7 +107,7 @@ def evaluatorTwo(
     // Iterate only over masks where the first element is included to avoid redundant checks
     for (mask <- 0 until (1 << n)) {
         val complement = ((1 << n) - 1) ^ mask
-        maxPressure = math.max(maxPressure, maxPressures(mask) + maxPressures(complement))
+        maxPressure = maxPressure.max(maxPressures(mask) + maxPressures(complement))
     }
     
     maxPressure

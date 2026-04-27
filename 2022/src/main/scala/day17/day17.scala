@@ -56,7 +56,7 @@ case class Tunnel(jets: String, linesToStore: Int) {
 
         lines = lines.dropWhile(_.forall(_ != '#'))
 
-        val excessCount = math.max(0, lines.size - linesToStore)
+        val excessCount = (lines.size - linesToStore).max(0)
         lines = lines.dropRight(excessCount)
         linesNotStored += excessCount
     }
