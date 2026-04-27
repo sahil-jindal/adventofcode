@@ -5,11 +5,9 @@ import scala.io.Source
 import scala.collection.mutable.{ListBuffer, Queue, Set, Map => MutableMap}
 
 case class Pair(g: Int, c: Int)
-case class State(elevator: Int, elements: List[Pair])
+case class State(elevator: Int, elements: Vector[Pair])
 
-type Building = Map[String, Pair]
-
-def parseInput(input: List[String]): Building = {
+def parseInput(input: List[String]): Vector[Pair] = {
     val elementMap = MutableMap.empty[String, Pair].withDefaultValue(Pair(0, 0))
 
     for ((line, idx) <- input.zipWithIndex) {
@@ -22,10 +20,21 @@ def parseInput(input: List[String]): Building = {
         for (element <- microchips) { elementMap(element) = Pair(elementMap(element).g, floor) }
     }
     
-    return elementMap.toMap
+    return elementMap.values.toVector
 }
 
-def isValid(elements: List[Pair]): Boolean = {
+def applyElements(elements: Vector[Pair], combo: Vector[(Int, Char)], newFloor: Int) = {
+    val newElements = elements.zipWithIndex.map { case (it, idx) =>
+        val moves = combo.collect { case (i, t) if i == idx => t }
+        val newG = if (moves.contains('G')) newFloor else it.g
+        val newC = if (moves.contains('M')) newFloor else it.c
+        Pair(newG, newC)
+    }
+        
+    newElements.sortBy(t => (t.g, t.c))
+}
+
+def isValid(elements: Vector[Pair]): Boolean = {
     return (1 to 4).forall { floor =>
         val generators = elements.exists(_.g == floor)
         val chips = elements.exists(it => it.g != floor && it.c == floor)
@@ -36,30 +45,24 @@ def isValid(elements: List[Pair]): Boolean = {
 def nextStates(current: State): List[State] = {
     val State(currentFloor, elements) = current
 
-    val items = elements.zipWithIndex.flatMap { case (it, i) =>
-        val list = ListBuffer.empty[(Int, Char)]
-        if (it.g == currentFloor) list += ((i, 'G'))
-        if (it.c == currentFloor) list += ((i, 'M'))
-        list.toList
+    val generators = elements.map(_.g).zipWithIndex.collect {
+        case (g, i) if g == currentFloor => (i, 'G')
     }
 
+    val microchips = elements.map(_.c).zipWithIndex.collect {
+        case (c, i) if c == currentFloor => (i, 'M')
+    }
+
+    val items = generators ++ microchips
     val combinations = items.combinations(1).toList ++ items.combinations(2).toList
     val newFloors = List(currentFloor + 1, currentFloor - 1).filter(f => f >= 1 && f <= 4)
 
-    return combinations.flatMap { combo =>
-        newFloors.flatMap { newFloor =>
-            val newElements = elements.zipWithIndex.map { case (it, idx) =>
-                val moves = combo.collect { case (i, t) if i == idx => t }
-                val newG = if (moves.contains('G')) newFloor else it.g
-                val newC = if (moves.contains('M')) newFloor else it.c
-                Pair(newG, newC)
-            }
-        
-            val sortedElements = newElements.sortBy(t => (t.g, t.c))
-            val newState = State(newFloor, sortedElements)
-            if (isValid(sortedElements)) Some(newState) else None
-        }
-    }
+    return (for {
+        combo <- combinations
+        newFloor <- newFloors
+        sortedElements = applyElements(elements, combo, newFloor)
+        if isValid(sortedElements)
+    } yield State(newFloor, sortedElements))
 }
 
 def isGoal(state: State) = state.elements.forall(it => it.g == 4 && it.c == 4)
@@ -84,13 +87,13 @@ def bfs(initial: State): Int = {
     throw new Exception("No solution found!")
 }
 
-def evaluatorOne(initialElements: Building): Int = {
-    return bfs(State(1, initialElements.values.toList))
+def evaluatorOne(initialElements: Vector[Pair]): Int = {
+    return bfs(State(1, initialElements))
 }
     
-def evaluatorTwo(initialElements: Building): Int = {
-    val newElements = initialElements ++ Map("elerium" -> Pair(1, 1), "dilithium" -> Pair(1, 1))
-    return bfs(State(1, newElements.values.toList))
+def evaluatorTwo(initialElements: Vector[Pair]): Int = {
+    val newElements = initialElements ++ Vector(Pair(1, 1), Pair(1, 1))
+    return bfs(State(1, newElements))
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

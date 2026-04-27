@@ -8,14 +8,17 @@ def parseInput(input: String) = input.collect {
     case '.' => false
 }
 
+def transform(current: IndexedSeq[Boolean]): IndexedSeq[Boolean] = {
+    return (false +: current :+ false).sliding(3).map { it => it(0) ^ it(2) }.toIndexedSeq
+}
+
 def safeCount(input: IndexedSeq[Boolean], row: Int): Int = {
     var current = input
     var count = 0
 
     for (_ <- 1 to row) {
         count += current.count(!_)
-        val temp = false +: current :+ false
-        current = temp.sliding(3).map { it => it(0) ^ it(2) }.toIndexedSeq
+        current = transform(current)
     }
 
     return count
