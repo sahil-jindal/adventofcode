@@ -13,11 +13,8 @@ extension (arr: Array[Int]) {
     }
 }
 
-case class TreeNode(weight: Int, children: List[String])
-
 case class Node(
-    var hasParent: Boolean = false,
-    var parent: String = "",
+    var parent: Option[String] = None,
     var children: Int = 0,
     var processed: Int = 0,
     var weight: Int = 0,
@@ -26,26 +23,27 @@ case class Node(
     val subTotals: Array[Int] = Array(0, 0),
 )
 
+type TreeNode = (weight: Int, children: List[String])
+
 val pattern =  raw"(\w+) \((\d+)\)(?: -> ([\w, ]+))?".r
 
 def parseInput(input: List[String]) = input.collect {
     case pattern(id, weight, childrenOpt) => {
         val children = Option(childrenOpt).map(_.split(", ").toList).getOrElse(List.empty)
-        id -> TreeNode(weight.toInt, children)
+        id -> (weight.toInt, children)
     }
 }.toMap
 
 def solver(pairs: Map[String, TreeNode]): (String, Int) = {
     val nodes = pairs.keySet.map(_ -> Node()).toMap
 
-    for ((id, TreeNode(weight, children)) <- pairs) {
+    for ((id, (weight, children)) <- pairs) {
         nodes(id).weight = weight
         nodes(id).total = weight
         nodes(id).children = children.size
 
         for (edge <- children) {
-            nodes(edge).parent = id
-            nodes(edge).hasParent = true
+            nodes(edge).parent = Some(id)
         }
     }
 
@@ -53,8 +51,8 @@ def solver(pairs: Map[String, TreeNode]): (String, Int) = {
     // and walk up the tree until finding the root.
     var partOne = pairs.keySet.head
 
-    while (nodes(partOne).hasParent) {
-        partOne = nodes(partOne).parent
+    while (nodes(partOne).parent.isDefined) {
+        partOne = nodes(partOne).parent.get
     }
 
     val todo = Queue.from(nodes.collect { 
@@ -66,7 +64,8 @@ def solver(pairs: Map[String, TreeNode]): (String, Int) = {
     breakable {
         while (todo.nonEmpty) {
             val index = todo.dequeue()
-            val Node(_, parent, _, _, weight, total, _, _) = nodes(index)
+            val Node(name, _, _, weight, total, _, _) = nodes(index)
+            val parent = name.get
             val node = nodes(parent)
 
             if (node.processed < 2) {
