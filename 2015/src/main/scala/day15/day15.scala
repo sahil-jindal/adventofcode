@@ -38,10 +38,10 @@ def allPossibleRecipes(ingredients: List[Ingredient]): List[Ingredient] = {
         val temp = (ingredients zip scoops).map(_ * _).reduce(_ + _)
 
         temp.copy(
-            flavor = math.max(temp.flavor, 0),
-            texture = math.max(temp.texture, 0),
-            capacity = math.max(temp.capacity, 0),
-            durability = math.max(temp.durability, 0),
+            flavor = temp.flavor.max(0),
+            texture = temp.texture.max(0),
+            capacity = temp.capacity.max(0),
+            durability = temp.durability.max(0),
         )
     }).toList
 }

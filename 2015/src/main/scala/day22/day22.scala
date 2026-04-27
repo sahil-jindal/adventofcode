@@ -49,7 +49,7 @@ case class State(
 
     def bossStep(): State = {
         if playerHp <= 0 || bossHp <= 0 then return this
-        return copy(playerHp = playerHp - math.max(1, bossDamage - playerArmor))
+        return copy(playerHp = playerHp - (bossDamage - playerArmor).max(1))
     }
 
     def playerSteps(): List[State] = {
