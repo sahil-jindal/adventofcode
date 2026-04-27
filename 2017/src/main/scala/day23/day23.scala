@@ -2,7 +2,6 @@ package day23
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.Map
 
 // # Coprocessor Conflagration
 //
