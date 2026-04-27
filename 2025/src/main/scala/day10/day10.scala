@@ -64,7 +64,7 @@ def solve(joltages: List[Int], singlePresses: IndexedSeq[SinglePress], cache: Ma
                     case (j, jC) => (j - jC) / 2
                 }
 
-                best = Math.min(best, buttonCount + 2*solve(subProblem, singlePresses, cache))
+                best = best.min(buttonCount + 2*solve(subProblem, singlePresses, cache))
             } 
         }
 
