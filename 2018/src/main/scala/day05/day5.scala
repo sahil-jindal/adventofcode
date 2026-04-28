@@ -8,7 +8,7 @@ def react(polymer: String): String = {
     val stack = Stack.empty[Char]
 
     for (unit <- polymer) {
-        if (stack.nonEmpty && math.abs(stack.top - unit) == 32) then stack.pop()
+        if (stack.nonEmpty && (stack.top - unit).abs == 32) then stack.pop()
         else stack.push(unit)
     }
     
