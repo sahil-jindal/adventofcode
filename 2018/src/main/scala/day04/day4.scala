@@ -57,7 +57,6 @@ def evaluatorTwo(guards: List[Guard]): Int = solver(guards, it => it.sleepByMin.
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
 
-@main
 def hello(): Unit = {
     readLinesFromFile("day04.txt") match {
         case Success(lines) => {
