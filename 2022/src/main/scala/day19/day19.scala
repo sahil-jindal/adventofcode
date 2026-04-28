@@ -17,7 +17,13 @@ case class State(remainingTime: Int, available: Material, producing: Material, d
 
 case class Blueprint(id: Int, robots: List[Robot]) {
     val costs = robots.map(_.cost)
-    val maxCost = Material(costs.map(_.ore).max, costs.map(_.clay).max, costs.map(_.obsidian).max, Int.MaxValue)
+    
+    val maxCost = Material(
+        ore = costs.map(_.ore).max, 
+        clay = costs.map(_.clay).max, 
+        obsidian = costs.map(_.obsidian).max, 
+        geode = Int.MaxValue
+    )
 }
 
 val Ore = Material(1, 0, 0, 0)
@@ -38,8 +44,9 @@ def parseInput(input: List[String]) = input.map(line => {
 })
 
 def potentialGeodeCount(state: State): Int = {
-    val future = (2 * state.producing.geode + state.remainingTime - 1) * state.remainingTime / 2
-    return state.available.geode + future
+    val State(remainingTime, available, producing, _) = state
+    val future = (2 * producing.geode + remainingTime - 1) * remainingTime / 2
+    return available.geode + future
 }
 
 def maxGeodes(blueprint: Blueprint, timeLimit: Int): Int = {    
@@ -51,17 +58,17 @@ def maxGeodes(blueprint: Blueprint, timeLimit: Int): Int = {
     val pq = PriorityQueue(State(timeLimit, Nothing, Ore, 0))(using Ordering.by(potentialGeodeCount))
     val seen = Set.empty[State]
 
-    var max = 0
+    var maxResult = 0
 
     while (pq.nonEmpty) {
         val state = pq.dequeue()
 
-        if (potentialGeodeCount(state) < max) return max
+        if (potentialGeodeCount(state) < maxResult) return maxResult
 
         if (seen.add(state)) {
 
             if (state.remainingTime == 0) {
-                max = math.max(max, state.available.geode)
+                maxResult = maxResult.max(state.available.geode)
             } else {
                 val buildable = blueprint.robots.filter(r => state.available >= r.cost)
 
@@ -84,11 +91,16 @@ def maxGeodes(blueprint: Blueprint, timeLimit: Int): Int = {
         }
     }
 
-    return max
+    return maxResult
 }
 
-def evaluatorOne(blueprints: List[Blueprint]): Int = blueprints.map(bp => bp.id * maxGeodes(bp, 24)).sum
-def evaluatorTwo(blueprints: List[Blueprint]): Int = blueprints.take(3).map(bp => maxGeodes(bp, 32)).product  
+def evaluatorOne(blueprints: List[Blueprint]): Int = {
+    return blueprints.map(bp => bp.id * maxGeodes(bp, 24)).sum
+}
+
+def evaluatorTwo(blueprints: List[Blueprint]): Int = {
+    return blueprints.take(3).map(bp => maxGeodes(bp, 32)).product
+}  
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
     Using(Source.fromResource(filePath))(_.getLines().toList)
