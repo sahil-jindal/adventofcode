@@ -7,7 +7,7 @@ case class Group(dir: Char, amount: Int, color: String)
 
 case class Direction(dy: Long, dx: Long) {
     def *(num: Int) = Direction(dy * num, dx * num)
-    def magnitude = Math.sqrt(dy.toDouble * dy.toDouble + dx.toDouble * dx.toDouble)
+    def magnitude = Math.hypot(dy.toDouble, dx.toDouble)
 }
 
 case class Point(y: Long, x: Long) {
@@ -52,11 +52,11 @@ def area(steps: List[Direction]): Long = {
         case (p1, p2) => p1.x * p2.y - p1.y * p2.x
     }
 
-    val area = shoelaces.sum.abs / 2
+    val area = shoelaces.sum.abs >> 1
 
     // Pick's theorem  https://en.wikipedia.org/wiki/Pick%27s_theorem
     val boundary = steps.map(_.magnitude).sum.toLong
-    val interior = area - (boundary / 2) + 1
+    val interior = area - (boundary >> 1) + 1
 
     // integer area
     return boundary + interior
