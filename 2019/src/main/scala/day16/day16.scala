@@ -125,6 +125,9 @@ type Pair = (binomial: List[(Int, Int)], size: Int)
 val BINOMIAL_MOD_2 = List((1, 4), (1, 4), (1, 4), (1, 4), (1, 4), (1, 4), (1, 4), (1, 100))
 val BINOMIAL_MOD_5 = List((1, 25), (4, 100))
 
+def gcd(a: Int, b: Int): Int = if b == 0 then a else gcd(b, a % b)
+def lcm(a: Int, b: Int): Int = a * b / gcd(a, b)
+
 def parseInput(input: String) = input.map(_.asDigit)
 
 def fft(digits: IndexedSeq[Int]): IndexedSeq[Int] = {
@@ -157,9 +160,6 @@ def fft(digits: IndexedSeq[Int]): IndexedSeq[Int] = {
 
     return (result1 ++ result2)
 }
-
-def gcd(a: Int, b: Int): Int = if b == 0 then a else gcd(b, a % b)
-def lcm(a: Int, b: Int): Int = a * b / gcd(a, b)
 
 def compute(input: IndexedSeq[Int], begin: Int, upper: Int, pair: Pair): Vector[Int] = {
     val (binomial, size) = pair
