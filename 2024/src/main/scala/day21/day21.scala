@@ -4,10 +4,12 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.collection.mutable.{Map => MutableMap}
 
-case class Point(y: Int, x: Int)
+case class Vec2D(y: Int, x: Int) {
+    def -(that: Vec2D) = Vec2D(y - that.y, x - that.x)
+}
 
 type Cache = MutableMap[(Char, Char, Int), Long]
-type Keypad = Map[Point, Char]
+type Keypad = Map[Vec2D, Char]
 
 val keypad1 = parseKeypad(List("789", "456", "123", " 0A"))
 val keypad2 = parseKeypad(List(" ^A", "<v>"))
@@ -16,34 +18,32 @@ def parseKeypad(input: List[String]): Keypad = {
     return (for {
         (line, y) <- input.zipWithIndex
         (ch, x) <- line.zipWithIndex
-    } yield Point(-y, x) -> ch).toMap
+    } yield Vec2D(y, x) -> ch).toMap
 }
 
-def encodeKey(currentKey: Char, nextKey: Char, keypads: List[Keypad], cache: Cache): Long = {
-    return cache.getOrElseUpdate((currentKey, nextKey, keypads.length), {
+def encodeKey(currKey: Char, nextKey: Char, keypads: List[Keypad], cache: Cache): Long = {
+    return cache.getOrElseUpdate((currKey, nextKey, keypads.length), {
         val keypad = keypads.head
 
-        val currentPos = keypad.collectFirst { case (pos, ch) if ch == currentKey => pos }.get
+        val currPos = keypad.collectFirst { case (pos, ch) if ch == currKey => pos }.get
         val nextPos = keypad.collectFirst { case (pos, ch) if ch == nextKey => pos }.get
 
-        val dy = nextPos.y - currentPos.y
-        val vert = (if (dy < 0) 'v' else '^').toString * dy.abs
+        val Vec2D(dy, dx) = nextPos - currPos
 
-        val dx = nextPos.x - currentPos.x
+        val verti = (if (dy < 0) '^' else 'v').toString * dy.abs
         val horiz = (if (dx < 0) '<' else '>').toString * dx.abs
 
         var cost = Long.MaxValue
 
-        // we can usually go vertical first then horizontal or vica versa,
-        // but we should check for the extra condition and don't position
-        // the robot over the ' ' key:
+        // we can usually go vertical first then horizontal or vica versa, but we should 
+        // check for the extra condition and don't position the robot over the ' ' key:
 
-        if (keypad(Point(nextPos.y, currentPos.x)) != ' ') {
-            cost = math.min(cost, encodeKeys(s"${vert}${horiz}A", keypads.tail, cache))
+        if (keypad(Vec2D(nextPos.y, currPos.x)) != ' ') {
+            cost = cost.min(encodeKeys(s"${verti}${horiz}A", keypads.tail, cache))
         }
 
-        if (keypad(Point(currentPos.y, nextPos.x)) != ' ') {
-            cost = math.min(cost, encodeKeys(s"${horiz}${vert}A", keypads.tail, cache))
+        if (keypad(Vec2D(currPos.y, nextPos.x)) != ' ') {
+            cost = cost.min(encodeKeys(s"${horiz}${verti}A", keypads.tail, cache))
         }
 
         cost
@@ -60,15 +60,10 @@ def encodeKey(currentKey: Char, nextKey: Char, keypads: List[Keypad], cache: Cac
 def encodeKeys(keys: String, keypads: List[Keypad], cache: Cache): Long = {
     if (keypads.isEmpty) return keys.size
 
-    var currentKey = 'A'
-    var length = 0L
+    val allKeys = 'A' +: keys
+    val length = (allKeys.init zip allKeys.tail).map(encodeKey(_, _, keypads, cache)).sum
 
-    for (nextKey <- keys) {
-        length += encodeKey(currentKey, nextKey, keypads, cache)
-        currentKey = nextKey
-    }
-
-    require(currentKey == 'A', "The robot should point at the 'A' key")
+    require(keys.last == 'A', "The robot should point at the 'A' key")
     return length
 }
 
@@ -89,6 +84,8 @@ def hello(): Unit = {
             println(s"Part One: ${evaluatorOne(lines)}")
             println(s"Part Two: ${evaluatorTwo(lines)}")
         }
-        case Failure(exception) => println(s"Error reading file: ${exception.getMessage}")
+        case Failure(exception) => {
+            println(s"Error reading file: ${exception.getMessage}")
+        }
     }
 }

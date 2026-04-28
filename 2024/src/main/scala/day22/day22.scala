@@ -2,7 +2,7 @@ package day22
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.Map
+import scala.collection.mutable.{Map => MutableMap}
 
 def parseInput(input: List[String]) = input.map(_.toInt)
 
@@ -20,23 +20,23 @@ def difference(nums: List[Int]) = (nums.init zip nums.tail).map { case (a, b) =>
 
 def BuyingOptions(nums: List[Int]): Map[List[Int], Int] = {
     val bananaSold = nums.map(_ % 10)
-    val diff = difference(bananaSold)    
+    val buyingOptions = MutableMap.empty[List[Int], Int]
 
-    val buyingOptions = Map.empty[List[Int], Int]
+    for (bananas <- bananaSold.sliding(5)) {
+        val (seq, banana) = (difference(bananas), bananas.last)
 
-    for((seq, i) <- diff.sliding(4).zipWithIndex) {
         if (!buyingOptions.contains(seq)) {
-            buyingOptions.put(seq, bananaSold(i + 4))
+            buyingOptions.put(seq, banana)
         }
     }
 
-    return buyingOptions
+    return buyingOptions.toMap
 }
 
 def evaluatorOne(nums: List[List[Int]]): Long = nums.map(_.last.toLong).sum
 
 def evaluatorTwo(nums: List[List[Int]]): Int = {
-    val buyingOptions = Map.empty[List[Int], Int].withDefaultValue(0)
+    val buyingOptions = MutableMap.empty[List[Int], Int].withDefaultValue(0)
 
     for (num <- nums; (key, value) <- BuyingOptions(num)) {
         buyingOptions(key) += value
