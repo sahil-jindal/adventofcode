@@ -7,6 +7,9 @@ enum Cmd { case Left, Right }
 
 case class Pair(dirs: IndexedSeq[Cmd], network: Map[String, Map[Cmd, String]])
 
+def gcd(a: Long, b: Long): Long = if b == 0 then a else gcd(b, a % b)
+def lcm(a: Long, b: Long): Long = a * b / gcd(a, b)
+
 def parseInput(input: List[String]): Pair = {
     val dirs = input.head.collect {
         case 'L' => Cmd.Left
@@ -25,12 +28,9 @@ def stepsToZ(input: Pair, current: String, zMarker: String): Long = {
     val Pair(dirs, network) = input
     
     return Iterator.continually(dirs).flatten
-        .scanLeft(current) { case (cur, dir) => network(cur)(dir) }
+        .scanLeft(current)(network(_)(_))
         .indexWhere(_.endsWith(zMarker)).toLong
 }
-
-def gcd(a: Long, b: Long): Long = if b == 0 then a else gcd(b, a % b)
-def lcm(a: Long, b: Long): Long = a * b / gcd(a, b)
 
 def solve(input: Pair, aMarker: String, zMarker: String): Long = {
     return input.network.keys.withFilter(_.endsWith(aMarker)).map(stepsToZ(input, _, zMarker)).reduce(lcm)
