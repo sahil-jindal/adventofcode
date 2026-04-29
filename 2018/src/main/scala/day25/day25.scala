@@ -3,6 +3,15 @@ package day25
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
+extension [A](items: List[A]) {
+    def upperTriangle(): List[(A, A)] = {
+        val partOne = items.tail.tails.toVector
+        return (items zip partOne).init.flatMap {
+            case (e1, ahead) => ahead.map(e1 -> _)
+        }
+    }
+}
+
 case class Vec4D(x: Int, y: Int, z: Int, w: Int) {
     def manhattan(other: Vec4D): Int = {
         (x - other.x).abs + (y - other.y).abs + (z - other.z).abs + (w - other.w).abs
@@ -47,10 +56,9 @@ def formConstellations(points: List[Vec4D]): Int = {
     val uf = DisjointUnionSets(points.length)
     
     for {
-        i <- 0 to points.length - 2
-        j <- i + 1 to points.length - 1
-        if points(i).manhattan(points(j)) <= 3
-    } uf.union(i, j)
+        ((p1, i1), (p2, i2)) <- points.zipWithIndex.upperTriangle()
+        if p1.manhattan(p2) <= 3
+    } uf.union(i1, i2)
 
     return points.indices.map(uf.find).toSet.size
 }
