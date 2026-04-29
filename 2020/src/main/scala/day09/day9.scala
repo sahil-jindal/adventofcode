@@ -4,12 +4,21 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.util.boundary, boundary.break
 
+extension [A](items: Vector[A]) {
+    def upperTriangle(): Vector[(A, A)] = {
+        val partOne = items.tail.tails.toVector
+        return (items zip partOne).init.flatMap {
+            case (e1, ahead) => ahead.map(e1 -> _)
+        }
+    }
+}
+
 def parseInput(input: List[String]) = input.map(_.toLong).toVector
 
 def findFirstInvalidNumber(nums: Vector[Long], preambleSize: Int): Option[Long] = {
-    return nums.sliding(preambleSize + 1).collectFirst { 
-        case (preamble :+ target) if preamble.combinations(2).forall(_.sum != target) => target  
-    }
+    return nums.sliding(preambleSize + 1)
+        .map(it => it.init.upperTriangle().map(_ + _) -> it.last)
+        .collectFirst { case (paired, target) if paired.forall(_ != target) => target }
 }
 
 def findEncryptionWeakness(nums: Vector[Long], target: Long): Option[Long] = {
