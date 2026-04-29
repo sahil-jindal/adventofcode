@@ -11,9 +11,8 @@ case class Value(a: Boolean) extends Bit
 type Command = (baseAddr: Int, value: Long)
 type ProgramSegment = (mask: IndexedSeq[Bit], commands: List[Command])
 
-def parseBinaryToLong(str: IndexedSeq[Bit]): Long = {
-    require(str.forall(_.isInstanceOf[Value]))
-    return str.reverse.zipWithIndex.collect { case (Value(true), idx) => 1L << idx }.sum
+def parseBinaryToLong(str: IndexedSeq[Boolean]): Long = {
+    return str.reverse.zipWithIndex.collect { case (true, idx) => 1L << idx }.sum
 }
 
 def groupCommands(input: List[String]): List[List[String]] = {
@@ -57,8 +56,8 @@ def evaluatorOne(input: List[ProgramSegment]): Long = {
     
     for {
         (mask, commands) <- input
-        andMask = parseBinaryToLong(mask.map(it => if (it == Unknown) Value(true) else it))
-        orMask = parseBinaryToLong(mask.map(it => if (it == Unknown) Value(false) else it))
+        andMask = parseBinaryToLong(mask.map { case Unknown => true; case Value(a) => a })
+        orMask = parseBinaryToLong(mask.map { case Unknown => false; case Value(a) => a })
         (baseAddr, value) <- commands
     } mem(baseAddr) = (value & andMask) | orMask
     
