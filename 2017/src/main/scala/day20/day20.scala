@@ -64,21 +64,19 @@ def parseInput(input: List[String]): List[Particle] = {
 def evaluatorOne(currParticles: List[Particle]): Int = currParticles.minBy(_.acc.len).id
 
 def evaluatorTwo(currParticles: List[Particle]): Int = {
-    var particles = currParticles
+    var particles = currParticles.toSet
 
     val T = (for {
         p1 <- particles
-        p2 <- particles 
-        if p1.id != p2.id
-        ct <- p1.collisionTime(p2)
-    } yield ct).max
+        p2 <- particles - p1 
+    } yield p1.collisionTime(p2)).reduce(_ | _).max
 
     for (_ <- 0 to T) {
         val positionFreq = particles.groupMapReduce(_.pos)(_ => 1)(_ + _)
         particles = particles.withFilter(it => positionFreq(it.pos) == 1).map(_.step())
     }
     
-    return particles.length
+    return particles.size
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
