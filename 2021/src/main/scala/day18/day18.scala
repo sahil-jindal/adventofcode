@@ -136,13 +136,12 @@ def evaluatorOne(input: List[String]): Long = {
 }
 
 def evaluatorTwo(input: List[String]): Long = {
-    val numbers = input.map(parseNumber)
+    val numbers = input.map(parseNumber).toSet
 
     return (for {
-        i <- numbers.indices
-        j <- numbers.indices
-        if i != j
-    } yield magnitude(sum(numbers(i), numbers(j)))).max
+        n1 <- numbers
+        n2 <- numbers - n1
+    } yield magnitude(sum(n1, n2))).max
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =

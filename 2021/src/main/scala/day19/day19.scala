@@ -129,9 +129,9 @@ def evaluatorOne(scanners: Set[Scanner]): Int = {
 }
 
 def evaluatorTwo(scanners: Set[Scanner]): Int = {
-    return (for {sA <- scanners; sB <- scanners; if sA != sB} 
-        yield sA.center.manhattanDistance(sB.center)
-    ).max
+    return (for (sA <- scanners; sB <- scanners - sA) yield {
+        sA.center.manhattanDistance(sB.center)
+    }).max
 }
 
 def readLinesFromFile(filePath: String): Try[List[String]] =
