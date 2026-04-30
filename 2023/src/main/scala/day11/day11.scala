@@ -3,8 +3,18 @@ package day11
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
+extension [A](items: List[A]) {
+    def upperTriangle(): List[(A, A)] = {
+        val partOne = items.tail.tails.toVector
+        return (items zip partOne).init.flatMap {
+            case (e1, ahead) => ahead.map(e1 -> _)
+        }
+    }
+}
+
 case class Position(y: Int, x: Int)
-case class Triplet(galaxies: List[Position], isRowEmpty: Int => Boolean, isColEmpty: Int => Boolean)
+
+type Triplet = (galaxies: List[Position], isRowEmpty: Int => Boolean, isColEmpty: Int => Boolean)
 
 def emptyRows(grid: List[String]) = grid.zipWithIndex.collect {
     case (row, idx) if row.forall(_ == '.') => idx
@@ -22,7 +32,7 @@ def parseInput(input: List[String]): Triplet = {
     val isRowEmpty = emptyRows(input).toSet.contains
     val isColEmpty = emptyRows(input.transpose.map(_.mkString)).toSet.contains
 
-    return Triplet(findAll(input), isRowEmpty, isColEmpty)
+    return (findAll(input), isRowEmpty, isColEmpty)
 }
 
 def distance(i1: Int, i2: Int, expansion: Int, isEmpty: Int => Boolean): Long = {
@@ -32,10 +42,10 @@ def distance(i1: Int, i2: Int, expansion: Int, isEmpty: Int => Boolean): Long = 
 }
 
 def solve(input: Triplet, expansion: Int): Long = {
-    val Triplet(galaxies, isRowEmpty, isColEmpty) = input
+    val (galaxies, isRowEmpty, isColEmpty) = input
 
     return (for {
-        List(gA, gB) <- galaxies.combinations(2)
+        (gA, gB) <- galaxies.upperTriangle()
         d1 = distance(gA.y, gB.y, expansion, isRowEmpty)
         d2 = distance(gA.x, gB.x, expansion, isColEmpty)
     } yield d1 + d2).sum

@@ -2,7 +2,16 @@ package day22
 
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
-import scala.collection.mutable.{Set, Queue}
+import scala.collection.mutable.{Queue, Set => MutableSet}
+
+extension [A](items: List[A]) {
+    def upperTriangle(): List[(A, A)] = {
+        val partOne = items.tail.tails.toVector
+        return (items zip partOne).init.flatMap {
+            case (e1, ahead) => ahead.map(e1 -> _)
+        }
+    }
+}
 
 case class Inclusive(start: Int, end: Int) {
     def intersects(that: Inclusive) = start <= that.end && that.start <= end
@@ -23,6 +32,8 @@ def parseInput(input: List[String]) = input.map(line => {
     Block(Inclusive(sx, ex), Inclusive(sy, ey), Inclusive(sz, ez))
 })
 
+// This looks like it can converted to functional block
+// But it is updating block zRange in-Place using an array.
 def fall(blocksInit: List[Block]): List[Block] = {
     val blocks = blocksInit.sortBy(_.bottom).toArray
 
@@ -43,15 +54,12 @@ def fall(blocksInit: List[Block]): List[Block] = {
 }
 
 def getSupports(blocks: List[Block]): Supports = {
-    val blocksAbove = blocks.map(_ -> Set.empty[Block]).toMap
-    val blocksBelow = blocks.map(_ -> Set.empty[Block]).toMap
+    val pairs = blocks.upperTriangle().filter { case (blkA, blkB) =>
+        blkB.bottom == 1 + blkA.top && blkA.intersectsXY(blkB)
+    }.toSet
     
-    for (List(blkA, blkB) <- blocks.combinations(2)) {
-        if (blkB.bottom == 1 + blkA.top && blkA.intersectsXY(blkB)) {
-            blocksBelow(blkB).add(blkA)
-            blocksAbove(blkA).add(blkB)
-        }
-    }
+    val blocksAbove = pairs.groupMap(_._1)(_._2).withDefaultValue(Set.empty)
+    val blocksBelow = pairs.groupMap(_._2)(_._1).withDefaultValue(Set.empty)
     
     return (blocksAbove, blocksBelow)
 }
@@ -62,15 +70,15 @@ def kaboom(blocksInit: List[Block]): List[Int] = {
 
     return blocks.map(disintegratedBlock => {
         val queue = Queue(disintegratedBlock)
-        val falling = Set.empty[Block]
+        val falling = MutableSet.empty[Block]
 
         while (queue.nonEmpty) {
             val block = queue.dequeue()
             falling.add(block)
 
-            val blocksStartFailing = blocksAbove(block).filter(blockT => 
+            val blocksStartFailing = blocksAbove(block).filter { blockT => 
                 blocksBelow(blockT).subsetOf(falling)
-            )
+            }
 
             queue.enqueueAll(blocksStartFailing)
         }
