@@ -20,19 +20,23 @@ extension (self: Map[Int, Int]) {
     }
 }
 
-val goal = 150
+case class Eggnog(liter: Int)
+
+given Eggnog = Eggnog(150)
 
 def parseInput(input: List[String]) = input.map(_.toInt).sorted
 
-def preComputation(input: List[Int]): Map[Int, Int] = {
-    val ways = Array.fill(goal + 1)(Map.empty[Int, Int])
-    ways(0) = Map(0 -> 1)
+def preComputation(input: List[Int])(using goal: Eggnog): Map[Int, Int] = {
+    val target = goal.liter
 
-    for (item <- input; i <- goal to item by -1) {
-        ways(i) = ways(i) |+| ways(i - item).incrementKeys()
+    val liters = Array.fill(target + 1)(Map.empty[Int, Int])
+    liters(0) = Map(0 -> 1)
+
+    for (item <- input; i <- target to item by -1) {
+        liters(i) = liters(i) |+| liters(i - item).incrementKeys()
     }
 
-    return ways(goal)
+    return liters(target)
 }
 
 def evaluatorOne(input: Map[Int, Int]) = input.values.sum
