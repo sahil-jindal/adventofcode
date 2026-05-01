@@ -3,6 +3,15 @@ package day09
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 
+extension [A](items: List[A]) {
+    def upperTriangle(): List[(A, A)] = {
+        val partOne = items.tail.tails.toVector
+        return (items zip partOne).init.flatMap {
+            case (e1, ahead) => ahead.map(e1 -> _)
+        }
+    }
+}
+
 case class Point(x: Long, y: Long)
 
 case class Inclusive(start: Long, end: Long) {
@@ -10,10 +19,7 @@ case class Inclusive(start: Long, end: Long) {
     def strictOverlaps(that: Inclusive) = start < that.end && that.start < end 
 }
 
-case class Rectangle(a: Point, b: Point) {
-    val xRange = Inclusive(a.x.min(b.x), a.x.max(b.x))
-    val yRange = Inclusive(a.y.min(b.y), a.y.max(b.y))
-    
+case class Rectangle(xRange: Inclusive, yRange: Inclusive) {
     def area = yRange.length * xRange.length
 
     def aabbCollision(that: Rectangle): Boolean = {
@@ -26,13 +32,14 @@ def parseInput(input: List[String]) = input.collect {
     case s"$x,$y" => Point(x.toLong, y.toLong)
 }
 
-def allPossibleRectangles(points: List[Point]): List[Rectangle] = {
-    return points.combinations(2).collect { case List(a, b) => Rectangle(a, b) }.toList
+def formRectangle(a: Point, b: Point): Rectangle = {
+    val xRange = Inclusive(a.x.min(b.x), a.x.max(b.x))
+    val yRange = Inclusive(a.y.min(b.y), a.y.max(b.y))
+    return Rectangle(xRange, yRange)
 }
 
-def boundary(points: List[Point]): List[Rectangle] = {
-    val rightShifted = points.tail :+ points.head
-    return (points zip rightShifted).map(Rectangle(_, _))
+def allPossibleRectangles(points: List[Point]): List[Rectangle] = {
+    return points.upperTriangle().map(formRectangle)
 }
 
 def evaluatorOne(points: List[Point]): Long = {
@@ -40,7 +47,8 @@ def evaluatorOne(points: List[Point]): Long = {
 }
 
 def evaluatorTwo(points: List[Point]): Long = {
-    val segments = boundary(points)
+    val rightShifted = points.tail :+ points.head
+    val segments = (points zip rightShifted).map(formRectangle)
 
     return allPossibleRectangles(points)
         .sortBy(_.area)(using Ordering.Long.reverse)
