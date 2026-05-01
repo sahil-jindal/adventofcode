@@ -3,22 +3,36 @@ package day09
 import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.util.boundary, boundary.break
-
-extension [A](items: Vector[A]) {
-    def upperTriangle(): Vector[(A, A)] = {
-        val partOne = items.tail.tails.toVector
-        return (items zip partOne).init.flatMap {
-            case (e1, ahead) => ahead.map(e1 -> _)
-        }
-    }
-}
+import scala.collection.mutable.{Queue, Set => MutableSet}
 
 def parseInput(input: List[String]) = input.map(_.toLong).toVector
 
 def findFirstInvalidNumber(nums: Vector[Long], preambleSize: Int): Option[Long] = {
-    return nums.sliding(preambleSize + 1)
-        .map(it => it.init.upperTriangle().map(_ + _) -> it.last)
-        .collectFirst { case (paired, target) if paired.forall(_ != target) => target }
+    // This assumes that each sliding window would have unique numbers
+    require(nums.sliding(preambleSize).forall { it => it.toSet.size == it.size })
+    
+    val (first, second) = nums.splitAt(preambleSize)
+    
+    val window = Queue.from(first)
+    val windowSet = MutableSet.from(first)
+
+    def valid(target: Long) = window.exists(x => {
+        val complement = target - x
+        complement != x && windowSet.contains(complement)
+    })
+    
+    boundary {
+        for (x <- second) {
+            if (!valid(x)) break(Some(x))
+            
+            val num = window.dequeue()
+            windowSet -= num
+            window.enqueue(x)
+            windowSet += x
+        }
+
+        return None
+    }
 }
 
 def findEncryptionWeakness(nums: Vector[Long], target: Long): Option[Long] = {
