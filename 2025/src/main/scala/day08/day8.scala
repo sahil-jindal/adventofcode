@@ -4,8 +4,14 @@ import scala.util.{Try, Success, Failure, Using}
 import scala.io.Source
 import scala.util.control.Breaks._
 
-case class Edge(a: Int, b: Int)
-case class PairOne(dist: Long, edge: Edge)
+extension [A](items: List[A]) {
+    def upperTriangle(): List[(A, A)] = {
+        val partOne = items.tail.tails.toVector
+        return (items zip partOne).init.flatMap {
+            case (e1, ahead) => ahead.map(e1 -> _)
+        }
+    }
+}
 
 case class Vec3D(x: Long, y: Long, z: Long) {
     def distance(other: Vec3D): Long = {
@@ -15,8 +21,6 @@ case class Vec3D(x: Long, y: Long, z: Long) {
         return dx*dx + dy*dy + dz*dz
     }
 }
-
-type Input = (first: List[Vec3D], second: IndexedSeq[Edge])
 
 class DisjointUnionSets(size: Int) {
     private val parent = (0 until size).toArray
@@ -47,16 +51,20 @@ class DisjointUnionSets(size: Int) {
     }
 }
 
+case class Pair(dist: Long, edge: Edge)
+
+type Edge = (a: Int, b: Int)
+type Input = (first: List[Vec3D], second: List[Edge])
+
 def parseInput(input: List[String]) = input.map(line => {
     val Array(x, y, z) = line.split(",").map(_.toLong)
     Vec3D(x, y, z)
 })
 
 def preComputation(points: List[Vec3D]): Input = {
-    val pairs = for {
-        i <- 0 to points.length - 2
-        j <- i + 1 to points.length - 1
-    } yield PairOne(points(i).distance(points(j)), Edge(i, j))
+    val pairs = points.zipWithIndex.upperTriangle().map {
+        case ((p1, i1), (p2, i2)) => Pair(p1.distance(p2), (i1, i2))
+    }
 
     return (points, pairs.sortBy(_.dist).map(_.edge))
 }
@@ -66,7 +74,7 @@ def evaluatorOne(pair: Input): Int = {
     
     val uf = DisjointUnionSets(points.length)
 
-    sortedEdges.take(1000).foreach { case Edge(a, b) => uf.union(a, b) }
+    sortedEdges.take(1000).foreach { case (a, b) => uf.union(a, b) }
 
     return points.indices.groupMapReduce(uf.find)(_ => 1)(_ + _)
         .values.toSeq.sorted(using Ordering.Int.reverse).take(3).product
@@ -77,12 +85,12 @@ def evaluatorTwo(pair: Input): Long = {
     
     val uf = DisjointUnionSets(points.length)
 
-    val maybeEdge = sortedEdges.find(it => {
-        uf.union(it.a, it.b)
+    val maybeEdge = sortedEdges.find { (a, b) =>
+        uf.union(a, b)
         points.indices.distinctBy(uf.find).size == 1
-    })
+    }
 
-    val Edge(a, b) = maybeEdge.get
+    val (a, b) = maybeEdge.get
     return points(a).x * points(b).x
 }
 
