@@ -131,7 +131,6 @@ def lookAndSaySequence(sequence: Vector[Int], iterations: Int): Int = {
 def evaluatorOne(sequence: Vector[Int]): Int = lookAndSaySequence(sequence, 40)
 def evaluatorTwo(sequence: Vector[Int]): Int = lookAndSaySequence(sequence, 50)
 
-@main
 def hello(): Unit = {
     val inputLine = "3113322113"
     val input = parseInput(inputLine)
