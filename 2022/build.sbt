@@ -8,6 +8,6 @@ lazy val root = project
     scalaVersion := scala3Version,
     libraryDependencies ++= Seq(
       "org.playframework" %% "play-json" % "3.0.6",
-      "org.scalameta" %% "munit" % "1.0.0" % Test
+      "org.scalameta" %% "munit" % "1.3.6" % Test
     )
   )
